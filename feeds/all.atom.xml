@@ -163,7 +163,7 @@ Let's first look at the distribution of the contributions amounts.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-1-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-1-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;This plot does not give much information since the contribution range is
 very large. Since the median and mean contribution is \$35 and \$290,
 respectively, we can gain more insight by narrowing the range of the
@@ -173,7 +173,7 @@ distribution between \$0 to \$1000.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-2-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-2-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;Even with this much smaller range, the dispsersion is quite large. By
 looking at this range, we can conclude that we have a right-skewed
 distribution.Another way to get a better understanding of contibution
@@ -186,7 +186,7 @@ view to where majority of the values lie.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-3-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-3-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;Although not perfectly normal, the log transformed plot is much less
 skewed.&lt;/p&gt;
 &lt;h1&gt;Univariate Analysis&lt;/h1&gt;
@@ -257,7 +257,7 @@ to all candidates by month.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-4-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-4-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;As one would guess, the total contributions have generally increased per
 month as we get closer to the election. Since the contritions made
 before Jan-2015 were minimal, it would be more appropriate to leave out
@@ -269,7 +269,7 @@ the dates before Jan-2015.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-5-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-5-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;We see that overall trend is an increase in contributions with time,
 with some dips in between. This is expected since we expect the
 contributions will increase as the election approaches but each month's
@@ -339,7 +339,7 @@ the top 6 candidates.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-6-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-6-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;The largest positive correlation for the contributions is with Clinton
 and Sanders. Since they are both Democrats, it may be that Democrat
 supporters started donating to their favourite candidates at the same
@@ -371,7 +371,7 @@ two.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-7-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-7-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;The large correlation between Clinton and Sanders is mainly driven by
 the trends prior to Jan-2016.Around Jan-2016, the trends shift towards
 having a negative correlation. Contributions for Sanders begin to rise
@@ -388,7 +388,7 @@ ggplot(data = date_candidate_data_spread, aes(x = Clinton, y = Sanders)) +
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-8-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-8-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;If the correlation between the 2 candidates was exactly 1, we would see
 all the points fall in a straight line going from the bottom-left corner
 of the plot to the top-right. In this case however, the points do not
@@ -411,7 +411,7 @@ ggplot(data = data_subset, aes(x = cand_nm, y = contb_receipt_amt)) +
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/Bivariate_Plots-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/Bivariate_Plots-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="x"&gt;print(&amp;quot;Bush, Jeb&amp;quot;)&lt;/span&gt;
 
 &lt;span class="cp"&gt;##&lt;/span&gt;&lt;span class="c"&gt; [1] &amp;quot;Bush, Jeb&amp;quot;&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
@@ -490,7 +490,7 @@ ggplot(data = data_subset, aes(x = contbr_occupation, y = contb_receipt_amt)) +
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-9-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-9-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;From the boxplot above, we can see that Professors had the largest
 interquartile range. By visual inspection, it appears that the retired
 demographic had the largest median as well as the most refunds.&lt;br&gt;
@@ -592,7 +592,7 @@ Note: the plot only displays contibutions between Jan. 2015 and Mar.
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-11-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-11-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;It's quite clear that contributions made to Clinton are much larger than
 the rest of the candidates. Before we explore this particular&lt;br&gt;
 candidate in more detail, let's first look at the other 5 candidates in
@@ -622,7 +622,7 @@ a separate plot.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-12-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-12-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;This plot now gives us a better view into the trend in contribution
 amounts for the other candidates. The first 2 things that jump out
 are:&lt;br&gt;
@@ -722,7 +722,7 @@ ggplot(data = data_subset, aes(x = contbr_city,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-14-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-14-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;Generally, Lawyers and Attorneys tend to contribute larger amounts when
 compared to those not employed and retired. New York City has the
 largest dispersion with residents from Rochester and Staten Island
@@ -746,7 +746,7 @@ ggplot(data = agg_data, aes(x = contbr_city, y = contb_receipt_amt,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-15-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-15-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ggplot(data = agg_data, aes(x = contbr_occupation, 
                             y = contb_receipt_amt, 
                             fill = contbr_city)) + 
@@ -754,7 +754,7 @@ ggplot(data = agg_data, aes(x = contbr_city, y = contb_receipt_amt,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-15-2.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-15-2.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;From the first plot, it is quite apparent that most of the contribution
 to Clinton's campaign came from New York City. Within New York City, the
 largest proportion of those contributions were made by Attorneys,
@@ -857,7 +857,7 @@ ggplot(data = data_subset, aes(x = cand_nm, y = contb_receipt_amt,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-17-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-17-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;Note that the y-limits have been adjusted to ignore the refunded
 contributions. For each candidate, except for Clinton, there appears to
 be at least one outlier whose contributions are much larger than the
@@ -891,7 +891,7 @@ ggplot(data = agg_data, aes(x = cand_nm, y = contb_receipt_amt,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-18-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-18-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;Once again, we see that having Clinton in the same plot makes it
 difficult to analyze what is happening with the other candidates.&lt;br&gt;
 Since we have already explored Clinton's contribution data, it would
@@ -917,7 +917,7 @@ ggplot(data = agg_data, aes(x = cand_nm, y = contb_receipt_amt,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-19-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-19-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;Much better! We now see that out of the 5 candidates presented, Sanders
 has the largest total contribution amount, followed by Bush, Rubio, Cruz
 and Carson in that order. For each of the candidates, we see that
@@ -946,7 +946,7 @@ ggplot(data = agg_data, aes(x = cand_nm, y = contb_receipt_amt,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-20-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-20-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;The total amount of contributions in this plot remains the same as the
 prior plot. The difference is now the size of each colored chunk (which
 now represents occupation instead of city) in the total stack for each
@@ -979,7 +979,7 @@ ggplot(data = agg_data, aes(x = contbr_city, y = contb_receipt_amt,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-21-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-21-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;Once again we see that New York City outperforms all other cities by a
 very large margin, with Attorneys alone contributing more than all other
 cities. The likely cause of this is of course the fact that New York
@@ -1010,7 +1010,7 @@ ggplot(data = agg_data, aes(x = contbr_occupation, y = contb_receipt_amt,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/unnamed-chunk-22-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/unnamed-chunk-22-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;p&gt;With New York City dominating in each of the colored stacked bars, it is
 still interesting to note that most of the contributions were made by
 those not employed, followed by those retired, Attorneys, Professors and
@@ -1060,7 +1060,7 @@ group.&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/Plot_One-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/Plot_One-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;h3&gt;Description One&lt;/h3&gt;
 &lt;p&gt;The total contribution amounts increase as a function of time, with each
 month generally outperforming the previous month's contributions, albiet
@@ -1083,7 +1083,7 @@ qplot(x = cand_nm, y = contb_receipt_amt, data = subset(data_subset, contb_recei
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/Plot_Two-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/Plot_Two-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;h3&gt;Description Two&lt;/h3&gt;
 &lt;p&gt;We note that the range in contribution amounts varies quite a bit from
 one candidate to another. Bush seemed to have the largest median
@@ -1116,7 +1116,7 @@ ggplot(data = agg_data, aes(x = cand_nm, y = contb_receipt_amt/1e6,
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="" src="./images/Plot_Three-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/Plot_Three-1.png"&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;h3&gt;Description Three&lt;/h3&gt;
 &lt;p&gt;The largest group to contribute were Attorneys to Clinton. Clinton did
 get the most contributions out of all the other candidates. Another
@@ -1711,7 +1711,7 @@ The max salary in 2015 is $32571000.00
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="png" src="images/BaseballSalariesAnalysis_1_1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/BaseballSalariesAnalysis_1_1.png"&gt;&lt;/p&gt;
 &lt;p&gt;The salaries are tentatively higher in 2015 than in 1985.&lt;br&gt;
 The histograms were plotted to see the distibution of our salaries. The fact that the distribution is not normal, but instead right skewed, gives us an idea of the type of model we can use if we wanted to develop a predictive model to determine the salaries.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Question: Does the mean salary increase with the year?&lt;/span&gt;
@@ -1738,7 +1738,7 @@ The histograms were plotted to see the distibution of our salaries. The fact tha
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="png" src="images/BaseballSalariesAnalysis_3_0.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/BaseballSalariesAnalysis_3_0.png"&gt;&lt;/p&gt;
 &lt;p&gt;The long term trend shows that the mean salary tends to increase over time.&lt;br&gt;
 A line graph was plotted so that we can see the relationship between year and the mean salary. Although the relationship between year and mean salary is not perfectly linear, we can still get away by using a basic linear model if we wanted to develop a predictive model. One can also argue that the curve is non-linear and we may have to go beyond the basic linear model if we were to develop a predictive model.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Question: Do a player salaries have a higher correlation with total runs or homeruns?&lt;/span&gt;
