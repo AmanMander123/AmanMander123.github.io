@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>A Pelican Blog - Data Analysis</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="/category/data-analysis.html">Data Analysis</a></li>
+                    <li><a href="/category/introduction.html">Introduction</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="/baseball-salaries-analysis.html">Baseball Salaries Analysis</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-03-25T00:00:00+00:00">
+                Published: Fri 25 March 2016
+        </abbr>
+
+<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
+
+</footer><!-- /.post-info --><p>The Baseball Data was used to answer the following questions:<br>
+Are salaries higher in 2015 than in 1985?<br>
+Does the mean salary increase with the year?<br>
+Do a player salaries have a higher correlation with total runs or homeruns?</p>
+<div class="highlight"><pre><span></span><span class="c1"># Import packages</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">P</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+
+<span class="c1"># Use pandas csv reader to read in the salary data</span>
+<span class="n">salary_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;Data/Salaries.csv&quot;</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Question: Are salaries higher in 2015 than in 1985?</span>
+
+<span class="c1"># Compare salary statistics between 1985 and 2015</span>
+<span class="n">salaryData_1985</span> <span class="o">=</span> <span class="n">salary_df</span><span class="p">[</span><span class="n">salary_df</span><span class="p">[</span><span class="s1">&#39;yearID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1985</span><span class="p">][</span><span class="s1">&#39;salary&#39;</span><span class="p">]</span>
+<span class="n">salaryData_2015</span> <span class="o">=</span> <span class="n">salary_df</span><span class="p">[</span><span class="n">salary_df</span><span class="p">[</span><span class="s1">&#39;yearID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2015</span><span class="p">][</span><span class="s1">&#39;salary&#39;</span><span class="p">]</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;The median salary in 1985 is $</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">salaryData_1985</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;The median salary in 2015 is $</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">salaryData_2015</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;The mean salary in 1985 is $</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">salaryData_1985</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;The mean salary in 2015 is $</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">salaryData_2015</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;The max salary in 1985 is $</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">salaryData_1985</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;The max salary in 2015 is $</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">salaryData_2015</span><span class="p">))</span>
+
+<span class="c1"># Look at the distribution of the salary data</span>
+<span class="c1"># Plot histrograms of 1985 and 2015 salaries</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Histogram of Salary data in 1985 and 2015&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">salaryData_1985</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Salary&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency - 1985&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">salaryData_1985</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Salary&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency - 2015&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>The median salary in 1985 is $400000.00
+The median salary in 2015 is $1880000.00
+The mean salary in 1985 is $476299.45
+The mean salary in 2015 is $4301276.09
+The max salary in 1985 is $2130300.00
+The max salary in 2015 is $32571000.00
+</pre></div>
+
+
+<p><img alt="png" src="images/BaseballSalariesAnalysis_1_1.png"></p>
+<p>The salaries are tentatively higher in 2015 than in 1985.<br>
+The histograms were plotted to see the distibution of our salaries. The fact that the distribution is not normal, but instead right skewed, gives us an idea of the type of model we can use if we wanted to develop a predictive model to determine the salaries.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Question: Does the mean salary increase with the year?</span>
+
+<span class="c1"># Get all the unique years in the dataset</span>
+<span class="n">years</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">salary_df</span><span class="p">[</span><span class="s1">&#39;yearID&#39;</span><span class="p">])</span>
+
+<span class="c1"># Initialize empty list to store mean salaries</span>
+<span class="n">mean_salary</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Get average salary for each year</span>
+<span class="k">for</span> <span class="n">each_year</span> <span class="ow">in</span> <span class="n">years</span><span class="p">:</span>
+    <span class="n">year_salaries</span> <span class="o">=</span> <span class="n">salary_df</span><span class="p">[</span><span class="n">salary_df</span><span class="p">[</span><span class="s1">&#39;yearID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">each_year</span><span class="p">][</span><span class="s1">&#39;salary&#39;</span><span class="p">]</span>
+    <span class="n">mean_salary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">year_salaries</span><span class="p">))</span>
+
+<span class="c1"># Convert mean salaries list to numpy array</span>
+<span class="n">mean_salary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_salary</span><span class="p">)</span>
+
+<span class="c1"># Plot the year vs. mean salary line plot</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">years</span><span class="p">,</span> <span class="n">mean_salary</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Year&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Mean Salary ($)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="png" src="images/BaseballSalariesAnalysis_3_0.png"></p>
+<p>The long term trend shows that the mean salary tends to increase over time.<br>
+A line graph was plotted so that we can see the relationship between year and the mean salary. Although the relationship between year and mean salary is not perfectly linear, we can still get away by using a basic linear model if we wanted to develop a predictive model. One can also argue that the curve is non-linear and we may have to go beyond the basic linear model if we were to develop a predictive model.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Question: Do a player salaries have a higher correlation with total runs or homeruns?</span>
+
+<span class="c1"># Define function to calculate correlations</span>
+<span class="k">def</span> <span class="nf">correlations</span><span class="p">(</span><span class="n">DF</span><span class="p">,</span> <span class="n">VarA</span><span class="p">,</span> <span class="n">VarB</span><span class="p">):</span>
+    <span class="c1">#Inputs: Dataframe, Variable A and Variable B</span>
+    <span class="k">return</span> <span class="n">DF</span><span class="p">[</span><span class="n">VarA</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">DF</span><span class="p">[</span><span class="n">VarB</span><span class="p">])</span>
+
+<span class="c1"># Use pandas csv reader to read in the batting and salary data</span>
+<span class="n">batting_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;Data/Batting.csv&quot;</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">salary_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;Data/Salaries.csv&quot;</span><span class="p">,</span> <span class="n">header</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Look at the unique years in which the data for </span>
+<span class="c1"># runs and homeruns is missing</span>
+<span class="n">missing_runs</span> <span class="o">=</span> <span class="n">batting_df</span><span class="p">[</span><span class="n">batting_df</span><span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()][[</span><span class="s1">&#39;yearID&#39;</span><span class="p">]]</span>
+<span class="n">unique_missing_runs_years</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">missing_runs</span><span class="p">[</span><span class="s1">&#39;yearID&#39;</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;There are missing values for runs in years </span><span class="si">%.0f</span><span class="s1"> - </span><span class="si">%.0f</span><span class="s1">&#39;</span> <span class="o">%</span> \
+      <span class="p">(</span><span class="n">unique_missing_runs_years</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">unique_missing_runs_years</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+<span class="n">missing_homeruns</span> <span class="o">=</span> <span class="n">batting_df</span><span class="p">[</span><span class="n">batting_df</span><span class="p">[</span><span class="s1">&#39;HR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()][[</span><span class="s1">&#39;yearID&#39;</span><span class="p">]]</span>
+<span class="n">unique_missing_homeruns_years</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">missing_homeruns</span><span class="p">[</span><span class="s1">&#39;yearID&#39;</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;There are missing values for homeruns in years </span><span class="si">%.0f</span><span class="s1"> - </span><span class="si">%.0f</span><span class="s1">&#39;</span> <span class="o">%</span> \
+      <span class="p">(</span><span class="n">unique_missing_homeruns_years</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">unique_missing_homeruns_years</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+<span class="c1"># Data Cleaning</span>
+
+<span class="c1"># Create a new column duplicating the runs and homeruns columns and </span>
+<span class="c1"># replacing missing runs and homeruns data with 0s</span>
+<span class="n">batting_df</span><span class="p">[</span><span class="s1">&#39;Runs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">batting_df</span><span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">]</span>
+<span class="n">batting_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">batting_df</span><span class="p">[</span><span class="s1">&#39;Runs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">batting_df</span><span class="p">[</span><span class="s1">&#39;HomeRuns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">batting_df</span><span class="p">[</span><span class="s1">&#39;HR&#39;</span><span class="p">]</span>
+<span class="n">batting_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">batting_df</span><span class="p">[</span><span class="s1">&#39;HomeRuns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># Data Analysis</span>
+
+<span class="c1"># Merge the batting and salary dataframes</span>
+<span class="n">dfMerged</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">batting_df</span><span class="p">,</span> <span class="n">salary_df</span><span class="p">,</span> <span class="n">on</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;yearID&#39;</span><span class="p">,</span> <span class="s1">&#39;playerID&#39;</span><span class="p">],</span> <span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+
+<span class="c1"># Calculate correlations between Runs / Homeruns and Salary</span>
+<span class="n">Runs_Salary_Corr</span> <span class="o">=</span> <span class="n">correlations</span><span class="p">(</span><span class="n">dfMerged</span><span class="p">,</span> <span class="s1">&#39;Runs&#39;</span><span class="p">,</span> <span class="s1">&#39;salary&#39;</span><span class="p">)</span>
+<span class="n">HomeRuns_Salary_Corr</span> <span class="o">=</span> <span class="n">correlations</span><span class="p">(</span><span class="n">dfMerged</span><span class="p">,</span> <span class="s1">&#39;HomeRuns&#39;</span><span class="p">,</span> <span class="s1">&#39;salary&#39;</span><span class="p">)</span>
+
+<span class="c1"># Results</span>
+
+<span class="c1"># Print out the results</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">The correlation between a player</span><span class="se">\&#39;</span><span class="s1">s total runs and salary is </span><span class="si">%.2f</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="n">Runs_Salary_Corr</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;The correlation between a player</span><span class="se">\&#39;</span><span class="s1">s homeruns and salary is </span><span class="si">%.2f</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="n">HomeRuns_Salary_Corr</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>There are missing values for runs in years 1973 - 1999
+There are missing values for homeruns in years 1973 - 1999
+
+The correlation between a player&#39;s total runs and salary is 0.22 
+The correlation between a player&#39;s homeruns and salary is 0.27
+</pre></div>
+
+
+<p>Player salaries have a higher correlation with homeruns than total runs.<br>
+Limitations: The missing missing values for total runs and homeruns was replaced with zeros. This method may not reflect reality. Other ways to deal with missing missing data for total runs and homeruns could be:<br>
+1. Replace the missing values with mean values instead of zeros<br>
+2. Completely remove all items where there are any missing values<br>
+3. Interpolate the values  </p>
+<p>Further steps include adding confidence intervals when caclulating average salary values so that we can be aware of the uncertainty in our calculations.<br>
+The correlations were calculated to get an idea of whether the total runs or homeruns would be good features to include in a model if we were to develop a predictive model. The limitation of doing correlations on single variables like we did above is that the combined impact of multiple variables is not considered.</p>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
