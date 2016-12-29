@@ -1,113 +1,259 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>A Pelican Blog</title><link href="/" rel="alternate"></link><link href="/feeds/all-en.atom.xml" rel="self"></link><id>/</id><updated>2016-09-14T00:00:00+00:00</updated><entry><title>D3: Sorting and re-sorting visual elements with delay</title><link href="/d3-sorting-and-re-sorting-visual-elements-with-delay.html" rel="alternate"></link><published>2016-09-14T00:00:00+00:00</published><updated>2016-09-14T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2016-09-14:/d3-sorting-and-re-sorting-visual-elements-with-delay.html</id><summary type="html">
-        &lt;script type="text/javascript"&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>A Pelican Blog</title><link href="/" rel="alternate"></link><link href="/feeds/all-en.atom.xml" rel="self"></link><id>/</id><updated>2016-07-09T00:00:00+00:00</updated><entry><title>Identify Fraud from Enron Financial Statements</title><link href="/identify-fraud-from-enron-financial-statements.html" rel="alternate"></link><published>2016-07-09T00:00:00+00:00</published><updated>2016-07-09T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2016-07-09:/identify-fraud-from-enron-financial-statements.html</id><summary type="html">&lt;h2&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;The goal of this project is to identify employees from Enron that have been in on the fraud committed that came to light in 2001. This will be based on a machine learning algorithm using public Enron financial and email information.  &lt;/p&gt;
+&lt;h2&gt;Data Exploration&lt;/h2&gt;
+&lt;p&gt;The dataset that will be used …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;The goal of this project is to identify employees from Enron that have been in on the fraud committed that came to light in 2001. This will be based on a machine learning algorithm using public Enron financial and email information.  &lt;/p&gt;
+&lt;h2&gt;Data Exploration&lt;/h2&gt;
+&lt;p&gt;The dataset that will be used in this investigation to identify employees that may have committed fraud within Enron will be publicly available financial information. By breaking up the dataset into training and test sets and using our set of known POIs (Person Of Interest), we can use the features associated with each employee to identify whether or not they may be part of the fraud. This dataset contains a total of 146 points. Out of the 146 observations, 18 (12.3%) are POIs and 128 (87.7%) are therefore non-POIs. Each of the observations contains 21 features. Since this is a real-world dataset, not all of the features have attached values to them, hence showing up as NaNs. The list below provides the top 5 features the most missing values:
+1. loan_advances: 142 NaNs
+2. director_fees: 129 NaNs
+3. restricted_stock_deferred: 128 NaNs
+4. deferral_payments: 107 NaNs
+5. deferred_income: 97 NaNs&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;#Import libraries&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;warnings&lt;/span&gt;
+&lt;span class="n"&gt;warnings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;filterwarnings&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ignore&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;category&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="ne"&gt;DeprecationWarning&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;sys&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pickle&lt;/span&gt;
+&lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;./tools/&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;feature_format&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;featureFormat&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;targetFeatureSplit&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tester&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;dump_classifier_and_data&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;plt&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.feature_selection&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;SelectKBest&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.pipeline&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Pipeline&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.preprocessing&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;MinMaxScaler&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.preprocessing&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;StandardScaler&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;tree&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.metrics&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;accuracy_score&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.grid_search&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;GridSearchCV&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.cross_validation&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;StratifiedShuffleSplit&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.decomposition&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;PCA&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.naive_bayes&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;GaussianNB&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.cross_validation&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;train_test_split&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;svm&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn.svm&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;SVC&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;metrics&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;sklearn&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;cross_validation&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tester&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;test_classifier&lt;/span&gt;
 
-            //Width and height
-            var w = 600;
-            var h = 250;
-            
-            var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
-                            11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+&lt;span class="c1"&gt;### Features List&lt;/span&gt;
+&lt;span class="c1"&gt;### The first feature must be &amp;quot;poi&amp;quot;.&lt;/span&gt;
+&lt;span class="c1"&gt;### This features list contains all the features in the &lt;/span&gt;
+&lt;span class="c1"&gt;### dataset (except email_address) &lt;/span&gt;
 
-            var xScale = d3.scale.ordinal()
-                            .domain(d3.range(dataset.length))
-                            .rangeRoundBands([0, w], 0.05);
+&lt;span class="n"&gt;features_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;poi&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;salary&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;deferral_payments&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                    &lt;span class="s1"&gt;&amp;#39;total_payments&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;loan_advances&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                    &lt;span class="s1"&gt;&amp;#39;bonus&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;restricted_stock_deferred&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                    &lt;span class="s1"&gt;&amp;#39;deferred_income&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;total_stock_value&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                    &lt;span class="s1"&gt;&amp;#39;expenses&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;exercised_stock_options&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                    &lt;span class="s1"&gt;&amp;#39;other&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;long_term_incentive&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;restricted_stock&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                    &lt;span class="s1"&gt;&amp;#39;director_fees&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;to_messages&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  
+                    &lt;span class="s1"&gt;&amp;#39;from_poi_to_this_person&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;from_messages&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                    &lt;span class="s1"&gt;&amp;#39;from_this_person_to_poi&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;shared_receipt_with_poi&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="s1"&gt;&amp;#39;bonus_salary_ratio&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
 
-            var yScale = d3.scale …&lt;/script&gt;</summary><content type="html">
-        &lt;script type="text/javascript"&gt;
+&lt;span class="c1"&gt;### Load the dictionary containing the dataset&lt;/span&gt;
+&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;final_project_dataset.pkl&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;rb&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;data_file&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;data_dict&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pickle&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data_file&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-            //Width and height
-            var w = 600;
-            var h = 250;
-            
-            var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
-                            11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+&lt;span class="c1"&gt;#### DATA EXPLORATION ###&lt;/span&gt;
 
-            var xScale = d3.scale.ordinal()
-                            .domain(d3.range(dataset.length))
-                            .rangeRoundBands([0, w], 0.05);
+&lt;span class="c1"&gt;### Total number of data points&lt;/span&gt;
+&lt;span class="n"&gt;number_of_data_points&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Number of data points: &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;number_of_data_points&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-            var yScale = d3.scale.linear()
-                            .domain([0, d3.max(dataset)])
-                            .range([0, h]);
-            
-            //Create SVG element
-            var svg = d3.select("body")
-                        .append("svg")
-                        .attr("width", w)
-                        .attr("height", h);
+&lt;span class="c1"&gt;### Allocation across classes&lt;/span&gt;
+&lt;span class="n"&gt;classes&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;classes&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;poi&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
 
-            //Create bars
-            svg.selectAll("rect")
-               .data(dataset)
-               .enter()
-               .append("rect")
-               .attr("x", function(d, i) {
-                    return xScale(i);
-               })
-               .attr("y", function(d) {
-                    return h - yScale(d);
-               })
-               .attr("width", xScale.rangeBand())
-               .attr("height", function(d) {
-                    return yScale(d);
-               })
-               .attr("fill", function(d) {
-                    return "rgb(0, 0, " + (d * 10) + ")";
-               })
-               .on("click", function() {
-                    sortBars();
-               });
+&lt;span class="c1"&gt;### Total POI and non-POI observations in the dataset&lt;/span&gt;
+&lt;span class="n"&gt;total_poi&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;sum&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;classes&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;total_non_poi&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;classes&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;total_poi&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Total POIs: &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;total_poi&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Total non-POIs: &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;total_non_poi&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-            //Create labels
-            svg.selectAll("text")
-               .data(dataset)
-               .enter()
-               .append("text")
-               .text(function(d) {
-                    return d;
-               })
-               .attr("text-anchor", "middle")
-               .attr("x", function(d, i) {
-                    return xScale(i) + xScale.rangeBand() / 2;
-               })
-               .attr("y", function(d) {
-                    return h - yScale(d) + 14;
-               })
-               .attr("font-family", "sans-serif")
-               .attr("font-size", "11px")
-               .attr("fill", "white");
-            
-            //Define sort order flag
-            var sortOrder = false;
-            
-            //Define sort function
-            var sortBars = function() {
+&lt;span class="c1"&gt;### Percent of POIs in the dataset&lt;/span&gt;
+&lt;span class="n"&gt;percent_of_poi&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;float&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;total_poi&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="nb"&gt;float&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;total_poi&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;total_non_poi&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Percent of POIs: &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;percent_of_poi&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-                //Flip value of sortOrder
-                sortOrder = !sortOrder;
+&lt;span class="c1"&gt;### Number of features for each observation in the dataset&lt;/span&gt;
+&lt;span class="n"&gt;number_of_features&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;number_of_features&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Number of features: &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;number_of_features&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 
-                svg.selectAll("rect")
-                   .sort(function(a, b) {
-                        if (sortOrder) {
-                            return d3.ascending(a, b);
-                        } else {
-                            return d3.descending(a, b);
-                        }
-                    })
-                   .transition()
-                   .delay(function(d, i) {
-                       return i * 50;
-                   })
-                   .duration(1000)
-                   .attr("x", function(d, i) {
-                        return xScale(i);
-                   });
+&lt;span class="c1"&gt;### Check to see how many NaN&amp;#39;s are in each of the features&lt;/span&gt;
+&lt;span class="c1"&gt;### Create list of all features&lt;/span&gt;
+&lt;span class="n"&gt;all_features&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;next&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;iter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;))]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 
-            };          
-            
-        &lt;/script&gt;
-    </content></entry><entry><title>Financial Contributions to the 2016 Presidential Campaigns from NY</title><link href="/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html" rel="alternate"></link><published>2016-05-17T00:00:00+00:00</published><updated>2016-05-17T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2016-05-17:/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html</id><summary type="html">&lt;p&gt;========================================================&lt;/p&gt;
+&lt;span class="c1"&gt;### Convert list of features to dictionary and&lt;/span&gt;
+&lt;span class="c1"&gt;### initialize values with 0&lt;/span&gt;
+&lt;span class="n"&gt;feature_nan_count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;item&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;all_features&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;feature_nan_count&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;item&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Count number of times an NaN occurs for each feature&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;item&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;]:&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="n"&gt;item&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;NaN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;feature_nan_count&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;item&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Number of NaNs for each feature: &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;feature_nan_count&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Number of data points:  146
+Total POIs:  18
+Total non-POIs:  128
+Percent of POIs:  12.32876712328767
+Number of features:  [21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21]
+Number of NaNs for each feature:  {&amp;#39;exercised_stock_options&amp;#39;: 44, &amp;#39;total_stock_value&amp;#39;: 20, &amp;#39;bonus&amp;#39;: 64, &amp;#39;deferred_income&amp;#39;: 97, &amp;#39;restricted_stock_deferred&amp;#39;: 128, &amp;#39;to_messages&amp;#39;: 60, &amp;#39;expenses&amp;#39;: 51, &amp;#39;from_this_person_to_poi&amp;#39;: 60, &amp;#39;poi&amp;#39;: 0, &amp;#39;long_term_incentive&amp;#39;: 80, &amp;#39;total_payments&amp;#39;: 21, &amp;#39;email_address&amp;#39;: 35, &amp;#39;from_messages&amp;#39;: 60, &amp;#39;restricted_stock&amp;#39;: 36, &amp;#39;deferral_payments&amp;#39;: 107, &amp;#39;shared_receipt_with_poi&amp;#39;: 60, &amp;#39;director_fees&amp;#39;: 129, &amp;#39;from_poi_to_this_person&amp;#39;: 60, &amp;#39;salary&amp;#39;: 51, &amp;#39;loan_advances&amp;#39;: 142, &amp;#39;other&amp;#39;: 53}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Outlier Investigation&lt;/h2&gt;
+&lt;p&gt;In order to scan for any potential outliers in the dataset, we first look at a scatterplot between the salary and bonus (Shown in the first plot below).&lt;br&gt;
+Cleary, there is an outlier in the top-right corner of the plot that requires further examination. This point happens to be the ‘TOTAL’ line in the financial information that sums up the various financial metrics within our dataset. Since this observation does not correspond to an employee, it should be removed from the data. There is another observation in the dataset called ‘THE TRAVEL AGENCY IN THE PARK’ that also should be removed. After removing these 2 observations, we duplicate the plot above and notice that there are no points that are extremely different than the rest (Shown in the second plot below)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;### REMOVE OUTLIERS ###&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Create scatterplot of salary and bonus to detect &lt;/span&gt;
+&lt;span class="c1"&gt;### any potential outliers&lt;/span&gt;
+
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;figure&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;salary&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;salary&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;bonus&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;bonus&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;scatter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;salary&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;bonus&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xlabel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;salary&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ylabel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;bonus&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="c1"&gt;### The outlier that we see in the above scatterplot is the&lt;/span&gt;
+&lt;span class="c1"&gt;### TOTAL line that contains the sum of all the salary and&lt;/span&gt;
+&lt;span class="c1"&gt;###  bonus values and needs to be removed&lt;/span&gt;
+&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;TOTAL&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;### There is another outlier that needs to be removed&lt;/span&gt;
+&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pop&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;THE TRAVEL AGENCY IN THE PARK&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Create scatterplot of salary and bonus to ensure all outliers&lt;/span&gt;
+&lt;span class="c1"&gt;### have been eliminated&lt;/span&gt;
+
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;figure&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;salary&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;salary&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;bonus&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;bonus&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;scatter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;salary&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;bonus&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xlabel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;salary&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ylabel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;bonus&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;img alt="png" src="IdentifyFraudEnron_files/IdentifyFraudEnron_3_0.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="IdentifyFraudEnron_files/IdentifyFraudEnron_3_1.png"&gt;&lt;/p&gt;
+&lt;h2&gt;Create New Feature&lt;/h2&gt;
+&lt;p&gt;In an attempt to increase the accuracy of the algorithm to identify the POIs in the dataset, a new feature was created. This feature is the ratio between the bonus and the salary of each employee. The rationale behind this is that if an employee has an unusually large bonus to salary ratio, they must rely a lot more on their bonus than their salary for a higher income and would therefore be more inclined to engage in illegal or unethical behavior to boost company performance, which would then in turn lead to a higher bonus.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;### CREATE NEW FEATURE&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;bonus&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;NaN&amp;#39;&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; \
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;salary&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;NaN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;bonus_salary_ratio&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; \
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;float&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;bonus&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="nb"&gt;float&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;salary&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]))&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;data_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;bonus_salary_ratio&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;NaN&amp;#39;&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Store to my_dataset for easy export below.&lt;/span&gt;
+&lt;span class="n"&gt;my_dataset&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;data_dict&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Extract features and labels from dataset for local testing&lt;/span&gt;
+&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;featureFormat&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;my_dataset&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;features_list&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sort_keys&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;features&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;targetFeatureSplit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Feature Selection&lt;/h2&gt;
+&lt;p&gt;The features used in the algorithm were determined using the SelectKBest method.&lt;br&gt;
+It was determined that K = 5 and K = 6 have the highest accuracy, precision and recall scores. In order to avoid over fitting the model, it is better to go with the model with less features given equal performance. The output below outlines which features were selected for the final algorithm along with their scores.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;### Select K best features&lt;/span&gt;
+&lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;
+&lt;span class="n"&gt;skb&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;SelectKBest&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Feature Importance&lt;/span&gt;
+&lt;span class="n"&gt;skb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;features&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scores&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;log10&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;skb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pvalues_&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scores&lt;/span&gt; &lt;span class="o"&gt;/=&lt;/span&gt; &lt;span class="n"&gt;scores&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;indices&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argsort&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;scores&lt;/span&gt;&lt;span class="p"&gt;)[::&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;feature no. {}: {} ({})&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;features_list&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;indices&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;&lt;span class="n"&gt;scores&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;indices&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;]]))&lt;/span&gt;
+&lt;span class="n"&gt;updated_features_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;features_list&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;indices&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;k&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+&lt;span class="n"&gt;updated_features_list&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;insert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;poi&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Updated features list: &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;updated_features_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;feature no. 1: exercised_stock_options (1.0)
+feature no. 2: total_stock_value (0.978860444846489)
+feature no. 3: bonus (0.863725845607769)
+feature no. 4: salary (0.7767175626081195)
+feature no. 5: deferred_income (0.528756607360408)
+Updated features list:  [&amp;#39;poi&amp;#39;, &amp;#39;exercised_stock_options&amp;#39;, &amp;#39;total_stock_value&amp;#39;, &amp;#39;bonus&amp;#39;, &amp;#39;salary&amp;#39;, &amp;#39;deferred_income&amp;#39;]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Feature Scaling&lt;/h2&gt;
+&lt;p&gt;The algorithm was tested by applying a Min-Max Scaler. It turns out that the accuracy, precision and recall scores remain the same with the deployment of feature scaling. This means that featuring scaling did not add to better performance of our model. Since the purpose of feature scaling is to normalize the feature values, it turns out in our case that the large range of the values plays a crucial role in separating the POIs from the non-POIs. Therefore, feature scaling was not used in the final algorithm.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;### FEATURE SCALING&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Initialize Standard and Min-Max Scaler&lt;/span&gt;
+&lt;span class="n"&gt;Standard_scaler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;StandardScaler&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;Min_Max_scaler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MinMaxScaler&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Algorithm Selection and Paramter Tuning&lt;/h2&gt;
+&lt;p&gt;The algorithm that I ended up using to classify POIs and non-POIs was the Gaussian Naïve Bayes algorithm. The other algorithm that I tried was the Decision Tree Classifier.&lt;br&gt;
+Tuning the parameters of an algorithm simply means going through the process of optimizing the parameters of your algorithm that provides the best performance. In our case, this means selecting the parameters of our algorithm that maximize the accuracy, precision or recall scores in the classification of POIs and non-POIs. If the parameters are not tuned correctly, the algorithm will not perform optimally and thus have a higher likelihood of misclassifying the labels correctly. I used parameter tuning for the Decision Tree Classifier in order to ensure the most accurate model was utilized.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;### ALGORITHM SELECTION&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Naive Bayes&lt;/span&gt;
+&lt;span class="c1"&gt;#clf = Pipeline(steps=[(&amp;quot;scaling&amp;quot;, Min_Max_scaler),(&amp;quot;NaiveBayes&amp;quot;,GaussianNB())])&lt;/span&gt;
+&lt;span class="n"&gt;clf&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Pipeline&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;steps&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;NaiveBayes&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;GaussianNB&lt;/span&gt;&lt;span class="p"&gt;())])&lt;/span&gt;
+
+&lt;span class="c1"&gt;### Decision Tree&lt;/span&gt;
+&lt;span class="c1"&gt;# tree = tree.DecisionTreeClassifier()&lt;/span&gt;
+&lt;span class="c1"&gt;# parameters = {&amp;#39;tree__criterion&amp;#39;: (&amp;#39;gini&amp;#39;,&amp;#39;entropy&amp;#39;),&lt;/span&gt;
+&lt;span class="c1"&gt;#               &amp;#39;tree__splitter&amp;#39;:(&amp;#39;best&amp;#39;,&amp;#39;random&amp;#39;),&lt;/span&gt;
+&lt;span class="c1"&gt;#               &amp;#39;tree__min_samples_split&amp;#39;:[2, 10, 20],&lt;/span&gt;
+&lt;span class="c1"&gt;#                 &amp;#39;tree__max_depth&amp;#39;:[10,15,20,25,30],&lt;/span&gt;
+&lt;span class="c1"&gt;#                 &amp;#39;tree__max_leaf_nodes&amp;#39;:[5,10,30]}&lt;/span&gt;
+&lt;span class="c1"&gt;# #pipeline = Pipeline(steps=[(&amp;#39;scaler&amp;#39;, Min_Max_scaler), (&amp;#39;pca&amp;#39;,PCA(n_components = 2)), (&amp;#39;tree&amp;#39;, tree)])&lt;/span&gt;
+&lt;span class="c1"&gt;# pipeline = Pipeline(steps=[(&amp;#39;scaler&amp;#39;, Min_Max_scaler), (&amp;#39;tree&amp;#39;, tree)])&lt;/span&gt;
+&lt;span class="c1"&gt;# #pipeline = Pipeline(steps=[(&amp;#39;tree&amp;#39;, tree)])&lt;/span&gt;
+
+&lt;span class="c1"&gt;# cv = StratifiedShuffleSplit(labels, 100, random_state = 42)&lt;/span&gt;
+&lt;span class="c1"&gt;# gs = GridSearchCV(pipeline, parameters, cv=cv, scoring=&amp;#39;accuracy&amp;#39;)&lt;/span&gt;
+&lt;span class="c1"&gt;# gs.fit(features, labels)&lt;/span&gt;
+&lt;span class="c1"&gt;# clf = gs.best_estimator_&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Validation and Evaluation&lt;/h2&gt;
+&lt;p&gt;Validation is the process in which we use a subset of our training data to tune the parameters of the algorithm. If this step is done incorrectly, you run the risk of over fitting your model that will perform very good on the training set but will do very poorly on the test set. For my algorithm, I used the StratifiedShuffleSplit function to split the data into training and tests for validation purposes.&lt;br&gt;
+I evaluated by algorithm based on the precision and recall scores. For my algorithm, I was able to achieve an accuracy, precision and recall scores of 0.85, 0.49 and 0.38, respectively. Precision refers to the probability that an employee identified as a POI is actually a POI and recall refers to the probability of my algorithm in positively identifying a POI.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;### VALIDATION AND EVALUATION&lt;/span&gt;
+
+&lt;span class="n"&gt;test_classifier&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;clf&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;my_dataset&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;updated_features_list&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Pipeline(steps=[(&amp;#39;NaiveBayes&amp;#39;, GaussianNB(priors=None))])
+    Accuracy: 0.85464   Precision: 0.48876  Recall: 0.38050 F1: 0.42789 F2: 0.39814
+    Total predictions: 14000    True positives:  761    False positives:  796   False negatives: 1239   True negatives: 11204
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>Financial Contributions to the 2016 Presidential Campaigns from NY</title><link href="/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html" rel="alternate"></link><published>2016-05-17T00:00:00+00:00</published><updated>2016-05-17T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2016-05-17:/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html</id><summary type="html">&lt;p&gt;========================================================&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;#&lt;/span&gt;&lt;span class="nf"&gt;Load&lt;/span&gt;&lt;span class="x"&gt; libraries&lt;/span&gt;
 &lt;span class="x"&gt;library(ggplot2)&lt;/span&gt;
 &lt;span class="x"&gt;library(lubridate)&lt;/span&gt;
