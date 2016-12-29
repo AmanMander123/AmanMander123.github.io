@@ -16,6 +16,7 @@
                 <h1><a href="/">A Pelican Blog </a></h1>
                 <nav><ul>
                     <li><a href="/category/data-analysis.html">Data Analysis</a></li>
+                    <li><a href="/category/finance.html">Finance</a></li>
                     <li><a href="/category/introduction.html">Introduction</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
@@ -1212,6 +1213,39 @@ that feature.</p>                </article>
 <h2>Chopsticks</h2>
 <p>A few researchers set out to determine the optimal length of chopsticks for children and adults. They came up with a measure of how effective a pair of chopsticks performed, called the "Food Pinching Performance." The "Food Pinching Performance" was determined by counting the number …</p>
                 <a class="readmore" href="/introduction-to-research-methods.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/stock-screener.html" rel="bookmark"
+                           title="Permalink to Stock Screener">Stock Screener</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2015-09-07T00:00:00+00:00">
+                Published: Mon 07 September 2015
+        </abbr>
+
+<p>In <a href="/category/finance.html">Finance</a>.</p>
+
+</footer><!-- /.post-info -->                <div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="kn">as</span> <span class="nn">mticker</span>
+<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="kn">as</span> <span class="nn">mdates</span>
+<span class="kn">from</span> <span class="nn">matplotlib.finance</span> <span class="kn">import</span> <span class="n">candlestick_ohlc</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
+<span class="kn">import</span> <span class="nn">pylab</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span> <span class="nn">http …</span></pre></div>
+                <a class="readmore" href="/stock-screener.html">read more</a>
                 </div><!-- /.entry-content -->
             </article></li>
 

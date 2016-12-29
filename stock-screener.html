@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Stock Screener</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/category/data-analysis.html">Data Analysis</a></li>
+                    <li class="active"><a href="/category/finance.html">Finance</a></li>
+                    <li><a href="/category/introduction.html">Introduction</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/stock-screener.html" rel="bookmark"
+           title="Permalink to Stock Screener">Stock Screener</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2015-09-07T00:00:00+00:00">
+                Published: Mon 07 September 2015
+        </abbr>
+
+<p>In <a href="/category/finance.html">Finance</a>.</p>
+
+</footer><!-- /.post-info -->      <div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="kn">as</span> <span class="nn">mticker</span>
+<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="kn">as</span> <span class="nn">mdates</span>
+<span class="kn">from</span> <span class="nn">matplotlib.finance</span> <span class="kn">import</span> <span class="n">candlestick_ohlc</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
+<span class="kn">import</span> <span class="nn">pylab</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span> <span class="nn">http</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Define functions</span>
+
+<span class="c1">#Define function to calculate Moving Averages</span>
+<span class="k">def</span> <span class="nf">movingAvg</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">range</span><span class="p">):</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">range</span><span class="p">)</span><span class="o">/</span><span class="nb">range</span>
+    <span class="n">avg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">avg</span>
+
+<span class="c1">#Define function to calculate RSI</span>
+<span class="k">def</span> <span class="nf">rsiCalc</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">14</span><span class="p">):</span>
+    <span class="n">deltas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">seed</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[:</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">up</span> <span class="o">=</span> <span class="n">seed</span><span class="p">[</span><span class="n">seed</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">n</span>
+    <span class="n">down</span> <span class="o">=</span> <span class="o">-</span><span class="n">seed</span><span class="p">[</span><span class="n">seed</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">n</span>
+    <span class="n">rs</span> <span class="o">=</span> <span class="n">up</span><span class="o">/</span><span class="n">down</span>
+    <span class="n">rsi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">rsi</span><span class="p">[:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.</span> <span class="o">-</span> <span class="mf">100.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">rs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">upval</span> <span class="o">=</span> <span class="n">delta</span>
+            <span class="n">downval</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">upval</span> <span class="o">=</span> <span class="mf">0.</span>
+            <span class="n">downval</span> <span class="o">=</span> <span class="o">-</span><span class="n">delta</span>
+        <span class="n">up</span> <span class="o">=</span> <span class="p">(</span><span class="n">up</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">upval</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">down</span> <span class="o">=</span> <span class="p">(</span><span class="n">down</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">downval</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="n">up</span> <span class="o">/</span> <span class="n">down</span>
+        <span class="n">rsi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.</span> <span class="o">-</span> <span class="mf">100.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">rs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rsi</span>
+
+<span class="c1">#Define function to calculate Exponential Moving Average    </span>
+<span class="k">def</span> <span class="nf">expMovingAvg</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">range</span><span class="p">):</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="nb">range</span><span class="p">))</span>
+    <span class="n">weights</span> <span class="o">/=</span> <span class="n">weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">avg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;full&#39;</span><span class="p">)[:</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span>
+    <span class="n">avg</span><span class="p">[:</span><span class="nb">range</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg</span><span class="p">[</span><span class="nb">range</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">avg</span>
+
+<span class="c1">#Define function to calculate MACD</span>
+<span class="k">def</span> <span class="nf">macdCalc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">slow</span> <span class="o">=</span> <span class="mi">26</span><span class="p">,</span> <span class="n">fast</span> <span class="o">=</span> <span class="mi">12</span><span class="p">):</span>
+    <span class="n">emaslow</span> <span class="o">=</span> <span class="n">expMovingAvg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">slow</span><span class="p">)</span>
+    <span class="n">emafast</span> <span class="o">=</span> <span class="n">expMovingAvg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fast</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">emaslow</span><span class="p">,</span> <span class="n">emafast</span><span class="p">,</span> <span class="n">emafast</span> <span class="o">-</span> <span class="n">emaslow</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1">#Define function to generate graph</span>
+<span class="k">def</span> <span class="nf">generateGraph</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">MA1</span><span class="p">,</span> <span class="n">MA2</span><span class="p">):</span>
+
+    <span class="c1">#Download ticker data using Yahoo! Finance API</span>
+    <span class="n">apiURL</span> <span class="o">=</span> <span class="s1">&#39;http://chartapi.finance.yahoo.com/instrument/1.0/&#39;</span><span class="o">+</span><span class="n">ticker</span><span class="o">+</span><span class="s1">&#39;/chartdata;type=quote;range=2y/csv&#39;</span>
+
+    <span class="c1">#Create list that will store the ticker data</span>
+    <span class="n">dataList</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1">#Read and parse data</span>
+    <span class="n">fp</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">apiURL</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">rawData</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
+    <span class="n">splitData</span> <span class="o">=</span> <span class="n">rawData</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">eachLine</span> <span class="ow">in</span> <span class="n">splitData</span><span class="p">:</span>
+        <span class="c1">#Use comma as the delimiter</span>
+        <span class="n">splitLine</span> <span class="o">=</span> <span class="n">eachLine</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+        <span class="c1">#Ignore header</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splitLine</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;values&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">eachLine</span><span class="p">:</span>
+                <span class="n">dataList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eachLine</span><span class="p">)</span>
+
+    <span class="c1">#Use NumPy to load data</span>
+    <span class="n">date</span><span class="p">,</span> <span class="n">closePrice</span><span class="p">,</span> <span class="n">highPrice</span><span class="p">,</span> <span class="n">lowPrice</span><span class="p">,</span> <span class="n">openPrice</span><span class="p">,</span> <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">dataList</span><span class="p">,</span><span class="n">delimiter</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span><span class="n">unpack</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> 
+                                                                          <span class="n">converters</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="n">mdates</span><span class="o">.</span><span class="n">bytespdate2num</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)})</span>
+
+    <span class="c1">#Create array to be plotted in Candlestick format</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+    <span class="n">candlestickData</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">j</span><span class="p">:</span>
+        <span class="n">oneDayData</span> <span class="o">=</span> <span class="n">date</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">openPrice</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">closePrice</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">highPrice</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">lowPrice</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">volume</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">candlestickData</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oneDayData</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1">#Calculate the moving averages  </span>
+    <span class="n">avg1</span> <span class="o">=</span> <span class="n">movingAvg</span><span class="p">(</span><span class="n">closePrice</span><span class="p">,</span> <span class="n">MA1</span><span class="p">)</span>
+    <span class="n">avg2</span> <span class="o">=</span> <span class="n">movingAvg</span><span class="p">(</span><span class="n">closePrice</span><span class="p">,</span> <span class="n">MA2</span><span class="p">)</span>
+
+    <span class="c1">#Leave out initial data for which moving averages are not available</span>
+    <span class="n">startingPoint</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="n">MA2</span><span class="o">-</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="c1">#Make plot and define face color</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">facecolor</span> <span class="o">=</span> <span class="s1">&#39;#180202&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Make candlestick plot</span>
+    <span class="n">candlestickPlot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">rowspan</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">colspan</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">axisbg</span> <span class="o">=</span> <span class="s1">&#39;#0d0101&#39;</span><span class="p">)</span>
+    <span class="n">candlestick_ohlc</span><span class="p">(</span><span class="n">candlestickPlot</span><span class="p">,</span> <span class="n">candlestickData</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">width</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">colorup</span> <span class="o">=</span> <span class="s1">&#39;#53C156&#39;</span><span class="p">,</span> <span class="n">colordown</span> <span class="o">=</span> <span class="s1">&#39;#ff1717&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Define labels for the moving averages</span>
+    <span class="n">Label1</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">MA1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; SMA&#39;</span>
+    <span class="n">Label2</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">MA2</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; SMA&#39;</span>
+
+    <span class="c1">#Plot the moving averages</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">avg1</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="s1">&#39;#deeeeb&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">Label1</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">avg2</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="s1">&#39;#057bff&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">Label2</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1">#Turn on grid</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="c1">#Define max x-axis ticks</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">mticker</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+    <span class="c1">#Format dates to be more readable</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">mdates</span><span class="o">.</span><span class="n">DateFormatter</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">))</span>
+    <span class="c1">#Prune upper tick</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">mticker</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">prune</span> <span class="o">=</span> <span class="s1">&#39;upper&#39;</span><span class="p">))</span>
+    <span class="c1">#Set y-axis label color</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#c8cfd6&#39;</span><span class="p">)</span>
+    <span class="c1">#Set label colors</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="s1">&#39;#c8cfd6&#39;</span><span class="p">)</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="s1">&#39;#c8cfd6&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Price / Volume&#39;</span><span class="p">)</span>
+    <span class="c1">#Set graph border color</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Make legend</span>
+    <span class="n">MALegend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="mi">9</span><span class="p">,</span> <span class="n">ncol</span> <span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">prop</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span> <span class="n">fancybox</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">borderaxespad</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">shadow</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">MALegend</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">legendText</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span><span class="o">.</span><span class="n">get_texts</span><span class="p">()</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">legendText</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Add volume</span>
+    <span class="n">minVol</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">volPlot</span> <span class="o">=</span> <span class="n">candlestickPlot</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">minVol</span><span class="p">,</span> <span class="n">volume</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">facecolor</span> <span class="o">=</span> <span class="s1">&#39;#6b81f0&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">([])</span>
+    <span class="c1">#Set border colors</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="c1">#Make sure volume bars do not go too high</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">volume</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="c1">#Set tick parameters</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">volPlot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Make RSI plot</span>
+    <span class="n">rsiPlot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">sharex</span> <span class="o">=</span> <span class="n">candlestickPlot</span><span class="p">,</span> <span class="n">rowspan</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">colspan</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">axisbg</span> <span class="o">=</span> <span class="s1">&#39;#0d0101&#39;</span><span class="p">)</span>
+    <span class="c1">#Calculate RSI</span>
+    <span class="n">rsi</span> <span class="o">=</span> <span class="n">rsiCalc</span><span class="p">(</span><span class="n">closePrice</span><span class="p">)</span>
+    <span class="n">posCol</span> <span class="o">=</span> <span class="s1">&#39;#386d13&#39;</span>
+    <span class="n">negCol</span> <span class="o">=</span> <span class="s1">&#39;#8f2020&#39;</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span><span class="n">rsi</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="s1">&#39;#deeeeb&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1">#Make horizontal lines at ris = 70 and rsi = 30 to represent overbought and oversold points</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;#eafbff&#39;</span><span class="p">)</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;#eafbff&#39;</span><span class="p">)</span>
+    <span class="c1">#Fill overbought and oversold conditions</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span><span class="n">rsi</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span><span class="mi">70</span><span class="p">,</span> <span class="n">where</span> <span class="o">=</span> <span class="n">rsi</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:]</span> <span class="o">&gt;=</span> <span class="mi">70</span><span class="p">,</span> <span class="n">facecolor</span> <span class="o">=</span> <span class="s1">&#39;#ff0000&#39;</span><span class="p">,</span> <span class="n">edgecolor</span> <span class="o">=</span> <span class="s1">&#39;#ff0000&#39;</span><span class="p">)</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span><span class="n">rsi</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span><span class="mi">30</span><span class="p">,</span> <span class="n">where</span> <span class="o">=</span> <span class="n">rsi</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:]</span> <span class="o">&lt;</span> <span class="mi">30</span><span class="p">,</span> <span class="n">facecolor</span> <span class="o">=</span> <span class="s1">&#39;#00ff2b&#39;</span><span class="p">,</span> <span class="n">edgecolor</span> <span class="o">=</span> <span class="s1">&#39;#00ff2b&#39;</span><span class="p">)</span>        
+    <span class="c1">#Set title of graph</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.018</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="s1">&#39;RSI (14)&#39;</span><span class="p">,</span> <span class="n">va</span> <span class="o">=</span> <span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;#FF8000&#39;</span><span class="p">,</span> <span class="n">transform</span> <span class="o">=</span> <span class="n">rsiPlot</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+    <span class="c1">#Set border color</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+
+
+    <span class="c1">#Set tick parameters</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">70</span><span class="p">])</span>
+    <span class="n">rsiPlot</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Make MACD plot</span>
+    <span class="n">macdPlot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">sharex</span> <span class="o">=</span> <span class="n">candlestickPlot</span><span class="p">,</span> <span class="n">rowspan</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">colspan</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">axisbg</span> <span class="o">=</span> <span class="s1">&#39;#0d0101&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Define MACD parameters</span>
+    <span class="n">slow</span> <span class="o">=</span> <span class="mi">26</span>
+    <span class="n">fast</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">ema</span> <span class="o">=</span> <span class="mi">9</span>
+
+    <span class="c1">#Calculate MACD and Exponential Moving Average</span>
+    <span class="n">emaslow</span><span class="p">,</span> <span class="n">emafast</span><span class="p">,</span> <span class="n">macd</span> <span class="o">=</span> <span class="n">macdCalc</span><span class="p">(</span><span class="n">closePrice</span><span class="p">)</span>
+    <span class="n">ema9</span> <span class="o">=</span> <span class="n">expMovingAvg</span><span class="p">(</span><span class="n">macd</span><span class="p">,</span> <span class="n">ema</span><span class="p">)</span>
+
+    <span class="c1">#Plot data</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">macd</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;#deeeeb&#39;</span><span class="p">,</span> <span class="n">lw</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">ema9</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;#057bff&#39;</span><span class="p">,</span> <span class="n">lw</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">date</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="n">macd</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:]</span> <span class="o">-</span> <span class="n">ema9</span><span class="p">[</span><span class="o">-</span><span class="n">startingPoint</span><span class="p">:],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">facecolor</span> <span class="o">=</span> <span class="s1">&#39;#17aee7&#39;</span><span class="p">,</span> <span class="n">edgecolor</span> <span class="o">=</span> <span class="s1">&#39;#17aee7&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Add chart title</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.017</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">,</span> <span class="s1">&#39;MACD 12,26,9&#39;</span><span class="p">,</span> <span class="n">va</span> <span class="o">=</span> <span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">transform</span> <span class="o">=</span> <span class="n">macdPlot</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>     
+    <span class="c1">#Set border color</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;#ff59bd&#39;</span><span class="p">)</span>
+    <span class="c1">#Define tick parameters</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">macdPlot</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">mticker</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">nbins</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">prune</span> <span class="o">=</span> <span class="s1">&#39;upper&#39;</span><span class="p">))</span>
+
+    <span class="c1">#Set bottom graph x labels as 45 degrees</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">macdPlot</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">get_ticklabels</span><span class="p">():</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">set_rotation</span><span class="p">(</span><span class="mi">45</span><span class="p">)</span>
+
+    <span class="c1">#Set ticker as title of all graphs</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Hide x labels of other plots</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">candlestickPlot</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">visible</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">rsiPlot</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">visible</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+    <span class="c1">#Adjust the spacing of the graphs</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span> <span class="o">=</span> <span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="o">.</span><span class="mi">15</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="o">.</span><span class="mi">95</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="o">.</span><span class="mi">95</span><span class="p">,</span> <span class="n">wspace</span> <span class="o">=</span> <span class="o">.</span><span class="mi">20</span><span class="p">,</span> <span class="n">hspace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1">#Show plot</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Define paramaters</span>
+<span class="n">MinPrice</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">MaxPrice</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">MinRSI</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">MaxRSI</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">MinVol</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">MA1</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="n">MA2</span> <span class="o">=</span> <span class="mf">10.0</span>
+
+<span class="c1">#Open and read ticker file</span>
+<span class="n">TickerReader</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;TickerList.csv&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="n">splitTickers</span> <span class="o">=</span> <span class="n">TickerReader</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">splitTickers</span><span class="p">:</span>
+    <span class="c1">#Download ticker data using Yahoo! Finance API</span>
+    <span class="n">apiURL</span> <span class="o">=</span> <span class="s1">&#39;http://chartapi.finance.yahoo.com/instrument/1.0/&#39;</span><span class="o">+</span><span class="n">ticker</span><span class="o">+</span><span class="s1">&#39;/chartdata;type=quote;range=2y/csv&#39;</span>
+
+    <span class="c1">#Create list that will store the ticker data</span>
+    <span class="n">dataList</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1">#Read and parse data</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">apiURL</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">rawData</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
+
+        <span class="n">splitData</span> <span class="o">=</span> <span class="n">rawData</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">eachLine</span> <span class="ow">in</span> <span class="n">splitData</span><span class="p">:</span>
+            <span class="c1">#Use comma as the delimiter</span>
+            <span class="n">splitLine</span> <span class="o">=</span> <span class="n">eachLine</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+            <span class="c1">#Ignore header</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splitLine</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;values&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">eachLine</span><span class="p">:</span>
+                    <span class="n">dataList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eachLine</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataList</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="c1">#Use NumPy to load data</span>
+            <span class="n">date</span><span class="p">,</span> <span class="n">closePrice</span><span class="p">,</span> <span class="n">highPrice</span><span class="p">,</span> <span class="n">lowPrice</span><span class="p">,</span> <span class="n">openPrice</span><span class="p">,</span> <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">dataList</span><span class="p">,</span><span class="n">delimiter</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span><span class="n">unpack</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> 
+                                                                                  <span class="n">converters</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="n">mdates</span><span class="o">.</span><span class="n">bytespdate2num</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)})</span>
+            <span class="c1">#Calculate RSI and average volume</span>
+            <span class="n">RSI</span> <span class="o">=</span> <span class="n">rsiCalc</span><span class="p">(</span><span class="n">closePrice</span><span class="p">)</span>
+            <span class="n">avgVol</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+
+            <span class="c1">#Run filter and generate graph</span>
+            <span class="k">if</span> <span class="n">closePrice</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">MinPrice</span><span class="p">)</span> <span class="ow">and</span> <span class="n">closePrice</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">MaxPrice</span><span class="p">)</span> <span class="ow">and</span> <span class="n">RSI</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">MinRSI</span><span class="p">)</span> <span class="ow">and</span> <span class="n">RSI</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">MaxRSI</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">avgVol</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">MinVol</span><span class="p">):</span>
+                <span class="n">generateGraph</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">MA1</span><span class="p">,</span> <span class="n">MA2</span><span class="p">)</span>
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/StockScreener_3_0.png"></p>
+<p><img alt="png" src="/images/StockScreener_3_1.png"></p>
+<p><img alt="png" src="/images/StockScreener_3_2.png"></p>
+<p><img alt="png" src="S/images/StockScreener_3_3.png"></p>
+<p><img alt="png" src="/images/StockScreener_3_4.png"></p>
+<p><img alt="png" src="/images/StockScreener_3_5.png"></p>
+<p><img alt="png" src="/images/StockScreener_3_6.png"></p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
