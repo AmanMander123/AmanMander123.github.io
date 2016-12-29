@@ -37,7 +37,22 @@
 
 <p>In <a href="/category/finance.html">Finance</a>.</p>
 
-</footer><!-- /.post-info -->      <div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
+</footer><!-- /.post-info -->      <h2>Purpose</h2>
+<p>This script gathers ticker data on the tickers in the TickerList.csv file and calculates the following metrics:<br>
+- Simple moving averages
+- RSI
+- Exponential moving averages
+- MACD  </p>
+<p>Then the tickers are filtered using the following user-defined parameters:<br>
+- MinPrice
+- MaxPrice
+- MinRSI 
+- MaxRSI
+- MinVol
+- MA1 
+- MA2  </p>
+<p>The technical charts of the tickers that meet the user-defined criteria are then displayed.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
@@ -329,13 +344,13 @@
 </pre></div>
 
 
-<p><img alt="png" src="/images/StockScreener_3_0.png"></p>
-<p><img alt="png" src="/images/StockScreener_3_1.png"></p>
-<p><img alt="png" src="/images/StockScreener_3_2.png"></p>
-<p><img alt="png" src="S/images/StockScreener_3_3.png"></p>
-<p><img alt="png" src="/images/StockScreener_3_4.png"></p>
-<p><img alt="png" src="/images/StockScreener_3_5.png"></p>
-<p><img alt="png" src="/images/StockScreener_3_6.png"></p>
+<p><img alt="png" src="/images/StockScreener_4_0.png"></p>
+<p><img alt="png" src="/imagesStockScreener_4_1.png"></p>
+<p><img alt="png" src="/images/StockScreener_4_2.png"></p>
+<p><img alt="png" src="/images/StockScreener_4_3.png"></p>
+<p><img alt="png" src="/images/StockScreener_4_4.png"></p>
+<p><img alt="png" src="/images/StockScreener_4_5.png"></p>
+<p><img alt="png" src="/images/StockScreener_4_6.png"></p>
     </div><!-- /.entry-content -->
 
   </article>

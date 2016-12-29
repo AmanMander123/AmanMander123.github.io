@@ -152,8 +152,8 @@ Cleary, there is an outlier in the top-right corner of the plot that requires fu
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="png" src="IdentifyFraudEnron_files/IdentifyFraudEnron_3_0.png"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="png" src="IdentifyFraudEnron_files/IdentifyFraudEnron_3_1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/IdentifyFraudEnron_3_0.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/IdentifyFraudEnron_3_1.png"&gt;&lt;/p&gt;
 &lt;h2&gt;Create New Feature&lt;/h2&gt;
 &lt;p&gt;In an attempt to increase the accuracy of the algorithm to identify the POIs in the dataset, a new feature was created. This feature is the ratio between the bonus and the salary of each employee. The rationale behind this is that if an employee has an unusually large bonus to salary ratio, they must rely a lot more on their bonus than their salary for a higher income and would therefore be more inclined to engage in illegal or unethical behavior to boost company performance, which would then in turn lead to a higher bonus.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;### CREATE NEW FEATURE&lt;/span&gt;
@@ -2648,21 +2648,36 @@ The dataset can be found &lt;a href="https://storage.googleapis.com/supplemental
 &lt;p&gt;There is a linear relationship between the Length and Efficiency in PPPC when the length is less than 260mm. When the length becomes greater than 260mm, there is no relationship between the Length and Efficiency of PPPC.  &lt;/p&gt;
 &lt;p&gt;In the abstract the researchers stated that their results showed food-pinching performance was significantly affected by the length of the chopsticks, and that chopsticks of about 240 mm long were optimal for adults. Based on that data, I agree with this claim because the efficiency in PPPC is greatest when the Length is 240mm.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>Stock Screener</title><link href="/stock-screener.html" rel="alternate"></link><published>2015-09-07T00:00:00+00:00</published><updated>2015-09-07T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2015-09-07:/stock-screener.html</id><summary type="html">&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Import libraries&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;warnings&lt;/span&gt;
-&lt;span class="n"&gt;warnings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;filterwarnings&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ignore&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;matplotlib&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;plt&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;matplotlib.ticker&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;mticker&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;matplotlib.dates&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;mdates&lt;/span&gt;
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;matplotlib.finance&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;candlestick_ohlc&lt;/span&gt;
-&lt;span class="n"&gt;matplotlib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rcParams&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;font.size&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pylab&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;time&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;datetime&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;urllib.request&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;http …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Import libraries&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>Stock Screener</title><link href="/stock-screener.html" rel="alternate"></link><published>2015-09-07T00:00:00+00:00</published><updated>2015-09-07T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2015-09-07:/stock-screener.html</id><summary type="html">&lt;h2&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;This script gathers ticker data on the tickers in the TickerList.csv file and calculates the following metrics:&lt;br&gt;
+- Simple moving averages
+- RSI
+- Exponential moving averages
+- MACD  &lt;/p&gt;
+&lt;p&gt;Then the tickers are filtered using the following user-defined parameters:&lt;br&gt;
+- MinPrice
+- MaxPrice
+- MinRSI 
+- MaxRSI
+- MinVol
+- MA1 
+- MA2  &lt;/p&gt;
+&lt;p&gt;The technical charts of the tickers …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;This script gathers ticker data on the tickers in the TickerList.csv file and calculates the following metrics:&lt;br&gt;
+- Simple moving averages
+- RSI
+- Exponential moving averages
+- MACD  &lt;/p&gt;
+&lt;p&gt;Then the tickers are filtered using the following user-defined parameters:&lt;br&gt;
+- MinPrice
+- MaxPrice
+- MinRSI 
+- MaxRSI
+- MinVol
+- MA1 
+- MA2  &lt;/p&gt;
+&lt;p&gt;The technical charts of the tickers that meet the user-defined criteria are then displayed.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Import libraries&lt;/span&gt;
 &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;warnings&lt;/span&gt;
 &lt;span class="n"&gt;warnings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;filterwarnings&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ignore&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;matplotlib&lt;/span&gt;
@@ -2954,13 +2969,13 @@ The dataset can be found &lt;a href="https://storage.googleapis.com/supplemental
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_3_0.png"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_3_1.png"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_3_2.png"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="png" src="S/images/StockScreener_3_3.png"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_3_4.png"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_3_5.png"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_3_6.png"&gt;&lt;/p&gt;</content></entry><entry><title>Baseball Salaries Analysis</title><link href="/baseball-salaries-analysis.html" rel="alternate"></link><published>2015-03-25T00:00:00+00:00</published><updated>2015-03-25T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2015-03-25:/baseball-salaries-analysis.html</id><summary type="html">&lt;p&gt;The Baseball Data was used to answer the following questions:&lt;br&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_4_0.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/imagesStockScreener_4_1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_4_2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_4_3.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_4_4.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_4_5.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/StockScreener_4_6.png"&gt;&lt;/p&gt;</content></entry><entry><title>Baseball Salaries Analysis</title><link href="/baseball-salaries-analysis.html" rel="alternate"></link><published>2015-03-25T00:00:00+00:00</published><updated>2015-03-25T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2015-03-25:/baseball-salaries-analysis.html</id><summary type="html">&lt;p&gt;The Baseball Data was used to answer the following questions:&lt;br&gt;
 Are salaries higher in 2015 than in 1985?&lt;br&gt;
 Does the mean salary increase with the year?&lt;br&gt;
 Do a player salaries have a higher correlation with total runs or homeruns?&lt;/p&gt;

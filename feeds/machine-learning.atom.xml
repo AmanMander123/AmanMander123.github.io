@@ -152,8 +152,8 @@ Cleary, there is an outlier in the top-right corner of the plot that requires fu
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;img alt="png" src="IdentifyFraudEnron_files/IdentifyFraudEnron_3_0.png"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img alt="png" src="IdentifyFraudEnron_files/IdentifyFraudEnron_3_1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/IdentifyFraudEnron_3_0.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="png" src="/images/IdentifyFraudEnron_3_1.png"&gt;&lt;/p&gt;
 &lt;h2&gt;Create New Feature&lt;/h2&gt;
 &lt;p&gt;In an attempt to increase the accuracy of the algorithm to identify the POIs in the dataset, a new feature was created. This feature is the ratio between the bonus and the salary of each employee. The rationale behind this is that if an employee has an unusually large bonus to salary ratio, they must rely a lot more on their bonus than their salary for a higher income and would therefore be more inclined to engage in illegal or unethical behavior to boost company performance, which would then in turn lead to a higher bonus.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;### CREATE NEW FEATURE&lt;/span&gt;

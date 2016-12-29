@@ -182,8 +182,8 @@ Cleary, there is an outlier in the top-right corner of the plot that requires fu
 </pre></div>
 
 
-<p><img alt="png" src="IdentifyFraudEnron_files/IdentifyFraudEnron_3_0.png"></p>
-<p><img alt="png" src="IdentifyFraudEnron_files/IdentifyFraudEnron_3_1.png"></p>
+<p><img alt="png" src="/images/IdentifyFraudEnron_3_0.png"></p>
+<p><img alt="png" src="/images/IdentifyFraudEnron_3_1.png"></p>
 <h2>Create New Feature</h2>
 <p>In an attempt to increase the accuracy of the algorithm to identify the POIs in the dataset, a new feature was created. This feature is the ratio between the bonus and the salary of each employee. The rationale behind this is that if an employee has an unusually large bonus to salary ratio, they must rely a lot more on their bonus than their salary for a higher income and would therefore be more inclined to engage in illegal or unethical behavior to boost company performance, which would then in turn lead to a higher bonus.</p>
 <div class="highlight"><pre><span></span><span class="c1">### CREATE NEW FEATURE</span>
@@ -399,21 +399,21 @@ I evaluated by algorithm based on the precision and recall scores. For my algori
 
 <p>In <a href="/category/finance.html">Finance</a>.</p>
 
-</footer><!-- /.post-info -->                <div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">matplotlib</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="kn">as</span> <span class="nn">mticker</span>
-<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="kn">as</span> <span class="nn">mdates</span>
-<span class="kn">from</span> <span class="nn">matplotlib.finance</span> <span class="kn">import</span> <span class="n">candlestick_ohlc</span>
-<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
-<span class="kn">import</span> <span class="nn">pylab</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">urllib.request</span>
-<span class="kn">import</span> <span class="nn">http …</span></pre></div>
+</footer><!-- /.post-info -->                <h2>Purpose</h2>
+<p>This script gathers ticker data on the tickers in the TickerList.csv file and calculates the following metrics:<br>
+- Simple moving averages
+- RSI
+- Exponential moving averages
+- MACD  </p>
+<p>Then the tickers are filtered using the following user-defined parameters:<br>
+- MinPrice
+- MaxPrice
+- MinRSI 
+- MaxRSI
+- MinVol
+- MA1 
+- MA2  </p>
+<p>The technical charts of the tickers …</p>
                 <a class="readmore" href="/stock-screener.html">read more</a>
                 </div><!-- /.entry-content -->
             </article></li>
