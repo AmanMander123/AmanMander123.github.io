@@ -17,14 +17,84 @@
                 <nav><ul>
                     <li><a href="/category/data-analysis.html">Data Analysis</a></li>
                     <li><a href="/category/finance.html">Finance</a></li>
-                    <li><a href="/category/introduction.html">Introduction</a></li>
                     <li><a href="/category/machine-learning.html">Machine Learning</a></li>
+                    <li><a href="/category/visualizations.html">Visualizations</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/identify-fraud-from-enron-financial-statements.html">Identify Fraud from Enron Financial Statements</a></h1>
+                    <h1 class="entry-title"><a href="/titanic-dataset-visualization.html">Titanic Dataset Visualization</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-09-14T00:00:00+00:00">
+                Published: Wed 14 September 2016
+        </abbr>
+
+<p>In <a href="/category/visualizations.html">Visualizations</a>.</p>
+
+</footer><!-- /.post-info --><h1>Link to Visualization</h1>
+<p><a href="http://bl.ocks.org/AmanMander123/raw/ebcf54644bd3672e5b14613318740eea/">Click here</a>  </p>
+<h1>Summary</h1>
+<p>This visualization describes the percentage of passengers that surived during the Titanic disaster. The circles represent the susbet of passengers categorized by sex, passenger class and point of embarkation. The size of the circle corresponds to the percent value; the higher the proportion of survivers, the larger the circle.</p>
+<h1>Design</h1>
+<p>This purpose of this visualization is to elegantly convey relationships between the survival rates amongst different categories of passengers. This message is delivered with the size of each circle. The circles are lined up horizontally since the natural tendancy for most people is to glance at a visual from left to right. There is enough space in between each circle so that they don't overlap but close enough that they can all fit on a regular computer monitor screen. The radius of the circle is aligned with the square root of percentage of survivors so that each circle, then multiplied by a factor of 8 to make them large enough to be visible. This is a reasonable choice since the cirlces are large enough to be visible yet small enough for them all to fit on the a single screen. The colors of the circle and the text are paste blue and white, respectively. This combination was selected because it does not strain the eyes when looking at it for a long time. The font of the text is the standard sans-serif and the size of the font is small enough to fit within all of the circles, yet large enough to be readable. When hovering over each cirlce, the tooltip feature is used to display the labels. The labels states the category of the passengers and the associated survival rate, as well as the actual count of survivors. The color of box is light pink, which was selected due to its contrast with the blue circles. Both are easy on the eyes separately and when displayed together. Because of the slight opacity of the labels, font color was chosen to be black so that it can be clearly read. In order to create a visual separation between the categories, a vertical line is added between the sex, passenger class and port of embarkation categories.</p>
+<h1>Feedback</h1>
+<h2>Feedback 1</h2>
+<ul>
+<li>Noticed that gender, passenger class and port of embarkation were being compared  </li>
+<li>Noticed that survival rate was higher in females than males and was correlated with passenger class  </li>
+<li>Suggestion was to use pastel palette instead of dark colors since they are too bright.<br>
+    o   Circle color changed  </li>
+<li>Questioned as to the meaning of the port of embarkation letters<br>
+    o   Addressed in the Data Story section  </li>
+</ul>
+<h2>Feedback 2</h2>
+<ul>
+<li>Noticed circles of different sizes lined across a horizontal line with labels  </li>
+<li>Noticed that hover certain circles are larger than others  </li>
+<li>Upon looking at the details while hovering over the circles, noticed that the size of the circle was related to the survival rate  </li>
+<li>Suggestion was to add a title so that it can be made more clear what we are looking at<br>
+    o   Title added to visualization  </li>
+<li>Noticed that females had a higher survival rate than males, as well as a decreasing survival rate when moving from passenger class 1 to 2 to 3  </li>
+<li>Question was raised as to why Port C had a larger survival rate than the other ports<br>
+    o   Addressed in the Data Story section  </li>
+</ul>
+<h2>Feedback 3</h2>
+<ul>
+<li>Noticed that there are different categories for survival rates: gender, passenger class and port of embarkation  </li>
+<li>Noticed that the size of the circle is used to visually convey the survival rates relative to each other  </li>
+<li>Noticed that females had the largest survival rate; even beating out those in passenger class one  </li>
+<li>A question was raised as to the meaning of point of embarkation<br>
+    o   Since this issue came up 2nd time, text was added below the visualization that explained what the ports letters meant (S, C and Q → Southampton, Cherbourg, Queenstown)  </li>
+</ul>
+<h2>Feedback 4</h2>
+<ul>
+<li>Include the actual count of passengers in the tooltip under the percentage of survivors<br>
+    o   Count of survivors added  </li>
+<li>Instead of using the actual percentage values for the radius, use the square root of the values<br>
+    o   Changed  </li>
+<li>Separate the circles for the different categories<br>
+    o   Vertical lines added between the categories to create separation  </li>
+</ul>
+<h1>Titanic Dataset – Story</h1>
+<p>In this visualization, the survival rate of the passengers was examined for the following categories:<br>
+• Sex<br>
+• Passenger Class<br>
+• Point of Embarkation<br>
+As we all know, there were a limited number of lifeboats that could only accommodate some of the passengers. These passengers that were boarded onto the lifeboats were selected by the crewmembers and there was a clear bias towards who got to board and who got left behind. The most obvious difference is the survival rate amongst males and females. Clearly, females were given priority in the lifeboat boarding process with a 74.20% survival rate amongst females, compared to a mere 18.89% survival rate amongst males. Another clear trend that we see in the survival rate is with the passenger class. The lower your class, the less chance you had at getting on a lifeboat and surviving the disaster. First class passengers had a survival rate of 62.96%, second class passengers had a survival rate of 47.28% and third class passengers had a survival rate of only 24.24%. This again makes sense since the first class passengers were more likely to be wealthy and treated better, thus the crewmembers giving the a higher priority at getting on the lifeboats. In terms of the Port of Embarkation, Ports S (Southampton), C (Cherbourg) and Q (Queenstown) had survival rates of 33.70%, 55.36% and 38.96%, respectively. Although Port C had a much higher survival rate and Ports S and Q had very similar survival rates, there is no clear indication as to why this may have happened. Some possibilities are that a larger number of first class passengers may have boarded from Port C, or could have boarded more females, or more families, or any other number of factors. This relationship can be explored with further analysis.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/identify-fraud-from-enron-financial-statements.html" rel="bookmark"
+                           title="Permalink to Identify Fraud from Enron Financial Statements">Identify Fraud from Enron Financial Statements</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2016-07-09T00:00:00+00:00">
                 Published: Sat 09 July 2016
@@ -32,263 +102,13 @@
 
 <p>In <a href="/category/machine-learning.html">Machine Learning</a>.</p>
 
-</footer><!-- /.post-info --><h2>Purpose</h2>
+</footer><!-- /.post-info -->                <h2>Purpose</h2>
 <p>The goal of this project is to identify employees from Enron that have been in on the fraud committed that came to light in 2001. This will be based on a machine learning algorithm using public Enron financial and email information.  </p>
 <h2>Data Exploration</h2>
-<p>The dataset that will be used in this investigation to identify employees that may have committed fraud within Enron will be publicly available financial information. By breaking up the dataset into training and test sets and using our set of known POIs (Person Of Interest), we can use the features associated with each employee to identify whether or not they may be part of the fraud. This dataset contains a total of 146 points. Out of the 146 observations, 18 (12.3%) are POIs and 128 (87.7%) are therefore non-POIs. Each of the observations contains 21 features. Since this is a real-world dataset, not all of the features have attached values to them, hence showing up as NaNs. The list below provides the top 5 features the most missing values:
-1. loan_advances: 142 NaNs
-2. director_fees: 129 NaNs
-3. restricted_stock_deferred: 128 NaNs
-4. deferral_payments: 107 NaNs
-5. deferred_income: 97 NaNs</p>
-<div class="highlight"><pre><span></span><span class="c1">#Import libraries</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;./tools/&quot;</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">feature_format</span> <span class="kn">import</span> <span class="n">featureFormat</span><span class="p">,</span> <span class="n">targetFeatureSplit</span>
-<span class="kn">from</span> <span class="nn">tester</span> <span class="kn">import</span> <span class="n">dump_classifier_and_data</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">SelectKBest</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">tree</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
-<span class="kn">from</span> <span class="nn">sklearn.grid_search</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
-<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">StratifiedShuffleSplit</span>
-<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
-<span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="kn">import</span> <span class="n">GaussianNB</span>
-<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">train_test_split</span>
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">svm</span>
-<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span>
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">cross_validation</span>
-<span class="kn">from</span> <span class="nn">tester</span> <span class="kn">import</span> <span class="n">test_classifier</span>
-
-<span class="c1">### Features List</span>
-<span class="c1">### The first feature must be &quot;poi&quot;.</span>
-<span class="c1">### This features list contains all the features in the </span>
-<span class="c1">### dataset (except email_address) </span>
-
-<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">,</span><span class="s1">&#39;salary&#39;</span><span class="p">,</span> <span class="s1">&#39;deferral_payments&#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;total_payments&#39;</span><span class="p">,</span> <span class="s1">&#39;loan_advances&#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;bonus&#39;</span><span class="p">,</span> <span class="s1">&#39;restricted_stock_deferred&#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;deferred_income&#39;</span><span class="p">,</span> <span class="s1">&#39;total_stock_value&#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;expenses&#39;</span><span class="p">,</span> <span class="s1">&#39;exercised_stock_options&#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;other&#39;</span><span class="p">,</span> <span class="s1">&#39;long_term_incentive&#39;</span><span class="p">,</span> <span class="s1">&#39;restricted_stock&#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;director_fees&#39;</span><span class="p">,</span><span class="s1">&#39;to_messages&#39;</span><span class="p">,</span>  
-                    <span class="s1">&#39;from_poi_to_this_person&#39;</span><span class="p">,</span> <span class="s1">&#39;from_messages&#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;from_this_person_to_poi&#39;</span><span class="p">,</span> <span class="s1">&#39;shared_receipt_with_poi&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;bonus_salary_ratio&#39;</span><span class="p">]</span>
-
-<span class="c1">### Load the dictionary containing the dataset</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;final_project_dataset.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">data_file</span><span class="p">:</span>
-    <span class="n">data_dict</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
-
-<span class="c1">#### DATA EXPLORATION ###</span>
-
-<span class="c1">### Total number of data points</span>
-<span class="n">number_of_data_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of data points: &#39;</span><span class="p">,</span> <span class="n">number_of_data_points</span><span class="p">)</span>
-
-<span class="c1">### Allocation across classes</span>
-<span class="n">classes</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="n">classes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;poi&#39;</span><span class="p">])</span>
-
-<span class="c1">### Total POI and non-POI observations in the dataset</span>
-<span class="n">total_poi</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span>
-<span class="n">total_non_poi</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span> <span class="o">-</span> <span class="n">total_poi</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total POIs: &#39;</span><span class="p">,</span> <span class="n">total_poi</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total non-POIs: &#39;</span><span class="p">,</span><span class="n">total_non_poi</span><span class="p">)</span>
-
-<span class="c1">### Percent of POIs in the dataset</span>
-<span class="n">percent_of_poi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">total_poi</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">((</span><span class="n">total_poi</span> <span class="o">+</span> <span class="n">total_non_poi</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Percent of POIs: &#39;</span><span class="p">,</span><span class="n">percent_of_poi</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
-
-<span class="c1">### Number of features for each observation in the dataset</span>
-<span class="n">number_of_features</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="n">number_of_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of features: &#39;</span><span class="p">,</span><span class="n">number_of_features</span><span class="p">)</span>
-
-<span class="c1">### Check to see how many NaN&#39;s are in each of the features</span>
-<span class="c1">### Create list of all features</span>
-<span class="n">all_features</span> <span class="o">=</span>  <span class="n">data_dict</span><span class="p">[</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data_dict</span><span class="p">))]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-
-<span class="c1">### Convert list of features to dictionary and</span>
-<span class="c1">### initialize values with 0</span>
-<span class="n">feature_nan_count</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">all_features</span><span class="p">:</span>
-    <span class="n">feature_nan_count</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="c1">### Count number of times an NaN occurs for each feature</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">item</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NaN&#39;</span><span class="p">:</span>
-            <span class="n">feature_nan_count</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of NaNs for each feature: &#39;</span><span class="p">,</span><span class="n">feature_nan_count</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>Number of data points:  146
-Total POIs:  18
-Total non-POIs:  128
-Percent of POIs:  12.32876712328767
-Number of features:  [21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21]
-Number of NaNs for each feature:  {&#39;exercised_stock_options&#39;: 44, &#39;total_stock_value&#39;: 20, &#39;bonus&#39;: 64, &#39;deferred_income&#39;: 97, &#39;restricted_stock_deferred&#39;: 128, &#39;to_messages&#39;: 60, &#39;expenses&#39;: 51, &#39;from_this_person_to_poi&#39;: 60, &#39;poi&#39;: 0, &#39;long_term_incentive&#39;: 80, &#39;total_payments&#39;: 21, &#39;email_address&#39;: 35, &#39;from_messages&#39;: 60, &#39;restricted_stock&#39;: 36, &#39;deferral_payments&#39;: 107, &#39;shared_receipt_with_poi&#39;: 60, &#39;director_fees&#39;: 129, &#39;from_poi_to_this_person&#39;: 60, &#39;salary&#39;: 51, &#39;loan_advances&#39;: 142, &#39;other&#39;: 53}
-</pre></div>
-
-
-<h2>Outlier Investigation</h2>
-<p>In order to scan for any potential outliers in the dataset, we first look at a scatterplot between the salary and bonus (Shown in the first plot below).<br>
-Cleary, there is an outlier in the top-right corner of the plot that requires further examination. This point happens to be the ‘TOTAL’ line in the financial information that sums up the various financial metrics within our dataset. Since this observation does not correspond to an employee, it should be removed from the data. There is another observation in the dataset called ‘THE TRAVEL AGENCY IN THE PARK’ that also should be removed. After removing these 2 observations, we duplicate the plot above and notice that there are no points that are extremely different than the rest (Shown in the second plot below)</p>
-<div class="highlight"><pre><span></span><span class="c1">### REMOVE OUTLIERS ###</span>
-
-<span class="c1">### Create scatterplot of salary and bonus to detect </span>
-<span class="c1">### any potential outliers</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="n">salary</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;salary&#39;</span><span class="p">]</span>
-    <span class="n">bonus</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;bonus&#39;</span><span class="p">]</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">salary</span><span class="p">,</span> <span class="n">bonus</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;salary&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;bonus&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="c1">### The outlier that we see in the above scatterplot is the</span>
-<span class="c1">### TOTAL line that contains the sum of all the salary and</span>
-<span class="c1">###  bonus values and needs to be removed</span>
-<span class="n">data_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;TOTAL&quot;</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="c1">### There is another outlier that needs to be removed</span>
-<span class="n">data_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;THE TRAVEL AGENCY IN THE PARK&quot;</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="c1">### Create scatterplot of salary and bonus to ensure all outliers</span>
-<span class="c1">### have been eliminated</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="n">salary</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;salary&#39;</span><span class="p">]</span>
-    <span class="n">bonus</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;bonus&#39;</span><span class="p">]</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">salary</span><span class="p">,</span> <span class="n">bonus</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;salary&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;bonus&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-
-
-<p><img alt="png" src="/images/IdentifyFraudEnron_3_0.png"></p>
-<p><img alt="png" src="/images/IdentifyFraudEnron_3_1.png"></p>
-<h2>Create New Feature</h2>
-<p>In an attempt to increase the accuracy of the algorithm to identify the POIs in the dataset, a new feature was created. This feature is the ratio between the bonus and the salary of each employee. The rationale behind this is that if an employee has an unusually large bonus to salary ratio, they must rely a lot more on their bonus than their salary for a higher income and would therefore be more inclined to engage in illegal or unethical behavior to boost company performance, which would then in turn lead to a higher bonus.</p>
-<div class="highlight"><pre><span></span><span class="c1">### CREATE NEW FEATURE</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;bonus&#39;</span><span class="p">])</span> <span class="o">!=</span> <span class="s1">&#39;NaN&#39;</span> <span class="ow">and</span> \
-    <span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;salary&#39;</span><span class="p">])</span> <span class="o">!=</span> <span class="s1">&#39;NaN&#39;</span><span class="p">:</span>
-        <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;bonus_salary_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> \
-        <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;bonus&#39;</span><span class="p">])</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;salary&#39;</span><span class="p">]))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">data_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;bonus_salary_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NaN&#39;</span>
-
-<span class="c1">### Store to my_dataset for easy export below.</span>
-<span class="n">my_dataset</span> <span class="o">=</span> <span class="n">data_dict</span>
-
-<span class="c1">### Extract features and labels from dataset for local testing</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">featureFormat</span><span class="p">(</span><span class="n">my_dataset</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">sort_keys</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
-<span class="n">labels</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="n">targetFeatureSplit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-
-
-<h2>Feature Selection</h2>
-<p>The features used in the algorithm were determined using the SelectKBest method.<br>
-It was determined that K = 5 and K = 6 have the highest accuracy, precision and recall scores. In order to avoid over fitting the model, it is better to go with the model with less features given equal performance. The output below outlines which features were selected for the final algorithm along with their scores.</p>
-<div class="highlight"><pre><span></span><span class="c1">### Select K best features</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">skb</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="p">)</span>
-
-<span class="c1">### Feature Importance</span>
-<span class="n">skb</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-<span class="n">scores</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">skb</span><span class="o">.</span><span class="n">pvalues_</span><span class="p">)</span>
-<span class="n">scores</span> <span class="o">/=</span> <span class="n">scores</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-<span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">scores</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;feature no. {}: {} ({})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">features_list</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span><span class="n">scores</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="n">i</span><span class="p">]]))</span>
-<span class="n">updated_features_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_list</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">k</span><span class="p">])</span>
-
-<span class="n">updated_features_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;poi&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Updated features list: &#39;</span><span class="p">,</span> <span class="n">updated_features_list</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>feature no. 1: exercised_stock_options (1.0)
-feature no. 2: total_stock_value (0.978860444846489)
-feature no. 3: bonus (0.863725845607769)
-feature no. 4: salary (0.7767175626081195)
-feature no. 5: deferred_income (0.528756607360408)
-Updated features list:  [&#39;poi&#39;, &#39;exercised_stock_options&#39;, &#39;total_stock_value&#39;, &#39;bonus&#39;, &#39;salary&#39;, &#39;deferred_income&#39;]
-</pre></div>
-
-
-<h2>Feature Scaling</h2>
-<p>The algorithm was tested by applying a Min-Max Scaler. It turns out that the accuracy, precision and recall scores remain the same with the deployment of feature scaling. This means that featuring scaling did not add to better performance of our model. Since the purpose of feature scaling is to normalize the feature values, it turns out in our case that the large range of the values plays a crucial role in separating the POIs from the non-POIs. Therefore, feature scaling was not used in the final algorithm.</p>
-<div class="highlight"><pre><span></span><span class="c1">### FEATURE SCALING</span>
-
-<span class="c1">### Initialize Standard and Min-Max Scaler</span>
-<span class="n">Standard_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
-<span class="n">Min_Max_scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
-</pre></div>
-
-
-<h2>Algorithm Selection and Paramter Tuning</h2>
-<p>The algorithm that I ended up using to classify POIs and non-POIs was the Gaussian Naïve Bayes algorithm. The other algorithm that I tried was the Decision Tree Classifier.<br>
-Tuning the parameters of an algorithm simply means going through the process of optimizing the parameters of your algorithm that provides the best performance. In our case, this means selecting the parameters of our algorithm that maximize the accuracy, precision or recall scores in the classification of POIs and non-POIs. If the parameters are not tuned correctly, the algorithm will not perform optimally and thus have a higher likelihood of misclassifying the labels correctly. I used parameter tuning for the Decision Tree Classifier in order to ensure the most accurate model was utilized.</p>
-<div class="highlight"><pre><span></span><span class="c1">### ALGORITHM SELECTION</span>
-
-<span class="c1">### Naive Bayes</span>
-<span class="c1">#clf = Pipeline(steps=[(&quot;scaling&quot;, Min_Max_scaler),(&quot;NaiveBayes&quot;,GaussianNB())])</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;NaiveBayes&quot;</span><span class="p">,</span><span class="n">GaussianNB</span><span class="p">())])</span>
-
-<span class="c1">### Decision Tree</span>
-<span class="c1"># tree = tree.DecisionTreeClassifier()</span>
-<span class="c1"># parameters = {&#39;tree__criterion&#39;: (&#39;gini&#39;,&#39;entropy&#39;),</span>
-<span class="c1">#               &#39;tree__splitter&#39;:(&#39;best&#39;,&#39;random&#39;),</span>
-<span class="c1">#               &#39;tree__min_samples_split&#39;:[2, 10, 20],</span>
-<span class="c1">#                 &#39;tree__max_depth&#39;:[10,15,20,25,30],</span>
-<span class="c1">#                 &#39;tree__max_leaf_nodes&#39;:[5,10,30]}</span>
-<span class="c1"># #pipeline = Pipeline(steps=[(&#39;scaler&#39;, Min_Max_scaler), (&#39;pca&#39;,PCA(n_components = 2)), (&#39;tree&#39;, tree)])</span>
-<span class="c1"># pipeline = Pipeline(steps=[(&#39;scaler&#39;, Min_Max_scaler), (&#39;tree&#39;, tree)])</span>
-<span class="c1"># #pipeline = Pipeline(steps=[(&#39;tree&#39;, tree)])</span>
-
-<span class="c1"># cv = StratifiedShuffleSplit(labels, 100, random_state = 42)</span>
-<span class="c1"># gs = GridSearchCV(pipeline, parameters, cv=cv, scoring=&#39;accuracy&#39;)</span>
-<span class="c1"># gs.fit(features, labels)</span>
-<span class="c1"># clf = gs.best_estimator_</span>
-</pre></div>
-
-
-<h2>Validation and Evaluation</h2>
-<p>Validation is the process in which we use a subset of our training data to tune the parameters of the algorithm. If this step is done incorrectly, you run the risk of over fitting your model that will perform very good on the training set but will do very poorly on the test set. For my algorithm, I used the StratifiedShuffleSplit function to split the data into training and tests for validation purposes.<br>
-I evaluated by algorithm based on the precision and recall scores. For my algorithm, I was able to achieve an accuracy, precision and recall scores of 0.85, 0.49 and 0.38, respectively. Precision refers to the probability that an employee identified as a POI is actually a POI and recall refers to the probability of my algorithm in positively identifying a POI.</p>
-<div class="highlight"><pre><span></span><span class="c1">### VALIDATION AND EVALUATION</span>
-
-<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">updated_features_list</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>Pipeline(steps=[(&#39;NaiveBayes&#39;, GaussianNB(priors=None))])
-    Accuracy: 0.85464   Precision: 0.48876  Recall: 0.38050 F1: 0.42789 F2: 0.39814
-    Total predictions: 14000    True positives:  761    False positives:  796   False negatives: 1239   True negatives: 11204
-</pre></div>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<p>The dataset that will be used …</p>
+                <a class="readmore" href="/identify-fraud-from-enron-financial-statements.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
@@ -376,7 +196,7 @@ I evaluated by algorithm based on the precision and recall scores. For my algori
                 Published: Sat 19 September 2015
         </abbr>
 
-<p>In <a href="/category/introduction.html">Introduction</a>.</p>
+<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
 
 </footer><!-- /.post-info -->                <h1>Introduction To Research Methods</h1>
 <h2>Chopsticks</h2>
