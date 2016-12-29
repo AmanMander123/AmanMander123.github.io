@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Udacity Engagement Analysis</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="/category/data-analysis.html">Data Analysis</a></li>
+                    <li><a href="/category/introduction.html">Introduction</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/udacity-engagement-analysis.html" rel="bookmark"
+           title="Permalink to Udacity Engagement Analysis">Udacity Engagement Analysis</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-03-16T00:00:00+00:00">
+                Published: Wed 16 March 2016
+        </abbr>
+
+<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
+
+</footer><!-- /.post-info -->      <h2>Loading Data from CSVs</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Import csv library</span>
+<span class="kn">import</span> <span class="nn">unicodecsv</span>
+
+<span class="c1"># Define function to read and store data</span>
+<span class="k">def</span> <span class="nf">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">unicodecsv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+
+<span class="n">enrollments</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/enrollments.csv&#39;</span><span class="p">)</span>
+<span class="n">daily_engagement</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/daily_engagement.csv&#39;</span><span class="p">)</span>
+<span class="n">project_submissions</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/project_submissions.csv&#39;</span><span class="p">)</span>
+
+<span class="c1"># Print out first element of each list</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Enrollments:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">enrollments</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Daily engagement:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">daily_engagement</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Project submissions:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">project_submissions</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Enrollments:
+{&#39;cancel_date&#39;: &#39;2015-01-14&#39;, &#39;join_date&#39;: &#39;2014-11-10&#39;, &#39;days_to_cancel&#39;: &#39;65&#39;, &#39;account_key&#39;: &#39;448&#39;, &#39;is_canceled&#39;: &#39;True&#39;, &#39;status&#39;: &#39;canceled&#39;, &#39;is_udacity&#39;: &#39;True&#39;}
+Daily engagement:
+{&#39;total_minutes_visited&#39;: &#39;11.6793745&#39;, &#39;acct&#39;: &#39;0&#39;, &#39;num_courses_visited&#39;: &#39;1.0&#39;, &#39;utc_date&#39;: &#39;2015-01-09&#39;, &#39;projects_completed&#39;: &#39;0.0&#39;, &#39;lessons_completed&#39;: &#39;0.0&#39;}
+Project submissions:
+{&#39;account_key&#39;: &#39;256&#39;, &#39;lesson_key&#39;: &#39;3176718735&#39;, &#39;creation_date&#39;: &#39;2015-01-14&#39;, &#39;assigned_rating&#39;: &#39;UNGRADED&#39;, &#39;processing_state&#39;: &#39;EVALUATED&#39;, &#39;completion_date&#39;: &#39;2015-01-16&#39;}
+</pre></div>
+
+
+<h2>Fixing Data Types</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Import library</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span> <span class="k">as</span> <span class="n">dt</span>
+
+<span class="c1"># Takes a date as a string, and returns a Python datetime object </span>
+<span class="c1"># If there is no date given, returns None</span>
+<span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">date</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">date</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dt</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Takes a string which is either an empty string or represents an integer</span>
+<span class="c1"># and returns an int or None.</span>
+<span class="k">def</span> <span class="nf">parse_maybe_int</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c1"># Clean up the data types in the enrollments table</span>
+<span class="k">for</span> <span class="n">enrollment</span> <span class="ow">in</span> <span class="n">enrollments</span><span class="p">:</span>
+    <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;cancel_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_date</span><span class="p">(</span><span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;cancel_date&#39;</span><span class="p">])</span>
+    <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;days_to_cancel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_maybe_int</span><span class="p">(</span><span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;days_to_cancel&#39;</span><span class="p">])</span>
+    <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;is_canceled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;is_canceled&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;True&#39;</span>
+    <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;is_udacity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;is_udacity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;True&#39;</span>
+    <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;join_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_date</span><span class="p">(</span><span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;join_date&#39;</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Enrollments:&#39;</span><span class="p">)</span>
+<span class="n">enrollments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Enrollments:
+
+
+
+
+
+{&#39;account_key&#39;: &#39;448&#39;,
+ &#39;cancel_date&#39;: datetime.datetime(2015, 1, 14, 0, 0),
+ &#39;days_to_cancel&#39;: 65,
+ &#39;is_canceled&#39;: True,
+ &#39;is_udacity&#39;: True,
+ &#39;join_date&#39;: datetime.datetime(2014, 11, 10, 0, 0),
+ &#39;status&#39;: &#39;canceled&#39;}
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Clean up the data types in the engagement table</span>
+<span class="k">for</span> <span class="n">engagement_record</span> <span class="ow">in</span> <span class="n">daily_engagement</span><span class="p">:</span>
+    <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;lessons_completed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;lessons_completed&#39;</span><span class="p">]))</span>
+    <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;num_courses_visited&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;num_courses_visited&#39;</span><span class="p">]))</span>
+    <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;projects_completed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;projects_completed&#39;</span><span class="p">]))</span>
+    <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;total_minutes_visited&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;total_minutes_visited&#39;</span><span class="p">])</span>
+    <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;utc_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_date</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;utc_date&#39;</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Daily engagement:&#39;</span><span class="p">)</span>
+<span class="n">daily_engagement</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Daily engagement:
+
+
+
+
+
+{&#39;acct&#39;: &#39;0&#39;,
+ &#39;lessons_completed&#39;: 0,
+ &#39;num_courses_visited&#39;: 1,
+ &#39;projects_completed&#39;: 0,
+ &#39;total_minutes_visited&#39;: 11.6793745,
+ &#39;utc_date&#39;: datetime.datetime(2015, 1, 9, 0, 0)}
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Clean up the data types in the submissions table</span>
+<span class="k">for</span> <span class="n">submission</span> <span class="ow">in</span> <span class="n">project_submissions</span><span class="p">:</span>
+    <span class="n">submission</span><span class="p">[</span><span class="s1">&#39;completion_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_date</span><span class="p">(</span><span class="n">submission</span><span class="p">[</span><span class="s1">&#39;completion_date&#39;</span><span class="p">])</span>
+    <span class="n">submission</span><span class="p">[</span><span class="s1">&#39;creation_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_date</span><span class="p">(</span><span class="n">submission</span><span class="p">[</span><span class="s1">&#39;creation_date&#39;</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Project submissions:&#39;</span><span class="p">)</span>
+<span class="n">project_submissions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Project submissions:
+
+
+
+
+
+{&#39;account_key&#39;: &#39;256&#39;,
+ &#39;assigned_rating&#39;: &#39;UNGRADED&#39;,
+ &#39;completion_date&#39;: datetime.datetime(2015, 1, 16, 0, 0),
+ &#39;creation_date&#39;: datetime.datetime(2015, 1, 14, 0, 0),
+ &#39;lesson_key&#39;: &#39;3176718735&#39;,
+ &#39;processing_state&#39;: &#39;EVALUATED&#39;}
+</pre></div>
+
+
+<h2>Investigating the Data</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Rename the &quot;acct&quot; column in the daily_engagement table to &quot;account_key&quot;.</span>
+
+<span class="k">for</span> <span class="n">engagement_record</span> <span class="ow">in</span> <span class="n">daily_engagement</span><span class="p">:</span>
+    <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;acct&#39;</span><span class="p">]</span>
+    <span class="k">del</span> <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;acct&#39;</span><span class="p">]</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Daily engagement - account key:&#39;</span><span class="p">)</span>
+<span class="n">daily_engagement</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Daily engagement - account key:
+
+
+
+
+
+&#39;0&#39;
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Define function to get unique students</span>
+<span class="k">def</span> <span class="nf">get_unique_students</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">unique_students</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">data_point</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">unique_students</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">data_point</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">unique_students</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Total number of rows and the number of unique students (account keys)</span>
+<span class="c1"># in each table.</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total enrollment records:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">enrollments</span><span class="p">))</span>
+
+<span class="n">unique_enrolled_students</span> <span class="o">=</span> <span class="n">get_unique_students</span><span class="p">(</span><span class="n">enrollments</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total unique enrollment records:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_enrolled_students</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total daily engagement records:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">daily_engagement</span><span class="p">))</span>
+
+<span class="n">unique_engagement_students</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="n">unique_engagement_students</span> <span class="o">=</span> <span class="n">get_unique_students</span><span class="p">(</span><span class="n">daily_engagement</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total unique daily engagement records:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_engagement_students</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total project submission records:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">project_submissions</span><span class="p">))</span>
+
+<span class="n">unique_project_submitters</span> <span class="o">=</span> <span class="n">get_unique_students</span><span class="p">(</span><span class="n">project_submissions</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total unique project submission records:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_project_submitters</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Total enrollment records:
+1640
+Total unique enrollment records:
+1302
+Total daily engagement records:
+136240
+Total unique daily engagement records:
+1237
+Total project submission records:
+3642
+Total unique project submission records:
+743
+</pre></div>
+
+
+<h2>Problems in the Data</h2>
+<h2>Missing Engagement Records</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Find one student enrollments where the student is missing from the daily engagement table</span>
+<span class="c1"># Output that enrollment</span>
+
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">enrollment</span> <span class="ow">in</span> <span class="n">enrollments</span><span class="p">:</span>
+    <span class="n">student</span> <span class="o">=</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">student</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_engagement_students</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Enrollment:&#39;</span><span class="p">)</span>
+        <span class="k">print</span> <span class="p">(</span><span class="n">enrollment</span><span class="p">)</span>
+        <span class="k">break</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Enrollment:
+{&#39;cancel_date&#39;: datetime.datetime(2014, 11, 12, 0, 0), &#39;join_date&#39;: datetime.datetime(2014, 11, 12, 0, 0), &#39;days_to_cancel&#39;: 0, &#39;account_key&#39;: &#39;1219&#39;, &#39;is_canceled&#39;: True, &#39;status&#39;: &#39;canceled&#39;, &#39;is_udacity&#39;: False}
+</pre></div>
+
+
+<h2>Checking for More Problem Records</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Find the number of surprising data points (enrollments missing from</span>
+<span class="c1"># the engagement table) that remain, if any</span>
+
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">enrollment</span> <span class="ow">in</span> <span class="n">enrollments</span><span class="p">:</span>
+    <span class="n">student</span> <span class="o">=</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">student</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_engagement_students</span> <span class="ow">and</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;days_to_cancel&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">counter</span><span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Enrollment:&#39;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">enrollment</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Counter:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Enrollment:
+{&#39;cancel_date&#39;: datetime.datetime(2015, 3, 10, 0, 0), &#39;join_date&#39;: datetime.datetime(2015, 1, 10, 0, 0), &#39;days_to_cancel&#39;: 59, &#39;account_key&#39;: &#39;1304&#39;, &#39;is_canceled&#39;: True, &#39;status&#39;: &#39;canceled&#39;, &#39;is_udacity&#39;: True}
+Enrollment:
+{&#39;cancel_date&#39;: datetime.datetime(2015, 6, 17, 0, 0), &#39;join_date&#39;: datetime.datetime(2015, 3, 10, 0, 0), &#39;days_to_cancel&#39;: 99, &#39;account_key&#39;: &#39;1304&#39;, &#39;is_canceled&#39;: True, &#39;status&#39;: &#39;canceled&#39;, &#39;is_udacity&#39;: True}
+Enrollment:
+{&#39;cancel_date&#39;: None, &#39;join_date&#39;: datetime.datetime(2015, 2, 25, 0, 0), &#39;days_to_cancel&#39;: None, &#39;account_key&#39;: &#39;1101&#39;, &#39;is_canceled&#39;: False, &#39;status&#39;: &#39;current&#39;, &#39;is_udacity&#39;: True}
+Counter:
+3
+</pre></div>
+
+
+<h2>Tracking Down the Remaining Problems</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Create a set of the account keys for all Udacity test accounts</span>
+<span class="n">udacity_test_accounts</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">enrollment</span> <span class="ow">in</span> <span class="n">enrollments</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;is_udacity&#39;</span><span class="p">]:</span>
+        <span class="n">udacity_test_accounts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Udacity test accounts:&#39;</span><span class="p">)</span>        
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">udacity_test_accounts</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Number of Udacity test accounts:
+6
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Given some data with an account_key field, removes any records corresponding to Udacity test accounts</span>
+<span class="k">def</span> <span class="nf">remove_udacity_accounts</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">non_udacity_data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">data_point</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">data_point</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">udacity_test_accounts</span><span class="p">:</span>
+            <span class="n">non_udacity_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_point</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">non_udacity_data</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Remove Udacity test accounts from all three tables</span>
+<span class="n">non_udacity_enrollments</span> <span class="o">=</span> <span class="n">remove_udacity_accounts</span><span class="p">(</span><span class="n">enrollments</span><span class="p">)</span>
+<span class="n">non_udacity_engagement</span> <span class="o">=</span> <span class="n">remove_udacity_accounts</span><span class="p">(</span><span class="n">daily_engagement</span><span class="p">)</span>
+<span class="n">non_udacity_submissions</span> <span class="o">=</span> <span class="n">remove_udacity_accounts</span><span class="p">(</span><span class="n">project_submissions</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Non Udacity enrollments:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">non_udacity_enrollments</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Non Udacity engagements:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">non_udacity_engagement</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Non Udacity submissions:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">non_udacity_submissions</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Non Udacity enrollments:
+1622
+Non Udacity engagements:
+135656
+Non Udacity submissions:
+3634
+</pre></div>
+
+
+<h2>Refining the Question</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Creates a dictionary named paid_students containing all students who either</span>
+<span class="c1"># haven&#39;t canceled yet or who remained enrolled for more than 7 days. The keys</span>
+<span class="c1"># are account keys, and the values are the date the student enrolled</span>
+
+<span class="n">paid_students</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">enrollment</span> <span class="ow">in</span> <span class="n">non_udacity_enrollments</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;is_canceled&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;days_to_cancel&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
+        <span class="n">account_key</span> <span class="o">=</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span>
+        <span class="n">enrollment_date</span> <span class="o">=</span> <span class="n">enrollment</span><span class="p">[</span><span class="s1">&#39;join_date&#39;</span><span class="p">]</span>
+        <span class="n">paid_students</span><span class="p">[</span><span class="n">account_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">enrollment_date</span>
+
+        <span class="k">if</span> <span class="n">account_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">paid_students</span> <span class="ow">or</span> \
+                <span class="n">enrollment_date</span> <span class="o">&gt;</span> <span class="n">paid_students</span><span class="p">[</span><span class="n">account_key</span><span class="p">]:</span>
+            <span class="n">paid_students</span><span class="p">[</span><span class="n">account_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">enrollment_date</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Paid students:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paid_students</span><span class="p">))</span>       
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Paid students:
+995
+</pre></div>
+
+
+<h2>Getting Data from First Week</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Takes a student&#39;s join date and the date of a specific engagement record,</span>
+<span class="c1"># and returns True if that engagement record happened within one week</span>
+<span class="c1"># of the student joining.</span>
+<span class="k">def</span> <span class="nf">within_one_week</span><span class="p">(</span><span class="n">join_date</span><span class="p">,</span> <span class="n">engagement_date</span><span class="p">):</span>
+    <span class="n">time_delta</span> <span class="o">=</span> <span class="n">engagement_date</span> <span class="o">-</span> <span class="n">join_date</span>
+    <span class="k">return</span> <span class="n">time_delta</span><span class="o">.</span><span class="n">days</span> <span class="o">&lt;</span> <span class="mi">7</span> <span class="ow">and</span> <span class="n">time_delta</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Creates a list of rows from the engagement table including only rows where</span>
+<span class="c1"># the student is one of the paid students we just found, and the date is within</span>
+<span class="c1"># one week of the student&#39;s join date</span>
+
+<span class="k">def</span> <span class="nf">remove_free_trial_cancels</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">new_data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">data_point</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">data_point</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">paid_students</span><span class="p">:</span>
+            <span class="n">new_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_point</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_data</span>
+
+<span class="n">paid_enrollments</span> <span class="o">=</span> <span class="n">remove_free_trial_cancels</span><span class="p">(</span><span class="n">non_udacity_enrollments</span><span class="p">)</span>
+<span class="n">paid_engagement</span> <span class="o">=</span> <span class="n">remove_free_trial_cancels</span><span class="p">(</span><span class="n">non_udacity_engagement</span><span class="p">)</span>
+<span class="n">paid_submissions</span> <span class="o">=</span> <span class="n">remove_free_trial_cancels</span><span class="p">(</span><span class="n">non_udacity_submissions</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Paid enrollments:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paid_enrollments</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Paid engagements:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paid_engagement</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Paid submissions:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paid_submissions</span><span class="p">))</span>
+
+<span class="n">paid_engagement_in_first_week</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">engagement_record</span> <span class="ow">in</span> <span class="n">paid_engagement</span><span class="p">:</span>
+    <span class="n">account_key</span> <span class="o">=</span> <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span>
+    <span class="n">join_date</span> <span class="o">=</span> <span class="n">paid_students</span><span class="p">[</span><span class="n">account_key</span><span class="p">]</span>
+    <span class="n">engagement_record_date</span> <span class="o">=</span> <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;utc_date&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">within_one_week</span><span class="p">(</span><span class="n">join_date</span><span class="p">,</span> <span class="n">engagement_record_date</span><span class="p">):</span>
+        <span class="n">paid_engagement_in_first_week</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Paid engagements in first week:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paid_engagement_in_first_week</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Paid enrollments:
+1293
+Paid engagements:
+134549
+Paid submissions:
+3618
+Paid engagements in first week:
+6920
+</pre></div>
+
+
+<h2>Exploring Student Engagement</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Import library</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="c1"># Creates a dictionary of engagement grouped by student</span>
+<span class="c1"># The keys are account keys, and the values are lists of engagement records.</span>
+<span class="n">engagement_by_account</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">engagement_record</span> <span class="ow">in</span> <span class="n">paid_engagement_in_first_week</span><span class="p">:</span>
+    <span class="n">account_key</span> <span class="o">=</span> <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span>
+    <span class="n">engagement_by_account</span><span class="p">[</span><span class="n">account_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Creates a dictionary with the total minutes each student spent in the classroom during the first week</span>
+<span class="c1"># The keys are account keys, and the values are numbers (total minutes)</span>
+<span class="n">total_minutes_by_account</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">account_key</span><span class="p">,</span> <span class="n">engagement_for_student</span> <span class="ow">in</span> <span class="n">engagement_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">total_minutes</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">engagement_record</span> <span class="ow">in</span> <span class="n">engagement_for_student</span><span class="p">:</span>
+        <span class="n">total_minutes</span> <span class="o">+=</span> <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;total_minutes_visited&#39;</span><span class="p">]</span>
+    <span class="n">total_minutes_by_account</span><span class="p">[</span><span class="n">account_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_minutes</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1">#Import library</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c1"># Summarize the data about minutes spent in the classroom</span>
+<span class="n">total_minutes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">total_minutes_by_account</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Mean:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">total_minutes</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Standard deviation:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">total_minutes</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Minimum:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">total_minutes</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Maximum:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">total_minutes</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">Mean</span><span class="o">:</span> <span class="mf">305.414718908</span>
+<span class="n">Standard</span> <span class="n">deviation</span><span class="o">:</span> <span class="mf">405.91261032</span>
+<span class="n">Minimum</span><span class="o">:</span> <span class="mf">0.0</span>
+<span class="n">Maximum</span><span class="o">:</span> <span class="mf">3564.7332645</span>
+</pre></div>
+
+
+<h2>Debugging Data Analysis Code</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Goes through a similar process as before to see if there is a problem</span>
+<span class="c1"># Locates at least one surprising piece of data and outputs it</span>
+<span class="n">student_with_max_minutes</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">max_minutes</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">for</span> <span class="n">student</span><span class="p">,</span> <span class="n">total_minutes</span> <span class="ow">in</span> <span class="n">total_minutes_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">total_minutes</span> <span class="o">&gt;</span> <span class="n">max_minutes</span><span class="p">:</span>
+        <span class="n">max_minutes</span> <span class="o">=</span> <span class="n">total_minutes</span>
+        <span class="n">student_with_max_minutes</span> <span class="o">=</span> <span class="n">student</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Max minutes:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">max_minutes</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">engagement_record</span> <span class="ow">in</span> <span class="n">paid_engagement_in_first_week</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">student_with_max_minutes</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Engagement record:&#39;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Max minutes:
+3564.7332644989997
+Engagement record:
+{&#39;total_minutes_visited&#39;: 850.519339666, &#39;num_courses_visited&#39;: 4, &#39;account_key&#39;: &#39;163&#39;, &#39;utc_date&#39;: datetime.datetime(2015, 7, 9, 0, 0), &#39;projects_completed&#39;: 0, &#39;lessons_completed&#39;: 4}
+Engagement record:
+{&#39;total_minutes_visited&#39;: 872.633923334, &#39;num_courses_visited&#39;: 6, &#39;account_key&#39;: &#39;163&#39;, &#39;utc_date&#39;: datetime.datetime(2015, 7, 10, 0, 0), &#39;projects_completed&#39;: 0, &#39;lessons_completed&#39;: 6}
+Engagement record:
+{&#39;total_minutes_visited&#39;: 777.018903666, &#39;num_courses_visited&#39;: 2, &#39;account_key&#39;: &#39;163&#39;, &#39;utc_date&#39;: datetime.datetime(2015, 7, 11, 0, 0), &#39;projects_completed&#39;: 0, &#39;lessons_completed&#39;: 6}
+Engagement record:
+{&#39;total_minutes_visited&#39;: 294.568774, &#39;num_courses_visited&#39;: 1, &#39;account_key&#39;: &#39;163&#39;, &#39;utc_date&#39;: datetime.datetime(2015, 7, 12, 0, 0), &#39;projects_completed&#39;: 0, &#39;lessons_completed&#39;: 2}
+Engagement record:
+{&#39;total_minutes_visited&#39;: 471.2139785, &#39;num_courses_visited&#39;: 3, &#39;account_key&#39;: &#39;163&#39;, &#39;utc_date&#39;: datetime.datetime(2015, 7, 13, 0, 0), &#39;projects_completed&#39;: 0, &#39;lessons_completed&#39;: 1}
+Engagement record:
+{&#39;total_minutes_visited&#39;: 298.778345333, &#39;num_courses_visited&#39;: 2, &#39;account_key&#39;: &#39;163&#39;, &#39;utc_date&#39;: datetime.datetime(2015, 7, 14, 0, 0), &#39;projects_completed&#39;: 0, &#39;lessons_completed&#39;: 1}
+Engagement record:
+{&#39;total_minutes_visited&#39;: 0.0, &#39;num_courses_visited&#39;: 0, &#39;account_key&#39;: &#39;163&#39;, &#39;utc_date&#39;: datetime.datetime(2015, 7, 15, 0, 0), &#39;projects_completed&#39;: 0, &#39;lessons_completed&#39;: 0}
+</pre></div>
+
+
+<h2>Lessons Completed in First Week</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Adapts the code above to find the mean, standard deviation, minimum, and maximum for</span>
+<span class="c1"># the number of lessons completed by each student during the first week</span>
+
+<span class="c1"># Load library</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="k">def</span> <span class="nf">group_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">key_name</span><span class="p">):</span>
+    <span class="n">grouped_data</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">data_point</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">data_point</span><span class="p">[</span><span class="n">key_name</span><span class="p">]</span>
+        <span class="n">grouped_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_point</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">grouped_data</span>
+
+<span class="n">engagement_by_account</span> <span class="o">=</span> <span class="n">group_data</span><span class="p">(</span><span class="n">paid_engagement_in_first_week</span><span class="p">,</span>
+                                   <span class="s1">&#39;account_key&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">sum_grouped_items</span><span class="p">(</span><span class="n">grouped_data</span><span class="p">,</span> <span class="n">field_name</span><span class="p">):</span>
+    <span class="n">summed_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">data_points</span> <span class="ow">in</span> <span class="n">grouped_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">data_point</span> <span class="ow">in</span> <span class="n">data_points</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">data_point</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span>
+        <span class="n">summed_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">total</span>
+    <span class="k">return</span> <span class="n">summed_data</span>
+
+<span class="n">total_minutes_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">engagement_by_account</span><span class="p">,</span>
+                                             <span class="s1">&#39;total_minutes_visited&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">describe_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Mean:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Standard deviation:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Minimum:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Maximum:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Total minutes by account:&#39;</span><span class="p">)</span>
+<span class="n">describe_data</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">total_minutes_by_account</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+
+<span class="n">lessons_completed_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;lessons_completed&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Lessons completed by account:&#39;</span><span class="p">)</span>
+<span class="n">describe_data</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">lessons_completed_by_account</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Total minutes by account:
+Mean: 305.414718908
+Standard deviation: 405.91261032
+Minimum: 0.0
+Maximum: 3564.7332645
+Lessons completed by account:
+Mean: 1.63216080402
+Standard deviation: 3.00140182563
+Minimum: 0
+Maximum: 36
+</pre></div>
+
+
+<h2>Number of Visits in First Week</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Finds the mean, standard deviation, minimum, and maximum for the number of</span>
+<span class="c1"># days each student visits the classroom during the first week</span>
+
+<span class="n">engagement_by_account</span> <span class="o">=</span> <span class="n">group_data</span><span class="p">(</span><span class="n">paid_engagement_in_first_week</span><span class="p">,</span>
+                                   <span class="s1">&#39;account_key&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">account_key</span><span class="p">,</span> <span class="n">engagement_for_student</span> <span class="ow">in</span> <span class="n">engagement_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">data_points</span> <span class="ow">in</span> <span class="n">engagement_for_student</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">data_points</span><span class="p">[</span><span class="s1">&#39;num_courses_visited&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">data_points</span><span class="p">[</span><span class="s1">&#39;has_visited&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_points</span><span class="p">[</span><span class="s1">&#39;has_visited&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">has_visited_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;has_visited&#39;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Students that visited in first week:&#39;</span><span class="p">)</span>
+<span class="n">describe_data</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">has_visited_by_account</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Students that visited in first week:
+Mean: 2.91256281407
+Standard deviation: 2.22037005491
+Minimum: 0
+Maximum: 7
+</pre></div>
+
+
+<h2>Splitting out Passing Students</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Creates two lists of engagement data for paid students in the first week</span>
+<span class="c1"># The first list contains data for students who eventually pass the</span>
+<span class="c1"># subway project, and the second list contains data for students</span>
+<span class="c1"># who do not</span>
+
+<span class="n">subway_project_lesson_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;746169184&#39;</span><span class="p">,</span> <span class="s1">&#39;3176718735&#39;</span><span class="p">]</span>
+
+<span class="n">pass_subway_project</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="n">passing_engagement</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">non_passing_engagement</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">submission</span> <span class="ow">in</span> <span class="n">paid_submissions</span><span class="p">:</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">submission</span><span class="p">[</span><span class="s1">&#39;lesson_key&#39;</span><span class="p">]</span>
+    <span class="n">rating</span> <span class="o">=</span> <span class="n">submission</span><span class="p">[</span><span class="s1">&#39;assigned_rating&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">project</span> <span class="ow">in</span> <span class="n">subway_project_lesson_keys</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">rating</span> <span class="o">==</span> <span class="s1">&#39;PASSED&#39;</span> <span class="ow">or</span> <span class="n">rating</span> <span class="o">==</span> <span class="s1">&#39;DISTINCTION&#39;</span><span class="p">)):</span>
+        <span class="n">pass_subway_project</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">submission</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">])</span>
+
+
+<span class="k">for</span> <span class="n">engagement_record</span> <span class="ow">in</span> <span class="n">paid_engagement_in_first_week</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">engagement_record</span><span class="p">[</span><span class="s1">&#39;account_key&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">pass_subway_project</span><span class="p">:</span>
+        <span class="n">passing_engagement</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">non_passing_engagement</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">engagement_record</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Passing engagement:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">passing_engagement</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Non passing engagement&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">non_passing_engagement</span><span class="p">))</span>           
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Passing engagement:
+4528
+Non passing engagement
+2392
+</pre></div>
+
+
+<h2>Comparing the Two Student Groups</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Computes some metrics that are interesting and see how they differ for</span>
+<span class="c1"># students who pass the subway project vs. students who don&#39;t</span>
+
+<span class="n">passing_engagement_by_account</span> <span class="o">=</span> <span class="n">group_data</span><span class="p">(</span><span class="n">passing_engagement</span><span class="p">,</span>
+                                   <span class="s1">&#39;account_key&#39;</span><span class="p">)</span>
+
+<span class="n">has_visited_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">passing_engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;has_visited&#39;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Has visited by account:&#39;</span><span class="p">)</span>
+<span class="n">describe_data</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">has_visited_by_account</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+
+<span class="n">non_passing_engagement_by_account</span> <span class="o">=</span> <span class="n">group_data</span><span class="p">(</span><span class="n">non_passing_engagement</span><span class="p">,</span>
+                                   <span class="s1">&#39;account_key&#39;</span><span class="p">)</span>
+
+<span class="n">non_has_visited_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">non_passing_engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;has_visited&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Has not visited by account:&#39;</span><span class="p">)</span>
+<span class="n">describe_data</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">non_has_visited_by_account</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Has visited by account:
+Mean: 3.42967542504
+Standard deviation: 2.21298340866
+Minimum: 0
+Maximum: 7
+Has not visited by account:
+Mean: 1.95114942529
+Standard deviation: 1.88929952676
+Minimum: 0
+Maximum: 7
+</pre></div>
+
+
+<h2>Making Histograms</h2>
+<div class="highlight"><pre><span></span><span class="c1"># Makes histograms of the three metrics we looked at earlier for both</span>
+<span class="c1"># students who passed the subway project and students who didn&#39;t</span>
+
+<span class="c1"># Ensure plot is displayed in notebook</span>
+<span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+
+<span class="c1"># Load libraries</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+
+<span class="n">has_minutes_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">passing_engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;total_minutes_visited&#39;</span><span class="p">)</span>
+<span class="n">non_has_minutes_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">non_passing_engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;total_minutes_visited&#39;</span><span class="p">)</span>
+
+<span class="n">has_lessons_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">passing_engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;lessons_completed&#39;</span><span class="p">)</span>
+<span class="n">non_has_lessons_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">non_passing_engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;lessons_completed&#39;</span><span class="p">)</span>
+
+<span class="n">has_visited_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">passing_engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;has_visited&#39;</span><span class="p">)</span>
+<span class="n">non_has_visited_by_account</span> <span class="o">=</span> <span class="n">sum_grouped_items</span><span class="p">(</span><span class="n">non_passing_engagement_by_account</span><span class="p">,</span>
+                                                 <span class="s1">&#39;has_visited&#39;</span><span class="p">)</span>
+
+<span class="n">has_mins</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">account_key</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="n">has_minutes_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">has_mins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">has_mins</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Minutes by account&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Days Visited&quot;</span><span class="p">)</span>
+
+<span class="n">non_has_mins</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">account_key</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="n">non_has_minutes_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">non_has_mins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">non_has_mins</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Non Minutes by account&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Days Visited&quot;</span><span class="p">)</span>
+
+<span class="n">has_lessons</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">account_key</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="n">has_lessons_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">has_lessons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">has_lessons</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Has lessons&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Days Visited&quot;</span><span class="p">)</span>
+
+<span class="n">non_has_lessons</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">account_key</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="n">non_has_lessons_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">non_has_lessons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">non_has_lessons</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Non has lessons&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Days Visited&quot;</span><span class="p">)</span>
+
+<span class="n">has_visited</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">account_key</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="n">has_visited_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">has_visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">has_visited</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Has visited&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Days Visited&quot;</span><span class="p">)</span>
+
+<span class="n">non_has_visited</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">account_key</span><span class="p">,</span> <span class="n">records</span> <span class="ow">in</span> <span class="n">non_has_visited_by_account</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">non_has_visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">non_has_visited</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Non has visisted&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Days Visited&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Populating the interactive namespace from numpy and matplotlib
+
+
+
+
+
+&lt;matplotlib.text.Text at 0x10e3f6080&gt;
+</pre></div>
+
+
+<p><img alt="png" src="/images/UdacityEngagementAnalysis_39_2.png"></p>
+<p><img alt="png" src="/images/UdacityEngagementAnalysis_39_3.png"></p>
+<p><img alt="png" src="/images/UdacityEngagementAnalysis_39_4.png"></p>
+<p><img alt="png" src="/images/UdacityEngagementAnalysis_39_5.png"></p>
+<p><img alt="png" src="/images/UdacityEngagementAnalysis_39_6.png"></p>
+<p><img alt="png" src="/images/UdacityEngagementAnalysis_39_7.png"></p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
