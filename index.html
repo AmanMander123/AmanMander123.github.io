@@ -18,12 +18,220 @@
                     <li><a href="/category/data-analysis.html">Data Analysis</a></li>
                     <li><a href="/category/finance.html">Finance</a></li>
                     <li><a href="/category/introduction.html">Introduction</a></li>
+                    <li><a href="/category/visualization.html">Visualization</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html">Financial Contributions to the 2016 Presidential Campaigns from NY</a></h1>
+                    <h1 class="entry-title"><a href="/titanic-dataset-visualization.html">
+
+    
+        
+        
+        
+        Titanic Dataset Visualization</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-09-14T00:00:00+00:00">
+                Published: Wed 14 September 2016
+        </abbr>
+
+<p>In <a href="/category/visualization.html">Visualization</a>.</p>
+
+</footer><!-- /.post-info -->
+        <script type="text/javascript">
+            
+function draw(data) {
+
+  //Set variables for width and height of svg element
+  w = 1200;
+  h = 500;
+
+  //Get unique values for Sex, Pclass and Embarked
+  var uniqueSex = d3.map(data, function(d){return d["Sex"];}).keys()
+  var uniquePclass = d3.map(data, function(d){return d["Pclass"];}).keys()
+  var uniqueEmbarked = d3.map(data, function(d){return d["Embarked"];}).keys()
+
+  
+  //Clean the values - eliminate any blanks or undefined values
+  //Function to clean the values
+  function cleaner(arr) {
+    var filteredArray = arr.filter(Boolean);
+    var filteredArray = filteredArray.filter(function(n) { return n != "undefined" });
+    return filteredArray;
+  }
+
+  //Pass the variables through the cleaner function
+  uniqueSex = cleaner(uniqueSex);
+  uniquePclass = cleaner(uniquePclass);
+  uniqueEmbarked = cleaner(uniqueEmbarked);
+
+  //Create an array containing data on the unique sex values in the dataset
+  var sexData = []
+  var sexSurvived = []
+  var sexSurvivedPercent = []
+  for (var i = 0; i < uniqueSex.length; i++) {
+    sexData[i] = data.filter(function(d) { return d["Sex"] == uniqueSex[i]});
+    sexSurvived[i] = d3.sum(sexData[i], function(d) {return parseFloat(d["Survived"])});
+    sexSurvivedPercent[i] = sexSurvived[i] / sexData[i].length * 100
+  }
+
+  //Create an array containing data on the unique Pclass values in the dataset
+  var PclassData = []
+  var PclassSurvived = []
+  var PclassSurvivedPercent = []
+  for (var i = 0; i < uniquePclass.length; i++) {
+    PclassData[i] = data.filter(function(d) { return d["Pclass"] == uniquePclass[i]});
+    PclassSurvived[i] = d3.sum(PclassData[i], function(d) {return parseFloat(d["Survived"])});
+    PclassSurvivedPercent[i] = PclassSurvived[i] / PclassData[i].length * 100
+  }
+
+  //Create an array containing data on the unique Embarked values in the dataset
+  var EmbarkedData = []
+  var EmbarkedSurvived = []
+  var EmbarkedSurvivedPercent = []
+  for (var i = 0; i < uniqueEmbarked.length; i++) {
+    EmbarkedData[i] = data.filter(function(d) { return d["Embarked"] == uniqueEmbarked[i]});
+    EmbarkedSurvived[i] = d3.sum(EmbarkedData[i], function(d) {return parseFloat(d["Survived"])});
+    EmbarkedSurvivedPercent[i] = EmbarkedSurvived[i] / EmbarkedData[i].length * 100
+  }
+
+  //Create object of all Suvival Data
+  var SurvivalData = [ { key: "Male", value: sexSurvivedPercent[0], survivedCount: sexSurvived[0]},
+                        { key: "Female", value: sexSurvivedPercent[1], survivedCount: sexSurvived[1]},
+                         { key: "1st Class", value: PclassSurvivedPercent[0], survivedCount: PclassSurvived[0]},
+                         { key: "2nd Class", value: PclassSurvivedPercent[1], survivedCount: PclassSurvived[1]},
+                         { key: "3rd Class", value: PclassSurvivedPercent[2], survivedCount: PclassSurvived[2]},
+                         { key: "Port S", value: EmbarkedSurvivedPercent[0], survivedCount: EmbarkedSurvived[0]},
+                         { key: "Port C", value: EmbarkedSurvivedPercent[1], survivedCount: EmbarkedSurvived[1]},
+                         { key: "Port Q", value: EmbarkedSurvivedPercent[2], survivedCount: EmbarkedSurvived[2]}
+                         ]
+
+  //Define key function, to be used when binding data
+  var key = function(d) {
+              return d.key;
+  };
+
+// Define the div for the tooltip
+var div = d3.select("body").append("div") 
+    .attr("class", "tooltip")       
+    .style("opacity", 0);
+
+  //Create SVG element
+  var svg = d3.select("body")
+               .append("svg")
+               .attr("width", w)
+               .attr("height", h);
+
+  //Create the circles on the svg element
+  var circles = svg.selectAll("circle")
+                   .data(SurvivalData, key)
+                   .enter()
+                   .append("circle");
+
+  //Assign the attributes to the circles
+  circles.attr("cx", function(d, i) {
+                       return (150 * i) + 100;
+                    })
+                   .attr("cy", h/2)
+                   .attr("r", function(d) {
+                        return Math.sqrt(d.value) * 8;
+                   })
+                   .attr("fill", "#AEC6CF")
+                   .on("mouseover", function(d) {   
+                      div.transition()    
+                         .duration(200)    
+                         .style("opacity", .9);    
+                      div.html(d.key + "<br/>"  + d3.format(".2f")(d.value) + "%" + "<br/>" + "Count: " + d.survivedCount)  
+                          .style("left", (d3.event.pageX) + "px")   
+                          .style("top", (d3.event.pageY) + "px");  
+                  })          
+                  .on("mouseout", function(d) {   
+                      div.transition()    
+                         .duration(500)    
+                         .style("opacity", 0); 
+        });
+
+  //Create labels
+  svg.selectAll("text")
+      .data(SurvivalData, key)    //Bind data with custom key function
+      .enter()
+      .append("text")
+      .text(function(d) {
+            return d.key
+        })
+      .attr("text-anchor", "middle")
+      .attr("x", function(d, i) {
+            return (150 * i) + 100;
+         })
+      .attr("y", h/2)
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "11px")
+      .attr("fill", "white");
+
+  //Add title
+  svg.append("text")
+      .attr("x", (w / 2))             
+      .attr("y", 50)
+      .attr("text-anchor", "middle")  
+      .style("font-size", "30px") 
+      .style("text-decoration", "underline")  
+      .text("Titanic Disaster Survival Rate")
+
+  svg.append("text")
+      .attr("x", (w / 2))             
+      .attr("y", 100)
+      .attr("text-anchor", "middle")  
+      .style("font-size", "30px") 
+      .style("text-decoration", "underline")  
+      .text("By Sex, Passenger Class and Port of Embarkation")
+
+  //Add text to describe meaning of Port letters
+  svg.append("text")
+      .attr("x", (w / 2))             
+      .attr("y", h - 50)
+      .attr("text-anchor", "middle")  
+      .style("font-size", "20px") 
+      .text("Port S = Southampton, Port C = Cherbourg, Post Q = Queenstown")
+
+  //Add lines between the sex, passenger class and port of embarkation to separate the categories
+  svg.append("line")
+  .attr("x1", (150 * 1) + 175)  
+  .attr("y1", 120)
+  .attr("x2", (150 * 1) + 175)    
+  .attr("y2", h - 100)
+  .style("stroke-width", 2)
+  .style("stroke", "black")
+  .style("fill", "none");
+
+  svg.append("line")
+  .attr("x1", (150 * 4) + 175)  
+  .attr("y1", 120)
+  .attr("x2", (150 * 4) + 175)    
+  .attr("y2", h - 100)
+  .style("stroke-width", 2)
+  .style("stroke", "black")
+  .style("fill", "none");
+}
+
+//Call the draw function
+d3.csv("titanic_data.csv", draw);
+
+        </script>
+                    </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html" rel="bookmark"
+                           title="Permalink to Financial Contributions to the 2016 Presidential Campaigns from NY">Financial Contributions to the 2016 Presidential Campaigns from NY</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2016-05-17T00:00:00+00:00">
                 Published: Tue 17 May 2016
@@ -31,7 +239,7 @@
 
 <p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
 
-</footer><!-- /.post-info --><p>========================================================</p>
+</footer><!-- /.post-info -->                <p>========================================================</p>
 <div class="highlight"><pre><span></span><span class="cp">#</span><span class="nf">Load</span><span class="x"> libraries</span>
 <span class="x">library(ggplot2)</span>
 <span class="x">library(lubridate)</span>
@@ -53,1114 +261,10 @@
 
 <span class="cp">##</span><span class="c"> [1] 186976     18</span><span class="x"></span>
 
-<span class="x">names(data)</span>
-
-<span class="cp">##</span><span class="c">  [1] &quot;cmte_id&quot;           &quot;cand_id&quot;           &quot;cand_nm&quot;          </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  [4] &quot;contbr_nm&quot;         &quot;contbr_city&quot;       &quot;contbr_st&quot;        </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  [7] &quot;contbr_zip&quot;        &quot;contbr_employer&quot;   &quot;contbr_occupation&quot;</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [10] &quot;contb_receipt_amt&quot; &quot;contb_receipt_dt&quot;  &quot;receipt_desc&quot;     </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [13] &quot;memo_cd&quot;           &quot;memo_text&quot;         &quot;form_tp&quot;          </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [16] &quot;file_num&quot;          &quot;tran_id&quot;           &quot;election_tp.&quot;</span><span class="x"></span>
-
-<span class="x">str(data)</span>
-
-<span class="cp">##</span><span class="c"> &#39;data.frame&#39;:    186976 obs. of  18 variables:</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ cmte_id          : Factor w/ 24 levels &quot;C00458844&quot;,&quot;C00500587&quot;,..: 7 7 7 7 7 7 7 7 7 7 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ cand_id          : Factor w/ 24 levels &quot;P00003392&quot;,&quot;P20002671&quot;,..: 12 12 12 12 12 12 12 12 12 12 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ cand_nm          : Factor w/ 24 levels &quot;Bush, Jeb&quot;,&quot;Carson, Benjamin S.&quot;,..: 19 19 19 19 19 19 19 19 19 19 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ contbr_nm        : Factor w/ 44582 levels &quot;AABO, TORBEN&quot;,..: 5418 2501 2505 2758 13532 13611 13611 3910 3912 40476 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ contbr_city      : Factor w/ 1475 levels &quot;&quot;,&quot; BROOKLYN&quot;,..: 1062 907 164 907 597 91 91 907 1116 164 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ contbr_st        : Factor w/ 1 level &quot;NY&quot;: 1 1 1 1 1 1 1 1 1 1 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ contbr_zip       : Factor w/ 34760 levels &quot;&quot;,&quot;`1136&quot;,&quot;0&quot;,..: 30963 433 18042 2536 28006 23274 23274 7059 33689 20679 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ contbr_employer  : Factor w/ 17710 levels &quot;&quot;,&quot; SPARTAN HEALTH SCIENCE UNIVERSITY&quot;,..: 3133 5841 4727 13900 14010 10897 10897 10897 13945 10897 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ contbr_occupation: Factor w/ 8123 levels &quot;&quot;,&quot; ADMINISTRATIVE ASSISTANT&quot;,..: 5776 3359 6609 2936 4766 6561 6561 4896 583 4896 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ contb_receipt_amt: num  50 250 50 50 12.5 10 10 50 31 15 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ contb_receipt_dt : POSIXct, format: &quot;2016-02-29&quot; &quot;2016-02-29&quot; ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ receipt_desc     : Factor w/ 22 levels &quot;&quot;,&quot; SEE REATTRIBUTION&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ memo_cd          : Factor w/ 2 levels &quot;&quot;,&quot;X&quot;: 1 1 1 1 1 1 1 1 1 1 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ memo_text        : Factor w/ 131 levels &quot;&quot;,&quot; SEE REATTRIBUTION&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ form_tp          : Factor w/ 3 levels &quot;SA17A&quot;,&quot;SA18&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ file_num         : int  1056899 1056899 1056899 1056899 1056899 1056899 1056899 1056899 1056899 1056899 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ tran_id          : Factor w/ 186708 levels &quot;A00136D649BB94F13985&quot;,..: 135800 137048 136618 136940 137691 136071 136209 136564 137978 143966 ...</span><span class="x"></span>
-<span class="cp">##</span><span class="c">  $ election_tp.     : Factor w/ 4 levels &quot;&quot;,&quot;G2016&quot;,&quot;P2016&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...</span><span class="x"></span>
-
-<span class="x">levels(data</span><span class="p">$</span><span class="nv">cand_nm</span><span class="x">)</span>
-
-<span class="cp">##</span><span class="c">  [1] &quot;Bush, Jeb&quot;                 &quot;Carson, Benjamin S.&quot;      </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  [3] &quot;Christie, Christopher J.&quot;  &quot;Clinton, Hillary Rodham&quot;  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  [5] &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot; &quot;Fiorina, Carly&quot;           </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  [7] &quot;Gilmore, James S IIII&quot;     &quot;Graham, Lindsey O.&quot;       </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  [9] &quot;Huckabee, Mike&quot;            &quot;Jindal, Bobby&quot;            </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [11] &quot;Johnson, Gary&quot;             &quot;Kasich, John R.&quot;          </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [13] &quot;Lessig, Lawrence&quot;          &quot;O&#39;Malley, Martin Joseph&quot;  </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [15] &quot;Pataki, George E.&quot;         &quot;Paul, Rand&quot;               </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [17] &quot;Perry, James R. (Rick)&quot;    &quot;Rubio, Marco&quot;             </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [19] &quot;Sanders, Bernard&quot;          &quot;Santorum, Richard J.&quot;     </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [21] &quot;Stein, Jill&quot;               &quot;Trump, Donald J.&quot;         </span><span class="x"></span>
-<span class="cp">##</span><span class="c"> [23] &quot;Walker, Scott&quot;             &quot;Webb, James Henry Jr.&quot;</span><span class="x"></span>
-
-<span class="x">summary(data)</span>
-
-<span class="cp">##</span><span class="c">       cmte_id           cand_id                           cand_nm     </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  C00577130:95454   P60007168:95454   Sanders, Bernard         :95454  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  C00575795:59789   P00003392:59789   Clinton, Hillary Rodham  :59789  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  C00574624:11764   P60006111:11764   Cruz, Rafael Edward &#39;Ted&#39;:11764  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  C00573519: 6614   P60005915: 6614   Carson, Benjamin S.      : 6614  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  C00458844: 4678   P60006723: 4678   Rubio, Marco             : 4678  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  C00579458: 2419   P60008059: 2419   Bush, Jeb                : 2419  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  (Other)  : 6258   (Other)  : 6258   (Other)                  : 6258  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">                     contbr_nm         contbr_city    contbr_st  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  SWIRE, JAMES BENNETT MR.:   143   NEW YORK :55572   NY:186976  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  SWIRE, JAMES B. MR.     :   136   BROOKLYN :22940              </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  PERE, RENE              :   120   BRONX    : 3720              </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  FISHER, MICHAEL         :   115   ROCHESTER: 3083              </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  DOWD, KATIE             :   113   BUFFALO  : 2339              </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  DYCKMAN, MICHAEL MR.    :   107   ITHACA   : 2170              </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  (Other)                 :186242   (Other)  :97152              </span><span class="x"></span>
-<span class="cp">##</span><span class="c">      contbr_zip          contbr_employer      contbr_occupation </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  108052128:   355   RETIRED      : 14464   NOT EMPLOYED: 24054  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  10024    :   235   NONE         : 14243   RETIRED     : 21165  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  10023    :   195   NOT EMPLOYED : 13272   ATTORNEY    :  6836  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  10025    :   189   SELF-EMPLOYED: 11155   TEACHER     :  4030  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  10128    :   186   N/A          : 10520   PROFESSOR   :  3274  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  11377    :   168   (Other)      :123176   (Other)     :127588  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  (Other)  :185648   NA&#39;s         :   146   NA&#39;s        :    29  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  contb_receipt_amt contb_receipt_dt             </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Min.   :  -5400   Min.   :2013-10-11 00:00:00  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  1st Qu.:     15   1st Qu.:2015-11-30 00:00:00  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Median :     35   Median :2016-02-10 00:00:00  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Mean   :    290   Mean   :2016-01-08 05:43:43  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  3rd Qu.:    100   3rd Qu.:2016-03-09 00:00:00  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Max.   :4904861   Max.   :2016-03-31 00:00:00  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">                                                 </span><span class="x"></span>
-<span class="cp">##</span><span class="c">                      receipt_desc    memo_cd   </span><span class="x"></span>
-<span class="cp">##</span><span class="c">                            :184468    :178404  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Refund                    :  1284   X:  8572  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  REDESIGNATION TO GENERAL  :   248             </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  REDESIGNATION FROM PRIMARY:   246             </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  REATTRIBUTION FROM SPOUSE :   145             </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  REATTRIBUTION TO SPOUSE   :   145             </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  (Other)                   :   440             </span><span class="x"></span>
-<span class="cp">##</span><span class="c">                                memo_text      form_tp      </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  * EARMARKED CONTRIBUTION: SEE BELOW:90567   SA17A:178223  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">                                     :87099   SA18 :  7469  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  * HILLARY VICTORY FUND             : 7368   SB28A:  1284  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  EARMARKED FROM MAKE DC LISTEN      :  251                 </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  REDESIGNATION TO GENERAL           :  248                 </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  REDESIGNATION FROM PRIMARY         :  246                 </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  (Other)                            : 1197                 </span><span class="x"></span>
-<span class="cp">##</span><span class="c">     file_num                       tran_id       election_tp.  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Min.   :1003942   A7A8C99C570A941E08F1:     2        :    49  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  1st Qu.:1056807   A8E6DF66C036B4EA89D5:     2   G2016:  1425  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Median :1057425   C1013282            :     2   P2016:185499  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Mean   :1056172   C1014914            :     2   P2020:     3  </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  3rd Qu.:1066337   C1022783            :     2                 </span><span class="x"></span>
-<span class="cp">##</span><span class="c">  Max.   :1066448   C1023143            :     2                 </span><span class="x"></span>
-<span class="cp">##</span><span class="c">                    (Other)             :186964</span><span class="x"></span>
-</pre></div>
-
-
-<p>The dataset contains 186,976 observations with 18 dimensions. There are
-24 distinct Presidential Candidates to whom the contributions were made.
-Majority of the number of contibutions were made to Bernard Sanders,
-followed by Hillary Clinton and Ted Cruz. Mr. James Bennett Swire made
-the most number of contributions. Those not employed and retired made
-more contributions than contributors from any one particular occupation.
-The average contibution amount was \$290, with a maximum of
-\$4,904,861.<br>
-Let's first look at the distribution of the contributions amounts.</p>
-<div class="highlight"><pre><span></span>qplot(contb_receipt_amt, data = data, binwidth = 100000)
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-1-1.png"><!-- --></p>
-<p>This plot does not give much information since the contribution range is
-very large. Since the median and mean contribution is \$35 and \$290,
-respectively, we can gain more insight by narrowing the range of the
-distribution between \$0 to \$1000.</p>
-<div class="highlight"><pre><span></span>qplot(contb_receipt_amt, data = data, binwidth = 50) +
-      coord_cartesian(xlim = c(0,1000))
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-2-1.png"><!-- --></p>
-<p>Even with this much smaller range, the dispsersion is quite large. By
-looking at this range, we can conclude that we have a right-skewed
-distribution.Another way to get a better understanding of contibution
-amounts is to transform the data using a log transform and narrowing our
-view to where majority of the values lie.</p>
-<div class="highlight"><pre><span></span>qplot(contb_receipt_amt, data = subset(data, contb_receipt_amt &gt; 0), 
-      binwidth = 0.2) + 
-      scale_x_log10(breaks = c(10,100,1000,10000)) + 
-      coord_cartesian(xlim = c(1,10000))
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-3-1.png"><!-- --></p>
-<p>Although not perfectly normal, the log transformed plot is much less
-skewed.</p>
-<h1>Univariate Analysis</h1>
-<h3>What is the structure of your dataset?</h3>
-<p>There are 186,976 observations in the dataset with 18 features:<br>
-Committee ID<br>
-Candidate ID<br>
-Candidate Name<br>
-Contibutor Name<br>
-Contributor City<br>
-Contributor State<br>
-Contributor Zip Code<br>
-Contributor Employer<br>
-Contributor Occupation<br>
-Contribution Receipt Amount<br>
-Contribution Receipt Date<br>
-Receipt Description<br>
-Memo Code<br>
-Memo Text<br>
-Form Type<br>
-File Number<br>
-Transaction ID<br>
-Election Type / Primary General Indicator<br>
-All of these are factors except for the Contribution Receipt Amount,
-Contribution Receipt Date and File Number.</p>
-<h3>What is/are the main feature(s) of interest in your dataset?</h3>
-<p>The main features in the dataset are the Candidate Name and Contribution
-Receipt Amount.<br>
-I am interested in seeing which candidate got the most and largest
-contributions.</p>
-<h3>What other features in the dataset do you think will help support your</h3>
-<h3>investigation into your feature(s) of interest?</h3>
-<p>Other features in the dataset that are of particular interest are the
-Contributor City and Occupation, and Contribution Receipt Date. I am
-interested in seeing if there are any recurring Contributor Occupations
-contributing to any particular candidate as well as the trends over
-time.</p>
-<h3>Did you create any new variables from existing variables in the dataset?</h3>
-<p>I did not create any new variables in the dataset.</p>
-<h3>Of the features you investigated, were there any unusual distributions?</h3>
-<h3>Did you perform any operations on the data to tidy, adjust,</h3>
-<h3>or change the form of the data?</h3>
-<h3>If so, why did you do this?</h3>
-<p>I log-transformed the right-skewed Contribution Receipt Amount. I did
-this because I noticed that most of the values were very small (under
-\$100), but there were some values that extended well beyond \$1M and
-several values in between the \$100 and \$1M range. Log-transforming the
-data allowed me to see all the values in one graph, but this resulted in
-the refunded values being left out.</p>
-<h1>Bivariate Plots Section</h1>
-<p>Before looking into how the contributions are divided up amongst the
-demographics and who they going to,let's first look at total
-contributions to all candidates by date.<br>
-The following plot aggregates total contributions from all contributors
-to all candidates by month.</p>
-<div class="highlight"><pre><span></span><span class="cp">#</span><span class="nf">Subset</span><span class="x"> data containing date and contribution amount columns only</span>
-<span class="x">date_cont_data = data[,c(&quot;contb_receipt_dt&quot;, &quot;contb_receipt_amt&quot;)]</span>
-<span class="cp">#</span><span class="nf">Floor</span><span class="x"> the dates to the first of each month</span>
-<span class="x">floored_data = date_cont_data</span>
-<span class="x">floored_data</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x"> = floor_date(floored_data</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x">, </span>
-<span class="x">                                           &quot;month&quot;)</span>
-<span class="cp">#</span><span class="nf">Aggregate</span><span class="x"> the contribution amounts based on contribution date</span>
-<span class="x">agg_date_data = aggregate(contb_receipt_amt ~ contb_receipt_dt, </span>
-<span class="x">                          data = floored_data, FUN = sum)</span>
-<span class="x">ggplot(data = agg_date_data, aes(x = contb_receipt_dt, </span>
-<span class="x">                                 y = contb_receipt_amt)) + </span>
-<span class="x">        geom_line()</span>
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-4-1.png"><!-- --></p>
-<p>As one would guess, the total contributions have generally increased per
-month as we get closer to the election. Since the contritions made
-before Jan-2015 were minimal, it would be more appropriate to leave out
-the dates before Jan-2015.</p>
-<div class="highlight"><pre><span></span>ggplot(data = agg_date_data, aes(x = contb_receipt_dt, 
-                                 y = contb_receipt_amt)) + 
-  geom_line() +
-  coord_cartesian(xlim = c(ymd(&quot;2015-01-01&quot;), ymd(&quot;2016-03-01&quot;)))
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-5-1.png"><!-- --></p>
-<p>We see that overall trend is an increase in contributions with time,
-with some dips in between. This is expected since we expect the
-contributions will increase as the election approaches but each month's
-contributions do not necessarily have t exceed the contributions made in
-the previous months.<br>
-Next, let's see if there is any correlation in the contributions made to
-the top 6 candidates.</p>
-<div class="highlight"><pre><span></span><span class="cp">#</span><span class="nf">Subset</span><span class="x"> data containing candidate name, contribution date and amount</span>
-<span class="x">cand_date_cont_data = data[,c(&quot;cand_nm&quot;, &quot;contb_receipt_dt&quot;, </span>
-<span class="x">                              &quot;contb_receipt_amt&quot;)]</span>
-<span class="cp">#</span><span class="nf">Floor</span><span class="x"> the dates to the first of each month</span>
-<span class="x">floored_data = cand_date_cont_data</span>
-<span class="x">floored_data</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x"> = floor_date(floored_data</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x">, </span>
-<span class="x">                                           &quot;month&quot;)</span>
-<span class="cp">#</span><span class="nf">Aggregate</span><span class="x"> the contribtution amounts based on candidate name </span>
-<span class="cp">#</span><span class="nf">and</span><span class="x"> contribution date</span>
-<span class="x">agg_date_data = aggregate(contb_receipt_amt ~ cand_nm + contb_receipt_dt, </span>
-<span class="x">                          data = floored_data, FUN = sum)</span>
-<span class="cp">#</span><span class="nf">Subset</span><span class="x"> the aggregated data for desired candidates</span>
-<span class="x">agg_date_subset_data = subset(agg_date_data, cand_nm %in% </span>
-<span class="x">                                        c(&quot;Sanders, Bernard&quot;, </span>
-<span class="x">                                        &quot;Clinton, Hillary Rodham&quot;,</span>
-<span class="x">                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, </span>
-<span class="x">                                        &quot;Carson, Benjamin S.&quot;,</span>
-<span class="x">                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;))</span>
-<span class="cp">#</span><span class="nf">Spread</span><span class="x"> the candidate name across multiple columns</span>
-<span class="x">agg_date_subset_data_spread = spread(agg_date_subset_data, cand_nm, </span>
-<span class="x">                                     contb_receipt_amt)</span>
-<span class="cp">#</span><span class="nf">Remove</span><span class="x"> the date column from the dataset</span>
-<span class="x">agg_date_subset_data_spread_date_removed = </span>
-<span class="x">                    subset(agg_date_subset_data_spread, </span>
-<span class="x">                    select = -c(contb_receipt_dt))</span>
-<span class="cp">#</span><span class="nf">Print</span><span class="x"> correlation table</span>
-<span class="x">cor(agg_date_subset_data_spread_date_removed, use = &quot;complete&quot;)</span>
-
-<span class="cp">##</span><span class="c">                            Bush, Jeb Carson, Benjamin S.</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Bush, Jeb                  1.0000000         -0.20197318</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Carson, Benjamin S.       -0.2019732          1.00000000</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Clinton, Hillary Rodham   -0.5183566         -0.33024620</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Cruz, Rafael Edward &#39;Ted&#39; -0.3429602         -0.21621087</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Rubio, Marco              -0.2978618          0.09202251</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Sanders, Bernard          -0.6198756         -0.28592116</span><span class="x"></span>
-<span class="cp">##</span><span class="c">                           Clinton, Hillary Rodham</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Bush, Jeb                              -0.5183566</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Carson, Benjamin S.                    -0.3302462</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Clinton, Hillary Rodham                 1.0000000</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Cruz, Rafael Edward &#39;Ted&#39;               0.8615447</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Rubio, Marco                            0.1278609</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Sanders, Bernard                        0.9250624</span><span class="x"></span>
-<span class="cp">##</span><span class="c">                           Cruz, Rafael Edward &#39;Ted&#39; Rubio, Marco</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Bush, Jeb                                -0.3429602  -0.29786181</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Carson, Benjamin S.                      -0.2162109   0.09202251</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Clinton, Hillary Rodham                   0.8615447   0.12786086</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Cruz, Rafael Edward &#39;Ted&#39;                 1.0000000   0.10303551</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Rubio, Marco                              0.1030355   1.00000000</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Sanders, Bernard                          0.7630061  -0.15426850</span><span class="x"></span>
-<span class="cp">##</span><span class="c">                           Sanders, Bernard</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Bush, Jeb                       -0.6198756</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Carson, Benjamin S.             -0.2859212</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Clinton, Hillary Rodham          0.9250624</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Cruz, Rafael Edward &#39;Ted&#39;        0.7630061</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Rubio, Marco                    -0.1542685</span><span class="x"></span>
-<span class="cp">##</span><span class="c"> Sanders, Bernard                 1.0000000</span><span class="x"></span>
-
-<span class="cp">#</span><span class="nf">Generate</span><span class="x"> correlation pairs graph</span>
-<span class="x">pairs.panels(agg_date_subset_data_spread_date_removed)</span>
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-6-1.png"><!-- --></p>
-<p>The largest positive correlation for the contributions is with Clinton
-and Sanders. Since they are both Democrats, it may be that Democrat
-supporters started donating to their favourite candidates at the same
-time. Other significant positive correlations are between Clinton and
-Cruz, as well as Cruz and Sanders.<br>
-Let's look at the contribution trends for Clinton and Sanders
-individually in order to better understand the correlation between the
-two.</p>
-<div class="highlight"><pre><span></span><span class="cp">#</span><span class="nf">Subset</span><span class="x"> data for desired candidates</span>
-<span class="x">data_subset = subset(data, cand_nm == c(&quot;Sanders, Bernard&quot;, </span>
-<span class="x">                                        &quot;Clinton, Hillary Rodham&quot;))</span>
-<span class="cp">#</span><span class="nf">Floor</span><span class="x"> the dates to the first of each month</span>
-<span class="x">data_subset</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x"> = floor_date(data_subset</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x">, </span>
-<span class="x">                                          &quot;month&quot;)</span>
-<span class="cp">#</span><span class="nf">Group</span><span class="x"> the data by candidate</span>
-<span class="x">date_candidate_groups = group_by(data_subset, contb_receipt_dt, cand_nm)</span>
-<span class="cp">#</span><span class="nf">Summarise</span><span class="x"> data to get total contribution amount for each candidate</span>
-<span class="x">date_candidate_data = summarise(date_candidate_groups, </span>
-<span class="x">                                total_cont = sum(contb_receipt_amt))</span>
-<span class="x">g1 = ggplot(data = subset(date_candidate_data, </span>
-<span class="x">                          cand_nm == &quot;Clinton, Hillary Rodham&quot;), </span>
-<span class="x">                          aes(x = contb_receipt_dt, y = total_cont)) + </span>
-<span class="x">     geom_line()</span>
-<span class="x">g2 = ggplot(data = subset(date_candidate_data, </span>
-<span class="x">                          cand_nm == &quot;Sanders, Bernard&quot;), </span>
-<span class="x">                          aes(x = contb_receipt_dt, y = total_cont)) + </span>
-<span class="x">     geom_line()</span>
-<span class="x">grid.arrange(g1,g2,ncol = 1)</span>
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-7-1.png"><!-- --></p>
-<p>The large correlation between Clinton and Sanders is mainly driven by
-the trends prior to Jan-2016.Around Jan-2016, the trends shift towards
-having a negative correlation. Contributions for Sanders begin to rise
-very quickly and begin to decrease for Clinton very quickly as well.<br>
-Next lets take a look at a scatterplot for contributions for Clinton and
-Sanders.</p>
-<div class="highlight"><pre><span></span>#Spread the candidate name across multiple columns
-date_candidate_data_spread = spread(date_candidate_data, cand_nm, 
-                                    total_cont)
-#Assign names to each column
-names(date_candidate_data_spread) = c(&quot;Date&quot;, &quot;Clinton&quot;, &quot;Sanders&quot;)
-ggplot(data = date_candidate_data_spread, aes(x = Clinton, y = Sanders)) + 
-  geom_point()
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-8-1.png"><!-- --></p>
-<p>If the correlation between the 2 candidates was exactly 1, we would see
-all the points fall in a straight line going from the bottom-left corner
-of the plot to the top-right. In this case however, the points do not
-fall on a straight line, but by looking at the plot, one can conclude
-the relationship between the contributions made to Clinton and Sanders
-has a positive correlation.<br>
-The following boxplots were plotted in order to get a better sense of
-how the contribution amounts are distributed amongst the 6 candidates.
-Also displayed below are the Interquartile Range for each candidate.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;, 
-                                          &quot;Clinton, Hillary Rodham&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;))
-ggplot(data = data_subset, aes(x = cand_nm, y = contb_receipt_amt)) + 
-  geom_boxplot() +
-  coord_cartesian(ylim = c(0,6000)) + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-</pre></div>
-
-
-<p><img alt="" src="/images/Bivariate_Plots-1.png"><!-- --></p>
-<div class="highlight"><pre><span></span><span class="x">print(&quot;Bush, Jeb&quot;)</span>
-
-<span class="cp">##</span><span class="c"> [1] &quot;Bush, Jeb&quot;</span><span class="x"></span>
-
-<span class="x">IQR(subset(data_subset, </span>
-<span class="x">           cand_nm == &quot;Bush, Jeb&quot;)</span><span class="p">$</span><span class="nv">contb_receipt_amt</span><span class="x">)</span>
-
-<span class="cp">##</span><span class="c"> [1] 2600</span><span class="x"></span>
-
-<span class="x">print(&quot;Carson, Benjamin S.&quot;)</span>
-
-<span class="cp">##</span><span class="c"> [1] &quot;Carson, Benjamin S.&quot;</span><span class="x"></span>
-
-<span class="x">IQR(subset(data_subset, </span>
-<span class="x">           cand_nm == &quot;Carson, Benjamin S.&quot;)</span><span class="p">$</span><span class="nv">contb_receipt_amt</span><span class="x">)</span>
-
-<span class="cp">##</span><span class="c"> [1] 75</span><span class="x"></span>
-
-<span class="x">print(&quot;Clinton, Hillary Rodham&quot;)</span>
-
-<span class="cp">##</span><span class="c"> [1] &quot;Clinton, Hillary Rodham&quot;</span><span class="x"></span>
-
-<span class="x">IQR(subset(data_subset, </span>
-<span class="x">           cand_nm == &quot;Clinton, Hillary Rodham&quot;)</span><span class="p">$</span><span class="nv">contb_receipt_amt</span><span class="x">)</span>
-
-<span class="cp">##</span><span class="c"> [1] 225</span><span class="x"></span>
-
-<span class="x">print(&quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;)</span>
-
-<span class="cp">##</span><span class="c"> [1] &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;</span><span class="x"></span>
-
-<span class="x">IQR(subset(data_subset, </span>
-<span class="x">           cand_nm == &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;)</span><span class="p">$</span><span class="nv">contb_receipt_amt</span><span class="x">)</span>
-
-<span class="cp">##</span><span class="c"> [1] 75</span><span class="x"></span>
-
-<span class="x">print(&quot;Rubio, Marco&quot;)</span>
-
-<span class="cp">##</span><span class="c"> [1] &quot;Rubio, Marco&quot;</span><span class="x"></span>
-
-<span class="x">IQR(subset(data_subset, </span>
-<span class="x">           cand_nm == &quot;Rubio, Marco&quot;)</span><span class="p">$</span><span class="nv">contb_receipt_amt</span><span class="x">)</span>
-
-<span class="cp">##</span><span class="c"> [1] 675</span><span class="x"></span>
-
-<span class="x">print(&quot;Sanders, Bernard&quot;)</span>
-
-<span class="cp">##</span><span class="c"> [1] &quot;Sanders, Bernard&quot;</span><span class="x"></span>
-
-<span class="x">IQR(subset(data_subset, </span>
-<span class="x">           cand_nm == &quot;Sanders, Bernard&quot;)</span><span class="p">$</span><span class="nv">contb_receipt_amt</span><span class="x">)</span>
-
-<span class="cp">##</span><span class="c"> [1] 35</span><span class="x"></span>
-</pre></div>
-
-
-<p>Because of the very large range of contribution amounts, the y-axis of
-the above plot was restricted between \$0 and \$6,000. Also displayed is
-the interquartile range for each candidate:<br>
-Sanders: \$35, Clinton: \$225, Cruz: \$75, Carson: \$75, Rubio: \$975,
-Bush: \$2600<br>
-Bush by far has the largest interquartile range whereas Sanders, Cruz
-and Carson are much smaller in comparison.<br>
-Next we explore contibution amounts based on occupations. The dataset
-summary above tells us that most number of contribution came from those
-not employed, retired, Attorneys, Teachers and Professors. Let's explore
-the contribution amounts from those occupations.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired occupations
-data_subset = subset(data, contbr_occupation %in% c(&quot;NOT EMPLOYED&quot;, 
-                                                    &quot;RETIRED&quot;, &quot;ATTORNY&quot;,
-                                                  &quot;TEACHER&quot;, &quot;PROFESSOR&quot;))
-
-ggplot(data = data_subset, aes(x = contbr_occupation, y = contb_receipt_amt)) +
-  geom_boxplot() +
-  coord_cartesian(ylim = c(-100,1000))
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-9-1.png"><!-- --></p>
-<p>From the boxplot above, we can see that Professors had the largest
-interquartile range. By visual inspection, it appears that the retired
-demographic had the largest median as well as the most refunds.<br>
-It would be interesting to see who most of the contributions went to
-from each of the above mentioned occupations and candidates.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;, 
-                                          &quot;Clinton, Hillary Rodham&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;) &amp; 
-                                        contbr_occupation %in% c(&quot;NOT EMPLOYED&quot;, 
-                                                                 &quot;RETIRED&quot;, 
-                                                              &quot;ATTORNY&quot;, 
-                                                              &quot;TEACHER&quot;, 
-                                                              &quot;PROFESSOR&quot;))
-#Group data by candidate and occupation
-occupation_candidate_groups = group_by(data_subset, 
-                                       contbr_occupation, cand_nm)
-#Get sum of contribution amount for each combination of candidate 
-#and occupation
-occupation_candidate_data = summarise(occupation_candidate_groups, 
-                                      contsum = sum(contb_receipt_amt))
-#Spread occupation into multiple columns
-topcontdata = spread(occupation_candidate_data, 
-                     contbr_occupation, contsum)
-topcontdata
-
-## Source: local data frame [6 x 5]
-## 
-##                     cand_nm NOT EMPLOYED PROFESSOR   RETIRED   TEACHER
-##                      (fctr)        (dbl)     (dbl)     (dbl)     (dbl)
-## 1                 Bush, Jeb           NA    3200.0  399274.3   8125.00
-## 2       Carson, Benjamin S.           NA     350.0  257266.6   2697.00
-## 3   Clinton, Hillary Rodham     338744.4  224731.8 1530139.2 162532.96
-## 4 Cruz, Rafael Edward &#39;Ted&#39;           NA    1950.0  326128.5   5940.00
-## 5              Rubio, Marco           NA    4650.0  241481.6  16865.15
-## 6          Sanders, Bernard    1351284.8  137505.9  182104.6 140516.64
-</pre></div>
-
-
-<p>Out of the 6 top candidates, Clinton and Sanders were the only 2
-candidates to get contributions from all of the above mentioned
-occupations. Those not employed only contributed to either Clinton or
-Sanders.</p>
-<h1>Bivariate Analysis</h1>
-<h3>Talk about some of the relationships you observed in this part of</h3>
-<h3>the investigation. How did the feature(s) of interest vary with</h3>
-<h3>other features in the dataset?</h3>
-<p>The first relationship that I observed in this part of the investigation
-involved looking at the contributions made by date. Unsurprisingly, the
-total amount of contributions trended positively with time. Other
-relationships that I observed in this part of the investigation involved
-how the contribution amount varied amongst the candidates and the amount
-that different occupations were contributing to the top candidates. It
-turned out that variation in the contribution amount was drastically
-different for Bush than it was for Sanders. In addition, it was
-interesting to see that those not employed only made contributions to
-Clinton and Sanders.</p>
-<h3>Did you observe any interesting relationships between the other</h3>
-<h3>features (not the main feature(s) of interest)?</h3>
-<p>It was interesting to see that those not employed only made
-contributions to Clinton and Sanders who are both running as Democrats
-(out of the top 6). Those not employed made no contributions to any of
-the Republic candidates (out of the top 6).</p>
-<h3>What was the strongest relationship you found?</h3>
-<p>The strongest relationship I found was in contributions made to Clinton
-and Sanders. This relationship however, begins to break down after
-Jan-2016 and the trend begins to move in opposite direction for the
-candidates.</p>
-<h1>Multivariate Plots Section</h1>
-<p>Next we explore the sum of the contibution amounts for each of the top 6
-candidates all on the same plot.<br>
-Note: the plot only displays contibutions between Jan. 2015 and Mar.
-2016.</p>
-<div class="highlight"><pre><span></span><span class="cp">#</span><span class="nf">Subset</span><span class="x"> data for desired candidates</span>
-<span class="x">data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;, </span>
-<span class="x">                                          &quot;Clinton, Hillary Rodham&quot;,</span>
-<span class="x">                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, </span>
-<span class="x">                                        &quot;Carson, Benjamin S.&quot;,</span>
-<span class="x">                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;))</span>
-<span class="cp">#</span><span class="nf">Floor</span><span class="x"> the dates to the first of each month</span>
-<span class="x">data_subset</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x"> = floor_date(data_subset</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x">, </span>
-<span class="x">                                          &quot;month&quot;)</span>
-<span class="cp">#</span><span class="nf">Group</span><span class="x"> data by contribution date and candidate name</span>
-<span class="x">date_candidate_groups = group_by(data_subset, contb_receipt_dt, </span>
-<span class="x">                                 cand_nm)</span>
-<span class="cp">#</span><span class="nf">Get</span><span class="x"> sum of contribution amount for each combination of date </span>
-<span class="cp">#</span><span class="nf">and</span><span class="x"> candidate</span>
-<span class="x">date_candidate_data = summarise(date_candidate_groups, </span>
-<span class="x">                                total_cont = sum(contb_receipt_amt))</span>
-<span class="x">ggplot(data = date_candidate_data, aes(x = contb_receipt_dt, </span>
-<span class="x">                                       y = total_cont, </span>
-<span class="x">                                       color = cand_nm)) + </span>
-<span class="x">  geom_line() + </span>
-<span class="x">  coord_cartesian(ylim = c(0,1000000)) + </span>
-<span class="x">  coord_cartesian(xlim = c(ymd(&quot;2015-01-01&quot;), </span>
-<span class="x">                           ymd(&quot;2016-03-01&quot;)))</span>
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-11-1.png"><!-- --></p>
-<p>It's quite clear that contributions made to Clinton are much larger than
-the rest of the candidates. Before we explore this particular<br>
-candidate in more detail, let's first look at the other 5 candidates in
-a separate plot.</p>
-<div class="highlight"><pre><span></span><span class="cp">#</span><span class="nf">Subset</span><span class="x"> data for desired candidates</span>
-<span class="x">data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;,</span>
-<span class="x">                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, </span>
-<span class="x">                                        &quot;Carson, Benjamin S.&quot;,</span>
-<span class="x">                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;))</span>
-<span class="cp">#</span><span class="nf">Floor</span><span class="x"> the dates to the first of each month</span>
-<span class="x">data_subset</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x"> = floor_date(data_subset</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x">, </span>
-<span class="x">                                          &quot;month&quot;)</span>
-<span class="cp">#</span><span class="nf">Group</span><span class="x"> data by contribution date and candidate name</span>
-<span class="x">date_candidate_groups = group_by(data_subset, contb_receipt_dt, </span>
-<span class="x">                                 cand_nm)</span>
-<span class="cp">#</span><span class="nf">Get</span><span class="x"> sum of contribution amount for each combination of date </span>
-<span class="cp">#</span><span class="nf">and</span><span class="x"> candidate</span>
-<span class="x">date_candidate_data = summarise(date_candidate_groups, </span>
-<span class="x">                                total_cont = sum(contb_receipt_amt))</span>
-<span class="x">ggplot(data = date_candidate_data, aes(x = contb_receipt_dt, </span>
-<span class="x">                                       y = total_cont, </span>
-<span class="x">                                       color = cand_nm)) + </span>
-<span class="x">  geom_line() + </span>
-<span class="x">  coord_cartesian(ylim = c(0,5000000)) + </span>
-<span class="x">  coord_cartesian(xlim = c(ymd(&quot;2015-01-01&quot;), </span>
-<span class="x">                           ymd(&quot;2016-03-01&quot;)))</span>
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-12-1.png"><!-- --></p>
-<p>This plot now gives us a better view into the trend in contribution
-amounts for the other candidates. The first 2 things that jump out
-are:<br>
-1. Contribution amounts increasing at a very fast pace for Sanders<br>
-2. Contribution amounts decreasing at a very fast face for Bush<br>
-Contribution amounts for the other candidates seem to be relatively
-stable except for a couple of really good months Rubio had towards the
-end of 2015.<br>
-Since Clinton is an exceptional case, it may be worthwhile to dig a
-little deeper into where her contributions are coming from.<br>
-Let`s first look at the summary of the data which contains only
-contributions made to Clinton.</p>
-<div class="highlight"><pre><span></span>data_subset = subset(data, cand_nm %in% c(&quot;Clinton, Hillary Rodham&quot;))
-summary(data_subset)
-
-##       cmte_id           cand_id                           cand_nm     
-##  C00575795:59789   P00003392:59789   Clinton, Hillary Rodham  :59789  
-##  C00458844:    0   P20002671:    0   Bush, Jeb                :    0  
-##  C00500587:    0   P20002721:    0   Carson, Benjamin S.      :    0  
-##  C00573519:    0   P20003281:    0   Christie, Christopher J. :    0  
-##  C00574624:    0   P20003984:    0   Cruz, Rafael Edward &#39;Ted&#39;:    0  
-##  C00575449:    0   P40003576:    0   Fiorina, Carly           :    0  
-##  (Other)  :    0   (Other)  :    0   (Other)                  :    0  
-##             contbr_nm            contbr_city    contbr_st 
-##  FISHER, MICHAEL :  115   NEW YORK     :26518   NY:59789  
-##  DOWD, KATIE     :  113   BROOKLYN     : 7339             
-##  TIDD, FRANCIS   :   93   BRONX        : 1254             
-##  NAZIR, MOHAMMAD :   90   ROCHESTER    :  710             
-##  RICHERT, RUTHANN:   85   BUFFALO      :  594             
-##  GRODY, GORDON   :   83   STATEN ISLAND:  504             
-##  (Other)         :59210   (Other)      :22870             
-##      contbr_zip                 contbr_employer 
-##  10024    :  191   N/A                  :10168  
-##  112012776:  157   SELF-EMPLOYED        : 8708  
-##  10025    :  143   RETIRED              : 2854  
-##  10011    :  129   INFORMATION REQUESTED: 1844  
-##  10128    :  125   HILLARY FOR AMERICA  :  940  
-##  100117200:  113   (Other)              :35272  
-##  (Other)  :58931   NA&#39;s                 :    3  
-##              contbr_occupation contb_receipt_amt
-##  RETIRED              : 7265   Min.   :  -5400  
-##  ATTORNEY             : 3635   1st Qu.:     25  
-##  INFORMATION REQUESTED: 1935   Median :     50  
-##  LAWYER               : 1480   Mean   :    610  
-##  NOT EMPLOYED         : 1307   3rd Qu.:    250  
-##  (Other)              :44164   Max.   :4904861  
-##  NA&#39;s                 :    3                    
-##  contb_receipt_dt             
-##  Min.   :2015-04-12 00:00:00  
-##  1st Qu.:2015-10-22 00:00:00  
-##  Median :2016-02-02 00:00:00  
-##  Mean   :2015-12-21 12:01:59  
-##  3rd Qu.:2016-03-03 00:00:00  
-##  Max.   :2016-03-31 00:00:00  
-##                               
-##                                                            receipt_desc  
-##                                                                  :59176  
-##  Refund                                                          :  613  
-##   SEE REATTRIBUTION                                              :    0  
-##  * EARMARKED CONTRIBUTION: SEE BELOW REATTRIBUTION/REFUND PENDING:    0  
-##  REATTRIBUTION / REDESIGNATION REQUESTED                         :    0  
-##  REATTRIBUTION / REDESIGNATION REQUESTED (AUTOMATIC)             :    0  
-##  (Other)                                                         :    0  
-##  memo_cd                                     memo_text      form_tp     
-##   :52289                                          :51936   SA17A:51802  
-##  X: 7500   * HILLARY VICTORY FUND                 : 7368   SA18 : 7374  
-##            * EARMARKED CONTRIBUTION: SEE BELOW    :  255   SB28A:  613  
-##            *BEST EFFORTS UPDATE                   :   69                
-##            *                                      :   61                
-##            PARTNERSHIP--PARTNERS BELOW IF ITEMIZED:   27                
-##            (Other)                                :   73                
-##     file_num           tran_id      election_tp. 
-##  Min.   :1024052   C1013282:    2        :    0  
-##  1st Qu.:1056807   C1014914:    2   G2016:  992  
-##  Median :1057425   C1022783:    2   P2016:58797  
-##  Mean   :1054254   C1023143:    2   P2020:    0  
-##  3rd Qu.:1066337   C1024890:    2                
-##  Max.   :1066337   C1025546:    2                
-##                    (Other) :59777
-</pre></div>
-
-
-<p>Most of the number of contributions came from Zip Code 10024, which is
-(unsurprisingly) a wealthy neighbourhood in Manhattan.<br>
-Below is a graph of the total contribution amounts made to Clinton by
-city and split by occupation.</p>
-<div class="highlight"><pre><span></span>data_subset = subset(data, cand_nm %in% c(&quot;Clinton, Hillary Rodham&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, 
-                                          &quot;BUFFALO&quot;, &quot;STATEN ISLAND&quot;) &amp;
-                       contbr_occupation %in% c(&quot;RETIRED&quot;, &quot;ATTORNEY&quot;, 
-                                                &quot;LAWYER&quot;, &quot;NOT EMPLOYED&quot;)) 
-ggplot(data = data_subset, aes(x = contbr_city, 
-                               y = contb_receipt_amt, 
-                               color = contbr_occupation)) + 
-  geom_point()
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-14-1.png"><!-- --></p>
-<p>Generally, Lawyers and Attorneys tend to contribute larger amounts when
-compared to those not employed and retired. New York City has the
-largest dispersion with residents from Rochester and Staten Island
-contribution relatively smaller amounts with a few outliers.<br>
-Below are 2 stacked column graphs that aggregate the data in the above
-plot and present it in different views.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Clinton, Hillary Rodham&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, 
-                                          &quot;BUFFALO&quot;, &quot;STATEN ISLAND&quot;) &amp;
-                       contbr_occupation %in% 
-                       c(&quot;RETIRED&quot;, &quot;ATTORNEY&quot;, &quot;LAWYER&quot;, 
-                         &quot;NOT EMPLOYED&quot;))
-#Aggregate contribution amount for occupation and city
-agg_data = aggregate(contb_receipt_amt ~ contbr_occupation + 
-                       contbr_city, data = data_subset, FUN = sum)
-ggplot(data = agg_data, aes(x = contbr_city, y = contb_receipt_amt, 
-                            fill = contbr_occupation)) + 
-  geom_bar(stat = &quot;identity&quot;)
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-15-1.png"><!-- --></p>
-<div class="highlight"><pre><span></span>ggplot(data = agg_data, aes(x = contbr_occupation, 
-                            y = contb_receipt_amt, 
-                            fill = contbr_city)) + 
-  geom_bar(stat = &quot;identity&quot;)
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-15-2.png"><!-- --></p>
-<p>From the first plot, it is quite apparent that most of the contribution
-to Clinton's campaign came from New York City. Within New York City, the
-largest proportion of those contributions were made by Attorneys,
-followed by Lawyers and those retired.<br>
-The second plot has the occupations on the x-axis with the colors now
-representing the city. From the fist plot, it was difficult to tell
-whether more contributions were coming from Lawyers or those retired.
-The second plot makes the answer to this question quite clear, showing
-contributions coming from those retired exceeded the contributions from
-Lawyers. The largest contributors however remain to be Attorneys.<br>
-By looking at both of the above plots, it can be concluded that largest
-category of contributors were Attorneys from New York City.<br>
-Now let's go back to exploring the other candidates.</p>
-<div class="highlight"><pre><span></span>data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;, 
-                                          &quot;Clinton, Hillary Rodham&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;))
-summary(data_subset)
-
-##       cmte_id           cand_id                           cand_nm     
-##  C00577130:95454   P60007168:95454   Sanders, Bernard         :95454  
-##  C00575795:59789   P00003392:59789   Clinton, Hillary Rodham  :59789  
-##  C00574624:11764   P60006111:11764   Cruz, Rafael Edward &#39;Ted&#39;:11764  
-##  C00573519: 6614   P60005915: 6614   Carson, Benjamin S.      : 6614  
-##  C00458844: 4678   P60006723: 4678   Rubio, Marco             : 4678  
-##  C00579458: 2419   P60008059: 2419   Bush, Jeb                : 2419  
-##  (Other)  :    0   (Other)  :    0   (Other)                  :    0  
-##                     contbr_nm         contbr_city    contbr_st  
-##  SWIRE, JAMES BENNETT MR.:   143   NEW YORK :53679   NY:180718  
-##  PERE, RENE              :   120   BROOKLYN :22616              
-##  SWIRE, JAMES B. MR.     :   119   BRONX    : 3655              
-##  FISHER, MICHAEL         :   115   ROCHESTER: 3004              
-##  DOWD, KATIE             :   113   BUFFALO  : 2302              
-##  DYCKMAN, MICHAEL MR.    :   107   ITHACA   : 2157              
-##  (Other)                 :180001   (Other)  :93305              
-##      contbr_zip          contbr_employer      contbr_occupation 
-##  108052128:   299   NONE         : 14123   NOT EMPLOYED: 24042  
-##  10024    :   220   NOT EMPLOYED : 13241   RETIRED     : 19881  
-##  10025    :   185   RETIRED      : 13201   ATTORNEY    :  6537  
-##  10128    :   174   SELF-EMPLOYED: 10800   TEACHER     :  3988  
-##  11377    :   167   N/A          : 10475   PROFESSOR   :  3262  
-##  10023    :   163   (Other)      :118761   (Other)     :122988  
-##  (Other)  :179510   NA&#39;s         :   117   NA&#39;s        :    20  
-##  contb_receipt_amt contb_receipt_dt             
-##  Min.   :  -5400   Min.   :2013-10-11 00:00:00  
-##  1st Qu.:     15   1st Qu.:2015-12-08 00:00:00  
-##  Median :     35   Median :2016-02-11 00:00:00  
-##  Mean   :    279   Mean   :2016-01-10 20:23:45  
-##  3rd Qu.:    100   3rd Qu.:2016-03-09 00:00:00  
-##  Max.   :4904861   Max.   :2016-03-31 00:00:00  
-##                                                 
-##                      receipt_desc    memo_cd   
-##                            :178403    :172403  
-##  Refund                    :  1200   X:  8315  
-##  REDESIGNATION TO GENERAL  :   218             
-##  REDESIGNATION FROM PRIMARY:   217             
-##  REATTRIBUTION FROM SPOUSE :   133             
-##  REATTRIBUTION TO SPOUSE   :   133             
-##  (Other)                   :   414             
-##                                memo_text      form_tp      
-##  * EARMARKED CONTRIBUTION: SEE BELOW:90544   SA17A:172126  
-##                                     :81022   SA18 :  7392  
-##  * HILLARY VICTORY FUND             : 7368   SB28A:  1200  
-##  EARMARKED FROM MAKE DC LISTEN      :  251                 
-##  REDESIGNATION TO GENERAL           :  218                 
-##  REDESIGNATION FROM PRIMARY         :  217                 
-##  (Other)                            : 1098                 
-##     file_num           tran_id       election_tp.  
-##  Min.   :1003942   C1013282:     2        :    19  
-##  1st Qu.:1056807   C1014914:     2   G2016:  1293  
-##  Median :1057425   C1022783:     2   P2016:179406  
-##  Mean   :1056396   C1023143:     2   P2020:     0  
-##  3rd Qu.:1066337   C1024890:     2                 
-##  Max.   :1066425   C1025546:     2                 
-##                    (Other) :180706
-</pre></div>
-
-
-<p>Based on the summary above, we will look at total contributions made to
-the top 6 candidates for the following cities and occupations:<br>
-Cities: New York, Brooklyn, Bronx, Rochester, Buffalo and Ithaca<br>
-Occupations Not Employed, Retired, Attorney, Teacher and Professor.</p>
-<div class="highlight"><pre><span></span>data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;, 
-                                          &quot;Clinton, Hillary Rodham&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, 
-                                          &quot;BUFFALO&quot;, &quot;ITHACA&quot;) &amp;
-                       contbr_occupation %in% c(&quot;RETIRED&quot;, &quot;ATTORNEY&quot;, 
-                                                &quot;NOT EMPLOYED&quot;, 
-                                                &quot;TEACHER&quot;, &quot;PROFESSOR&quot;)) 
-ggplot(data = data_subset, aes(x = cand_nm, y = contb_receipt_amt, 
-                               color = contbr_occupation)) + 
-  geom_point() +
-  coord_cartesian(ylim = c(0, 6000)) + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-17-1.png"><!-- --></p>
-<p>Note that the y-limits have been adjusted to ignore the refunded
-contributions. For each candidate, except for Clinton, there appears to
-be at least one outlier whose contributions are much larger than the
-rest of the contribution amounts. Other than those few outliers, only
-Clinton and Sanders seem receive fairly uniform contributions between
-\$0 and \$3200.<br>
-Let's now turn our focus to aggregated contribution sums instead of
-individual amounts as we saw above.<br>
-We first look at the contribution amounts to each candidate broken out
-by city.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;, 
-                                          &quot;Clinton, Hillary Rodham&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, &quot;BUFFALO&quot;,
-                                          &quot;ITHACA&quot;) &amp;
-                       contbr_occupation %in% c(&quot;RETIRED&quot;, 
-                                                &quot;ATTORNEY&quot;, 
-                                                &quot;NOT EMPLOYED&quot;, &quot;TEACHER&quot;, 
-                                                &quot;PROFESSOR&quot;)) 
-#Aggregate contribution amount for candidate, occcupation and city
-agg_data = aggregate(contb_receipt_amt ~ cand_nm + contbr_occupation + 
-                       contbr_city, data = data_subset, FUN = sum)
-ggplot(data = agg_data, aes(x = cand_nm, y = contb_receipt_amt, 
-                            fill = contbr_city)) + 
-  geom_bar(stat = &quot;identity&quot;) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-18-1.png"><!-- --></p>
-<p>Once again, we see that having Clinton in the same plot makes it
-difficult to analyze what is happening with the other candidates.<br>
-Since we have already explored Clinton's contribution data, it would
-fine to remove her from the analysis going forward.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, &quot;BUFFALO&quot;, 
-                                          &quot;ITHACA&quot;) &amp;
-                       contbr_occupation %in% c(&quot;RETIRED&quot;, &quot;ATTORNEY&quot;, 
-                                                &quot;NOT EMPLOYED&quot;, &quot;TEACHER&quot;, 
-                                                &quot;PROFESSOR&quot;)) 
-#Aggregate contribution amount for candidate, occcupation and city
-agg_data = aggregate(contb_receipt_amt ~ cand_nm + contbr_occupation + 
-                       contbr_city, data = data_subset, FUN = sum)
-ggplot(data = agg_data, aes(x = cand_nm, y = contb_receipt_amt, 
-                            fill = contbr_city)) + 
-  geom_bar(stat = &quot;identity&quot;) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-19-1.png"><!-- --></p>
-<p>Much better! We now see that out of the 5 candidates presented, Sanders
-has the largest total contribution amount, followed by Bush, Rubio, Cruz
-and Carson in that order. For each of the candidates, we see that
-majority of those contributions came from New York City, followed by
-Brooklyn. Those 2 cities are really the only two that stand out and the
-amounts become too small to determine the order thereafter.<br>
-Now let's look at the same type of plot but with the contribution
-amounts broken up by occupation as opposed to city.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, &quot;BUFFALO&quot;, 
-                                          &quot;ITHACA&quot;) &amp;
-                       contbr_occupation %in% c(&quot;RETIRED&quot;, &quot;ATTORNEY&quot;, 
-                                                &quot;NOT EMPLOYED&quot;, &quot;TEACHER&quot;, 
-                                                &quot;PROFESSOR&quot;)) 
-#Aggregate contribution amount for candidate, occcupation and city
-agg_data = aggregate(contb_receipt_amt ~ cand_nm + contbr_city + 
-                       contbr_occupation, data = data_subset, FUN = sum)
-ggplot(data = agg_data, aes(x = cand_nm, y = contb_receipt_amt, 
-                            fill = contbr_occupation)) + 
-  geom_bar(stat = &quot;identity&quot;)
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-20-1.png"><!-- --></p>
-<p>The total amount of contributions in this plot remains the same as the
-prior plot. The difference is now the size of each colored chunk (which
-now represents occupation instead of city) in the total stack for each
-candidate. The story here is much less uniform than it was in the
-previous case. Most of the contributions made to Sanders were by those
-not employed whereas most of the contributions made to the other
-candidates were by either those retired or Attorneys.<br>
-For the next part of the analysis, let's move our attention away from
-the individual candidates and focus on the city and occupation only.<br>
-Keep in that although not explicity shown, the data is still being
-filtered for the candidates, cities and occupations in the plots above.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, &quot;BUFFALO&quot;, 
-                                          &quot;ITHACA&quot;) &amp;
-                       contbr_occupation %in% c(&quot;RETIRED&quot;, &quot;ATTORNEY&quot;, 
-                                                &quot;NOT EMPLOYED&quot;, &quot;TEACHER&quot;, 
-                                                &quot;PROFESSOR&quot;)) 
-#Aggregate contribution amount for candidate, occcupation and city
-agg_data = aggregate(contb_receipt_amt ~ cand_nm + 
-                       contbr_occupation + contbr_city, 
-                     data = data_subset, FUN = sum)
-ggplot(data = agg_data, aes(x = contbr_city, y = contb_receipt_amt, 
-                            fill = contbr_occupation )) + 
-  geom_bar(stat = &quot;identity&quot;)
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-21-1.png"><!-- --></p>
-<p>Once again we see that New York City outperforms all other cities by a
-very large margin, with Attorneys alone contributing more than all other
-cities. The likely cause of this is of course the fact that New York
-City has a larger population than any of the other cities and further
-work can include doing the same analysis on a per capita basis. Other
-than the fact that Attorneys contribute large amounts, it is also
-interesting to note the large presence of those not employed in each of
-the cities.<br>
-Let's look at the same data again but with the occupation on the x-axis
-and split out by city.</p>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, &quot;BUFFALO&quot;, 
-                                          &quot;ITHACA&quot;) &amp;
-                       contbr_occupation %in% c(&quot;RETIRED&quot;, &quot;ATTORNEY&quot;, 
-                                                &quot;NOT EMPLOYED&quot;, &quot;TEACHER&quot;, 
-                                                &quot;PROFESSOR&quot;)) 
-#Aggregate contribution amount for candidate, occcupation and city
-agg_data = aggregate(contb_receipt_amt ~ cand_nm + contbr_city + 
-                       contbr_occupation, data = data_subset, FUN = sum)
-ggplot(data = agg_data, aes(x = contbr_occupation, y = contb_receipt_amt, 
-                            fill = contbr_city )) + 
-  geom_bar(stat = &quot;identity&quot;)
-</pre></div>
-
-
-<p><img alt="" src="/images/unnamed-chunk-22-1.png"><!-- --></p>
-<p>With New York City dominating in each of the colored stacked bars, it is
-still interesting to note that most of the contributions were made by
-those not employed, followed by those retired, Attorneys, Professors and
-Teachers in that order. From the previous chart it may have seemed like
-Attorneys were the top contributing occupation, but this plot proves
-otherwise.</p>
-<h1>Multivariate Analysis</h1>
-<h3>Talk about some of the relationships you observed in this part of</h3>
-<h3>the investigation.</h3>
-<p>The relationships that I observed in this part of the investigation
-involved looking at the contributions made to each candidate as a
-function of time and the aggregate contribution amounts broken up by the
-city of the contributors and their occupations.<br>
-I also looked at the relationship between the contributors' cities and
-occupations without consideration of which candidate they contributed
-towards.</p>
-<h3>Were there any interesting or surprising interactions between features?</h3>
-<p>It was interesting to see the negative relationship in contributions
-between Bush and Sanders as a function of time. As time progressed,
-contributions made to Sanders went up very quickly and the opposite
-effect happened for Bush.<br>
-It was also interesting to see that the top contributors were Attorneys
-from New York City, but the overall top contributors were those retired.
-I did not expected those retired to be ranking as the top contributing
-group.</p>
-<hr>
-<h1>Final Plots and Summary</h1>
-<h3>Plot One</h3>
-<div class="highlight"><pre><span></span><span class="cp">#</span><span class="nf">Extract</span><span class="x"> contribution date and amount from data</span>
-<span class="x">date_cont_data = data[,c(&quot;contb_receipt_dt&quot;, &quot;contb_receipt_amt&quot;)]</span>
-<span class="cp">#</span><span class="nf">Floor</span><span class="x"> the dates to the first of each month</span>
-<span class="x">floored_data = date_cont_data</span>
-<span class="x">floored_data</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x"> = floor_date(floored_data</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x">, </span>
-<span class="x">                                           &quot;month&quot;)</span>
-<span class="cp">#</span><span class="nf">Aggregate</span><span class="x"> contribution amount by date</span>
-<span class="x">agg_date_data = aggregate(contb_receipt_amt ~ contb_receipt_dt, </span>
-<span class="x">                          data = floored_data, FUN = sum)</span>
-<span class="cp">#</span><span class="nf">Plot</span><span class="x"> line graph</span>
-<span class="x">ggplot(data = agg_date_data, aes(x = contb_receipt_dt, </span>
-<span class="x">                                 y = contb_receipt_amt/1e6)) + </span>
-<span class="x">  geom_line() +</span>
-<span class="x">  coord_cartesian(xlim = c(ymd(&quot;2015-01-01&quot;), </span>
-<span class="x">                           ymd(&quot;2016-03-01&quot;))) + </span>
-<span class="x">  ggtitle(&#39;Total Contributions&#39;) +</span>
-<span class="x">  xlab(&#39;Date&#39;) +</span>
-<span class="x">  ylab(&#39;Contribution Amount (Million </span><span class="p">$</span><span class="x">)&#39;)</span>
-</pre></div>
-
-
-<p><img alt="" src="/images/Plot_One-1.png"><!-- --></p>
-<h3>Description One</h3>
-<p>The total contribution amounts increase as a function of time, with each
-month generally outperforming the previous month's contributions, albiet
-with considerable volatility. The contributions really started pouring
-in after the 2015 new year and have continued their gradual increase
-since then.</p>
-<h3>Plot Two</h3>
-<div class="highlight"><pre><span></span>#Set theme for plot
-theme_set(theme_minimal(12))
-#Plot boxplot
-qplot(x = cand_nm, y = contb_receipt_amt, data = subset(data_subset, contb_receipt_amt&gt;0), 
-      geom = &#39;boxplot&#39;,
-      fill = cand_nm) +
-  ggtitle(&#39;Contribution Amounts by Candidate&#39;) +
-  xlab(&#39;Candidate&#39;) +
-  ylab(&#39;Log10 of Contribution Amount ($)&#39;) +
-  scale_y_log10() +
-  theme(legend.position = &#39;none&#39;) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-</pre></div>
-
-
-<p><img alt="" src="/images/Plot_Two-1.png"><!-- --></p>
-<h3>Description Two</h3>
-<p>We note that the range in contribution amounts varies quite a bit from
-one candidate to another. Bush seemed to have the largest median
-contribution amount with very few outliers. Sanders on the other had a
-very small IQR with many outliers on the higher end.</p>
-<h3>Plot Three</h3>
-<div class="highlight"><pre><span></span>#Subset data for desired candidates
-data_subset = subset(data, cand_nm %in% c(&quot;Sanders, Bernard&quot;, 
-                                          &quot;Clinton, Hillary Rodham&quot;,
-                                        &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot;, 
-                                        &quot;Carson, Benjamin S.&quot;,
-                                        &quot;Rubio, Marco&quot;, &quot;Bush, Jeb&quot;) &amp;
-                       contbr_city %in% c(&quot;NEW YORK&quot;, &quot;BROOKLYN&quot;, 
-                                          &quot;BRONX&quot;, &quot;ROCHESTER&quot;, &quot;BUFFALO&quot;, 
-                                          &quot;ITHACA&quot;) &amp;
-                       contbr_occupation %in% c(&quot;RETIRED&quot;, &quot;ATTORNEY&quot;, 
-                                                &quot;NOT EMPLOYED&quot;, &quot;TEACHER&quot;, 
-                                                &quot;PROFESSOR&quot;)) 
-#Aggregate contribution amount by candidate and occupation
-agg_data = aggregate(contb_receipt_amt ~ cand_nm + contbr_occupation, 
-                     data = data_subset, FUN = sum)
-#plot bar chart
-ggplot(data = agg_data, aes(x = cand_nm, y = contb_receipt_amt/1e6, 
-                            fill = contbr_occupation )) + 
-  geom_bar(stat = &quot;identity&quot;) +
-  ggtitle(&#39;Total Contributions by Candidate&#39;) +
-  xlab(&#39;Candidate&#39;) +
-  ylab(&#39;Contribution Amount (Million $)&#39;) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-</pre></div>
-
-
-<p><img alt="" src="/images/Plot_Three-1.png"><!-- --></p>
-<h3>Description Three</h3>
-<p>The largest group to contribute were Attorneys to Clinton. Clinton did
-get the most contributions out of all the other candidates. Another
-sizable group are those not employed contributing to Sanders.  </p>
-<hr>
-<h1>Reflection</h1>
-<p>With many different features presented in the dataset, I had to only
-chose the ones that I believed would be the most interesting and would
-present us with the most insight into the financial contributions made
-the to 2016 Presidental Campaign. The central feature throughout most of
-this exploratory data analysis was the contribution amount. I was very
-curious to see which candidates got most of the contributions. After
-that, the rest of the analysis focused entirely on the top 6 candidates
-since the contributions made to the rest of the candidates were much
-less. I also wanted to know which occupation the contributors belonged
-to. Since there are many occupations in the dataset, I decided to focus
-only on the ones that showed up the most in the dataset. This helped to
-not clutter up the plots while still giving a strong indication of
-overall trends. Looking at the contribution amounts by date was also
-crucial since it gave insight into whether or not the campaigns were
-proving to be successful or not. The fact that the contributions for
-Sanders were consistently increasing with time and decreasing with time
-for Bush proved that Sanders was doing a much better job at campaigning
-than Bush. Narrowing in on the most top candidates, occupations and
-cities really helped reveal many insights. For future work, I would
-definitely consider looking beyond just the top 6 candidates, in
-addition to looking beyond the cities and occupations. I would also look
-at employers of the contributors to see if we can spot any trends in
-that feature.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<span class="x">names …</span></pre></div>
+                <a class="readmore" href="/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
