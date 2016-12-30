@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>A Pelican Blog - Data Wrangling</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/category/data-analysis.html">Data Analysis</a></li>
+                    <li class="active"><a href="/category/data-wrangling.html">Data Wrangling</a></li>
+                    <li><a href="/category/finance.html">Finance</a></li>
+                    <li><a href="/category/machine-learning.html">Machine Learning</a></li>
+                    <li><a href="/category/visualizations.html">Visualizations</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="/data-wrangling-with-mongodb-openstreetmap-data-case-study.html">Data Wrangling with MongoDB – OpenStreetMap Data Case Study</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-05-04T00:00:00+00:00">
+                Published: Wed 04 May 2016
+        </abbr>
+
+<p>In <a href="/category/data-wrangling.html">Data Wrangling</a>.</p>
+
+</footer><!-- /.post-info --><h2>Summary</h2>
+<p>Map Area: <a href="https://mapzen.com/data/metro-extracts/">Waterloo, Ontario, Canada</a><br>
+Problems Encountered in the Map:<br>
+After initially downloading the Waterloo area and running it against the script below, I noticed the following problems with the data:<br>
+•   Inconsistent methods of describing street direction (e.g. “N” or “North”)<br>
+•   Inconsistent street types (e.g. St. instead of Street, Dr instead of Drive)<br>
+•   Incorrect street types (e.g. AVenue instead of Avenue, Cresent instead of Crescent)<br>
+•   Inconsistent method of displaying the Postal Code (XXXXXX instead of XXX XXX)<br>
+•   Inconsistent Methods of Describing Street Direction<br>
+Some of the street names end with a direction (North, East, South, West). Some of these directions however are entered in as abbreviations (N, E, S, W) as opposed to the full words. In order to keep the direction method consistent, the abbreviation was replaced with the full word.
+<em>Inconsistent Street Types</em><br>
+Some of the street types were abbreviated as St. or Dr instead of Street or Drive, respectively. In order to ensure consistency, all the abbreviations were converted to full street types.<br>
+<em>Incorrect Street Types</em><br>
+Some of the street types were spelt incorrectly such as AVenue and Cresent instead of Avenue and Crescent, respectively. These incorrect words were detected and replaced with the correct spelling.  </p>
+<p>Inconsistent Method if Displaying Postal Code<br>
+In Canada, postal codes are 6 characters long with alternating letters and numbers, with an optional space between the first and last 3 characters (i.e. LNL NLN where L = Letter and N = Number). Some of the postal codes in the dataset have a space between the first and last 3 characters and some do not (e.g. N2K4N2 or N2K 4N2). </p>
+<h3>Data Overview</h3>
+<p>Below are some of the basic statistics about the dataset, including the MongoDB queries used to produce the statistics.  </p>
+<h5>File Size</h5>
+<p>waterloo-region_canada.osm – 155MB<br>
+waterloo-region_canada.json – 211MB  </p>
+<h5>Number of Documents</h5>
+<p>db.waterloo.find().count()<br>
+→ 763051</p>
+<h5>Number of Nodes</h5>
+<p>db.waterloo.find({"type" : "node"}).count()<br>
+→ 670362</p>
+<h5>Number of Ways</h5>
+<p>db.waterloo.find({"type" : "way"}).count()<br>
+→ 92689</p>
+<h5>Number of Unique Users</h5>
+<p>db.waterloo.aggregate([{ "$group": { "_id": "$created.user"}},
+    {"$group": {"_id": 1, "count": { "$sum": 1}}}])<br>
+→ 503</p>
+<p>As can be seen, some of the city names are duplicated with different names, such as Waterloo and City of Waterloo. One way to fix this issue would be to either include the type of city (e.g. City of, Township, etc.) for all cities or not include it for any of the cities. The issue with this approach is that the title is part of the official name for some of the cities and not for others, so it would inappropriate to force the names to be consistent in this case. The benefit of sticking to one method is that there will not be any duplicates, but forcing consistency may result in erroneous city names. </p>
+<h4>Conclusion</h4>
+<p>Although some of the inconsistent and incorrect data were fixed, there still remain some inconsistencies and errors. The street directions and types were mostly corrected for whereas the postal codes and city names remain inconsistent. Altering the postal codes to be more consistent is fairly straightforward whereas correcting the city names would pose a challenge.</p>
+<p>The script below wrangles the data and transforms the OpenStreetMap data into dictionaries that look like this:<br>
+{
+"id": "2406124091",
+"type: "node",
+"visible":"true",
+"created": {
+          "version":"2",
+          "changeset":"17206049",
+          "timestamp":"2013-08-03T16:43:42Z",
+          "user":"linuxUser16",
+          "uid":"1219059"
+        },
+"pos": [41.9757030, -87.6921867],
+"address": {
+          "housenumber": "5157",
+          "postcode": "60625",
+          "street": "North Lincoln Ave"
+        },
+"amenity": "restaurant",
+"cuisine": "mexican",
+"name": "La Cabana De Don Luis",
+"phone": "1 (773)-271-5176"
+}</p>
+<ul>
+<li>Only 2 types of top level tags are procssed: "node" and "way"</li>
+<li>All attributes of "node" and "way" are turned into regular key/value pairs, except:<ul>
+<li>attributes in the CREATED array should be added under a key "created"</li>
+<li>attributes for latitude and longitude should be added to a "pos" array,
+  for use in geospacial indexing. The values inside "pos" array are floats
+  and not strings. </li>
+</ul>
+</li>
+<li>if the second level tag "k" value contains problematic characters, it is ignored</li>
+<li>if the second level tag "k" value starts with "addr:", it is added to a dictionary "address"</li>
+<li>if the second level tag "k" value does not start with "addr:", but contains ":", it is processed
+  as a regular tag</li>
+<li>if there is a second ":" that separates the type/direction of a street,
+  the tag is ignored  </li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="kn">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">lower</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;^([a-z]|_)*$&#39;</span><span class="p">)</span>
+<span class="n">lower_colon</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;^([a-z]|_)*:([a-z]|_)*$&#39;</span><span class="p">)</span>
+<span class="n">problemchars</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;[=\+/&amp;&lt;&gt;;</span><span class="se">\&#39;</span><span class="s1">&quot;\?%#$@\,\. \t\r\n]&#39;</span><span class="p">)</span>
+<span class="n">street_type_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;\b\S+\.?$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+<span class="n">CREATED</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;changeset&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;uid&quot;</span><span class="p">]</span>
+
+<span class="c1"># List of expected street types</span>
+<span class="n">expected</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Street&quot;</span><span class="p">,</span> <span class="s2">&quot;Avenue&quot;</span><span class="p">,</span> <span class="s2">&quot;Boulevard&quot;</span><span class="p">,</span> <span class="s2">&quot;Drive&quot;</span><span class="p">,</span> <span class="s2">&quot;Court&quot;</span><span class="p">,</span> <span class="s2">&quot;Place&quot;</span><span class="p">,</span> <span class="s2">&quot;Square&quot;</span><span class="p">,</span> <span class="s2">&quot;Lane&quot;</span><span class="p">,</span> <span class="s2">&quot;Road&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;Trail&quot;</span><span class="p">,</span> <span class="s2">&quot;Parkway&quot;</span><span class="p">,</span> <span class="s2">&quot;Commons&quot;</span><span class="p">,</span><span class="s2">&quot;1&quot;</span><span class="p">,</span><span class="s2">&quot;10&quot;</span><span class="p">,</span><span class="s2">&quot;11&quot;</span><span class="p">,</span><span class="s2">&quot;116&quot;</span><span class="p">,</span><span class="s2">&quot;12&quot;</span><span class="p">,</span><span class="s2">&quot;124&quot;</span><span class="p">,</span><span class="s2">&quot;13&quot;</span><span class="p">,</span><span class="s2">&quot;14&quot;</span><span class="p">,</span><span class="s2">&quot;15&quot;</span><span class="p">,</span><span class="s2">&quot;154&quot;</span><span class="p">,</span><span class="s2">&quot;16&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;17&quot;</span><span class="p">,</span><span class="s2">&quot;18&quot;</span><span class="p">,</span><span class="s2">&quot;2&quot;</span><span class="p">,</span><span class="s2">&quot;20&quot;</span><span class="p">,</span><span class="s2">&quot;21&quot;</span><span class="p">,</span><span class="s2">&quot;22&quot;</span><span class="p">,</span><span class="s2">&quot;24&quot;</span><span class="p">,</span><span class="s2">&quot;3&quot;</span><span class="p">,</span><span class="s2">&quot;30&quot;</span><span class="p">,</span><span class="s2">&quot;32&quot;</span><span class="p">,</span><span class="s2">&quot;34&quot;</span><span class="p">,</span><span class="s2">&quot;4&quot;</span><span class="p">,</span><span class="s2">&quot;45&quot;</span><span class="p">,</span><span class="s2">&quot;5&quot;</span><span class="p">,</span><span class="s2">&quot;51&quot;</span><span class="p">,</span><span class="s2">&quot;6&quot;</span><span class="p">,</span><span class="s2">&quot;7&quot;</span><span class="p">,</span><span class="s2">&quot;8&quot;</span><span class="p">,</span><span class="s2">&quot;86&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;9&quot;</span><span class="p">,</span><span class="s2">&quot;97&quot;</span><span class="p">,</span><span class="s2">&quot;Baseline&quot;</span><span class="p">,</span><span class="s2">&quot;Boardwalk&quot;</span><span class="p">,</span> <span class="s2">&quot;Circle&quot;</span><span class="p">,</span> <span class="s2">&quot;Close&quot;</span><span class="p">,</span><span class="s2">&quot;Cove&quot;</span><span class="p">,</span> <span class="s2">&quot;Crescent&quot;</span><span class="p">,</span> <span class="s2">&quot;Crestway&quot;</span><span class="p">,</span> <span class="s2">&quot;Cross&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;Crossing&quot;</span><span class="p">,</span><span class="s2">&quot;East&quot;</span><span class="p">,</span><span class="s2">&quot;West&quot;</span><span class="p">,</span><span class="s2">&quot;South&quot;</span><span class="p">,</span><span class="s2">&quot;North&quot;</span><span class="p">,</span><span class="s2">&quot;Estates&quot;</span><span class="p">,</span><span class="s2">&quot;Gardens&quot;</span><span class="p">,</span><span class="s2">&quot;Gate&quot;</span><span class="p">,</span> <span class="s2">&quot;Grove&quot;</span><span class="p">,</span> <span class="s2">&quot;Heights&quot;</span><span class="p">,</span> <span class="s2">&quot;Highway&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;Hill&quot;</span><span class="p">,</span> <span class="s2">&quot;Hollow&quot;</span><span class="p">,</span> <span class="s2">&quot;Line&quot;</span><span class="p">,</span> <span class="s2">&quot;Walk&quot;</span><span class="p">,</span> <span class="s2">&quot;Way&quot;</span><span class="p">]</span>
+
+<span class="c1"># Map of incorrect to correct street types</span>
+<span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;St&quot;</span><span class="p">:</span> <span class="s2">&quot;Street&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;St.&quot;</span><span class="p">:</span> <span class="s2">&quot;Street&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Ave&quot;</span> <span class="p">:</span> <span class="s2">&quot;Avenue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Rd.&quot;</span> <span class="p">:</span> <span class="s2">&quot;Road&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Rd&quot;</span> <span class="p">:</span> <span class="s2">&quot;Road&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;AVenue&quot;</span> <span class="p">:</span> <span class="s2">&quot;Avenue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Cresent&quot;</span> <span class="p">:</span> <span class="s2">&quot;Crescent&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Dr&quot;</span> <span class="p">:</span> <span class="s2">&quot;Drive&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Dr.&quot;</span> <span class="p">:</span> <span class="s2">&quot;Drive&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;N&quot;</span> <span class="p">:</span> <span class="s2">&quot;North&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;E&quot;</span> <span class="p">:</span> <span class="s2">&quot;East&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;S&quot;</span> <span class="p">:</span> <span class="s2">&quot;South&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;W&quot;</span> <span class="p">:</span> <span class="s2">&quot;West&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;road&quot;</span> <span class="p">:</span> <span class="s2">&quot;Road&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;g&quot;</span> <span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;canadatrust.com&quot;</span> <span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;45th&quot;</span> <span class="p">:</span> <span class="s2">&quot;45&quot;</span>
+            <span class="p">}</span>
+
+<span class="c1"># Function to update the street types based on the mapping as defined above</span>
+<span class="k">def</span> <span class="nf">update_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mapping</span><span class="p">):</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">street_type_re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">expected</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">()</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(),</span> <span class="n">mapping</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">()],</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span>
+
+<span class="c1"># Function to update the problematic nodes</span>
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">tag</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;addr:&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;address&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+                <span class="n">node</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;addr:street&#39;</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">update_name</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">mapping</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;addr:postcode&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">r&#39;^[A-Z]\d[A-Z] \d[A-Z]\d$&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+            <span class="n">node</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">[</span><span class="mi">5</span><span class="p">:]]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">node</span>
+
+
+<span class="c1"># Function to convert XML input to JSON output</span>
+<span class="k">def</span> <span class="nf">shape_element</span><span class="p">(</span><span class="n">element</span><span class="p">):</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;node&quot;</span> <span class="ow">or</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;way&quot;</span> <span class="p">:</span>
+        <span class="n">node</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span>
+        <span class="n">node</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;lat&quot;</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s2">&quot;lon&quot;</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">])]</span>
+            <span class="n">node</span><span class="p">[</span><span class="s2">&quot;pos&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pos</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">iter</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">tag</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">CREATED</span><span class="p">:</span>
+                    <span class="n">node</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;k&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">problemchars</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                    <span class="n">node</span> <span class="o">=</span> <span class="n">update</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;ref&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s1">&#39;node_refs&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+                        <span class="n">node</span><span class="p">[</span><span class="s1">&#39;node_refs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">node</span><span class="p">[</span><span class="s1">&#39;node_refs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">]:</span>
+                    <span class="n">node</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">node</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+<span class="c1"># Function that wrangles the data</span>
+<span class="k">def</span> <span class="nf">process_map</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="n">pretty</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="n">file_out</span> <span class="o">=</span> <span class="s2">&quot;{0}.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_in</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_out</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fo</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">ET</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="n">file_in</span><span class="p">):</span>
+            <span class="n">el</span> <span class="o">=</span> <span class="n">shape_element</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">el</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">pretty</span><span class="p">:</span>
+                    <span class="n">fo</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fo</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">el</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">process_map</span><span class="p">(</span><span class="s1">&#39;waterloo-region_canada.osm&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>{&#39;created&#39;: {&#39;changeset&#39;: &#39;38463820&#39;,
+             &#39;timestamp&#39;: &#39;2016-04-11T01:35:40Z&#39;,
+             &#39;uid&#39;: &#39;951370&#39;,
+             &#39;user&#39;: &#39;fbax&#39;,
+             &#39;version&#39;: &#39;1&#39;},
+ &#39;id&#39;: &#39;409382133&#39;,
+ &#39;node_refs&#39;: [&#39;4113058876&#39;, &#39;4113058877&#39;, &#39;4113058878&#39;],
+ &#39;type&#39;: &#39;way&#39;}
+</pre></div>
+
+
+<p>This script queries the database</p>
+<div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">from</span> <span class="nn">pymongo</span> <span class="kn">import</span> <span class="n">MongoClient</span>
+
+<span class="c1"># Initialize MongoDB client</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">(</span><span class="s2">&quot;mongodb://localhost:27017&quot;</span><span class="p">)</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">examples</span>
+
+<span class="c1"># Print Postal Codes ordered by descending count</span>
+<span class="n">result</span> <span class="o">=</span>  <span class="n">db</span><span class="o">.</span><span class="n">waterloo</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([{</span><span class="s2">&quot;$match&quot;</span> <span class="p">:</span> <span class="p">{</span><span class="s2">&quot;address.postcode&quot;</span> <span class="p">:</span> <span class="p">{</span><span class="s2">&quot;$exists&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">}}},</span>
+                        <span class="p">{</span><span class="s2">&quot;$group&quot;</span> <span class="p">:</span> <span class="p">{</span><span class="s2">&quot;_id&quot;</span> <span class="p">:</span> <span class="s2">&quot;$address.postcode&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;count&quot;</span> <span class="p">:</span> <span class="p">{</span><span class="s2">&quot;$sum&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">}}},</span>
+                        <span class="p">{</span><span class="s2">&quot;$sort&quot;</span> <span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}}])</span>
+
+<span class="c1"># Print postal codes with count</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Postal Codes with count:&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+    <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+
+<span class="c1"># Number of documents</span>
+<span class="n">documents</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">waterloo</span><span class="o">.</span><span class="n">find</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of documents:&#39;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span>
+
+<span class="c1"># Number of nodes</span>
+<span class="n">nodes</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">waterloo</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;node&quot;</span><span class="p">})</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of nodes:&#39;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+
+<span class="c1"># Number of ways</span>
+<span class="n">ways</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">waterloo</span><span class="o">.</span><span class="n">find</span><span class="p">({</span><span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;way&quot;</span><span class="p">})</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of ways:&#39;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">ways</span><span class="p">)</span>
+
+<span class="c1"># Number of unique users</span>
+<span class="n">unique_users</span> <span class="o">=</span>  <span class="n">db</span><span class="o">.</span><span class="n">waterloo</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([{</span> <span class="s2">&quot;$group&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="s2">&quot;$created.user&quot;</span><span class="p">}},</span>
+    <span class="p">{</span><span class="s2">&quot;$group&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;$sum&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}}])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of unique users:&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">unique_users</span><span class="p">:</span>
+    <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Postal Codes with count:
+{&#39;_id&#39;: &#39;N2K 4L7&#39;, &#39;count&#39;: 105}
+{&#39;_id&#39;: &#39;N2K 4N3&#39;, &#39;count&#39;: 99}
+{&#39;_id&#39;: &#39;N2K 4N2&#39;, &#39;count&#39;: 75}
+{&#39;_id&#39;: &#39;N2B 1A4&#39;, &#39;count&#39;: 63}
+{&#39;_id&#39;: &#39;N2M 3V1&#39;, &#39;count&#39;: 57}
+{&#39;_id&#39;: &#39;N1G 4C9&#39;, &#39;count&#39;: 45}
+{&#39;_id&#39;: &#39;N2T 0A6&#39;, &#39;count&#39;: 42}
+{&#39;_id&#39;: &#39;N2J 1K7&#39;, &#39;count&#39;: 39}
+{&#39;_id&#39;: &#39;N2E 0A3&#39;, &#39;count&#39;: 36}
+{&#39;_id&#39;: &#39;N3H 4R8&#39;, &#39;count&#39;: 34}
+{&#39;_id&#39;: &#39;N2K 4M3&#39;, &#39;count&#39;: 33}
+{&#39;_id&#39;: &#39;N2B 1G9&#39;, &#39;count&#39;: 30}
+{&#39;_id&#39;: &#39;N2B 1C2&#39;, &#39;count&#39;: 27}
+{&#39;_id&#39;: &#39;N2B 1G8&#39;, &#39;count&#39;: 27}
+{&#39;_id&#39;: &#39;N3H 4Z7&#39;, &#39;count&#39;: 24}
+{&#39;_id&#39;: &#39;N2N 0B1&#39;, &#39;count&#39;: 24}
+{&#39;_id&#39;: &#39;N2T 2Z7&#39;, &#39;count&#39;: 24}
+{&#39;_id&#39;: &#39;N2B 1C1&#39;, &#39;count&#39;: 24}
+{&#39;_id&#39;: &#39;N2K 4N6&#39;, &#39;count&#39;: 21}
+{&#39;_id&#39;: &#39;N1H 4G3&#39;, &#39;count&#39;: 21}
+{&#39;_id&#39;: &#39;N2V 0A2&#39;, &#39;count&#39;: 21}
+{&#39;_id&#39;: &#39;N2B 1H7&#39;, &#39;count&#39;: 18}
+{&#39;_id&#39;: &#39;N2E0A3&#39;, &#39;count&#39;: 18}
+{&#39;_id&#39;: &#39;N2B 3H2&#39;, &#39;count&#39;: 18}
+{&#39;_id&#39;: &#39;N3H4R8&#39;, &#39;count&#39;: 17}
+{&#39;_id&#39;: &#39;N2K 4L9&#39;, &#39;count&#39;: 15}
+{&#39;_id&#39;: &#39;N1H 4G1&#39;, &#39;count&#39;: 15}
+{&#39;_id&#39;: &#39;N3H 2W7&#39;, &#39;count&#39;: 15}
+{&#39;_id&#39;: &#39;N1H 4G2&#39;, &#39;count&#39;: 15}
+{&#39;_id&#39;: &#39;N2L 5Z4&#39;, &#39;count&#39;: 14}
+{&#39;_id&#39;: &#39;N1S 1V6&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N2B 3N1&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N2L 5S7&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N2N 3P8&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N2B 3H3&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N0B 1B0&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N2R 0A4&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N0B 1N0&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N3C 1B7&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N2B 1G6&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N2B 1H9&#39;, &#39;count&#39;: 12}
+{&#39;_id&#39;: &#39;N2B 1A2&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N2P 2E7&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N0B 2R0&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N1H 3V3&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N1H 3V5&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N2G 1A3&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N2B 3H1&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N2J 3H6&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N2G 1H6&#39;, &#39;count&#39;: 9}
+{&#39;_id&#39;: &#39;N2L 3G5&#39;, &#39;count&#39;: 8}
+{&#39;_id&#39;: &#39;N2L5Z4&#39;, &#39;count&#39;: 7}
+{&#39;_id&#39;: &#39;N2C 1K3&#39;, &#39;count&#39;: 7}
+{&#39;_id&#39;: &#39;N2B 1A5&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2B 1E9&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2K 1W9&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2B 3G4&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N1R 7H2&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2M 5C6&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 2X2&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 3G1&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2G 4X6&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2J 3J3&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2J 1R1&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N1R 8P1&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2M 1A1&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 2Y5&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N1T 1K7&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 3V4&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N0B 1E0&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 3E9&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N1G 0C5&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 6R5&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2R0A4&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2J 3Z3&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2K 1J9&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2G 1H2&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2J 2G9&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N3A 1E7&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2G 1X4&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2E 1B6&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2G 4Z2&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2K 2E1&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N0B 1S0&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N1G 4Z1&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N3A 1K1&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N1L 0A6&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 6C2&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 3L2&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2A 0E4&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N1M 3G4&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2C 1X1&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2L 3V3&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2J 1P2&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2B 1B7&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N1E 5R3&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2N 2Y2&#39;, &#39;count&#39;: 6}
+{&#39;_id&#39;: &#39;N2G 1H3&#39;, &#39;count&#39;: 5}
+{&#39;_id&#39;: &#39;N2J 3H8&#39;, &#39;count&#39;: 5}
+{&#39;_id&#39;: &#39;N2J 3H4&#39;, &#39;count&#39;: 4}
+{&#39;_id&#39;: &#39;N0B 1K0&#39;, &#39;count&#39;: 4}
+{&#39;_id&#39;: &#39;N1H 6J2&#39;, &#39;count&#39;: 4}
+{&#39;_id&#39;: &#39;N2L 6A1&#39;, &#39;count&#39;: 4}
+{&#39;_id&#39;: &#39;N2M 3W1&#39;, &#39;count&#39;: 4}
+{&#39;_id&#39;: &#39;N1G 4G3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 4C6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1K 1S5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 4S2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2T 0C1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1L 1G9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2A 4H4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1E 5H5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 5H7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2K 0A8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2K 0A7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2K 0A2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 6J4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3S2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 1P8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2H 2H1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2E 3W7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3L1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2H 4V2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1R 7W6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 5W6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2N 3J2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 3Z4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 6G6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1E 2Y9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 3Z6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 4Z2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 6P5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2V 2J8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 2Z6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 3Y8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 5Z3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 3V7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 1C3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1L 1C8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 4W2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2V 1V8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 2X6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 6R2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3E6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3E7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 4N4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 1W4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 1W3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 1W2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 2V3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1E 7C4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3B 2N0&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3H 3M4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 1T6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3H 3M6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2M 2C6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1L 0J3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2N 2A8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2H 1Z4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2T 2Z4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 5A3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 4M4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1R 5S2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2H 2Z6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3E8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3L3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 5G7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 4S7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2H 1A3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 3X3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 1W5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1T 1Z9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 5L4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2V 2A9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2C 1P7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3B 2Y9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3B9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2B 3C9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1R 8L4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1P 1C7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 2Y2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 3J5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 7R4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2K 0A9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2M 5N9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 1W7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 1A1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1T 1C0&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N0B 2M0&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2V 2G8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2R 0A3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 2T3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2N 1C1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2B 1E3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3H 3G5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2K 4A2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2C 1X3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1R 6J8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3A 1E3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2M 1R9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1S 2H4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1T 2K8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 2N6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3A 1T6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3T7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 2X4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 1X1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 6J3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1K 1X3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 2G4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 2N8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 4W3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 7Y5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1R 5G6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1S 1P3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1R 8R3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 2M6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3A 1R3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 4V2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 4J4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2M 5J9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 5G4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2M 3C5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2B 1E8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2H 6R4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2M 1Y4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2V 2R6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 4Z8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 4X7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 2J3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1R 3H3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2V 1B4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 1V4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2V 1C5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2M 3C2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 1X8&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2H 3X7&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1L 0Z6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2A 2Y2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2V 1C2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 0C6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 2Y9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 3W1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 3P4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3A 1R1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2E 2M6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2K 0B3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2P 2G2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2E 4K6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1L 1G1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 4W1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G1H6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3A 1J3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 5E2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 3A4&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 3W3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 1V5&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3V1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2K 3T6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 1T2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2T 2W1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1E 7H1&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 6E3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 3Y9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 1N9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2L 2J2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G1H2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2T 3A3&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1H 3T9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 3W6&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N1G 3A2&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2J 2X0&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2G 1R9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N2M 4W9&#39;, &#39;count&#39;: 3}
+{&#39;_id&#39;: &#39;N3H 0A8&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L 1H1&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L 6B5&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2A 3G6&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L 5P6&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 1M8&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2C 2N9&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;n2j 2h4&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 1V6&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 1X5&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L 4M3&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L 5J4&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N1R 3B2&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L 5V4&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2J 2V9&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 1A7&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2k  3T&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 3C5&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2J 2W9&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2C1K3&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N1S 1H3&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2K  3v&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 1H1&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N1H6J2&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2M 3W4&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L 5Z7&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 1B7&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2H 6R2&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N0B1K0&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2J 2X7&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2R 1S1&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2M3W1&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 3N1&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2M 3H5&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2E 4H9&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2C 1A4&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L6A1&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2L 6C1&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2M 3R3&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N1G 0A9&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2G 1A1&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N2J3H4&#39;, &#39;count&#39;: 2}
+{&#39;_id&#39;: &#39;N3H0A8&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L1H1&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2E4H9&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L6B5&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2A3G6&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2M3R3&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L5P6&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G1H3&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2M3H5&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N1S1H3&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2R1S1&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2J3H8&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L5V4&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2k 3T6&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2H6R2&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G1X5&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G1A7&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G3N1&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2M3W4&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2C2N9&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L5Z7&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L4M3&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G1A1&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2J2W9&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L5J4&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L3G5&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G3C5&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G1M8&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N1R3B2&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2K 3v3&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2L6C1&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G1V6&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2C1A4&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G1H1&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2G1B7&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N1G0A9&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2J2X7&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;n2j2h4&#39;, &#39;count&#39;: 1}
+{&#39;_id&#39;: &#39;N2J2V9&#39;, &#39;count&#39;: 1}
+Number of documents:
+2289153
+Number of nodes:
+2011086
+Number of ways:
+278067
+Number of unique users:
+{&#39;_id&#39;: 1, &#39;count&#39;: 503}
+</pre></div>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
