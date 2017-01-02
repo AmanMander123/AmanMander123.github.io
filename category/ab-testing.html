@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>A Pelican Blog - AB Testing</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="/category/ab-testing.html">AB Testing</a></li>
+                    <li><a href="/category/data-analysis.html">Data Analysis</a></li>
+                    <li><a href="/category/data-wrangling.html">Data Wrangling</a></li>
+                    <li><a href="/category/finance.html">Finance</a></li>
+                    <li><a href="/category/machine-learning.html">Machine Learning</a></li>
+                    <li><a href="/category/visualizations.html">Visualizations</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="/ab-testing-free-trial-scanner.html">A/B Testing – Free Trial Scanner</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-09-03T00:00:00+00:00">
+                Published: Sat 03 September 2016
+        </abbr>
+
+<p>In <a href="/category/ab-testing.html">AB Testing</a>.</p>
+
+</footer><!-- /.post-info --><h2>Experiment Overview</h2>
+<p>In this experiment, Udacity tested the change where if the student clicked “Start free trial” on the home page, they were asked about their availability to commit to the course as can be seen <a href="https://drive.google.com/file/d/0ByAfiG8HpNUMakVrS0s4cGN2TjQ/view">here</a>. If the student indicated that they had fewer than 5 hours per week, a suggestion would be made to instead access the course materials for free. The student would then be given the choice to proceed with the enrollment or be directed to the free course materials. The purpose of this experiment was to improve the overall student experience and improve coaches’ capacity to support students are likely to complete the course.  </p>
+<p>The hypothesis was that this might set clearer expectations for students upfront, thus reducing the number of frustrated students who left the free trial because they didn't have enough time—without significantly reducing the number of students to continue past the free trial and eventually complete the course. If this hypothesis held true, Udacity could improve the overall student experience and improve coaches' capacity to support students who are likely to complete the course.  </p>
+<p>The unit of diversion is a cookie, although if the student enrolls in the free trial, they are tracked by user-id from that point forward. The same user-id cannot enroll in the free trial twice. For users that do not enroll, their user-id is not tracked in the experiment, even if they were signed in when they visited the course overview page.  </p>
+<h2>Experiment Design</h2>
+<h3>Metric Choice</h3>
+<h4>Invariant Metrics</h4>
+<h5>Number of Cookies</h5>
+<p>Since this is the number of unique cookies to view the course overview page, we expect this value to be similar in both the experiment and control groups. Since this value will be similar for both cases, it can be considered as an invariant metric.</p>
+<h5>Number of Clicks</h5>
+<p>The number of clicks is the unique cookies to click the “Start free trial” button and happens before the free trial screener is shown to the user. Since this is a measure of the number of clicks before the free trial screener, we expect the count to be equal between the experiment and control groups, thus making this an invariant metric.</p>
+<h5>Click-Through-Probability</h5>
+<p>This metric is dependent on the number of unique cookies to click the “Start free trial” and the unique cookie to view the course overview page. Both these instances occur before the free trial screener and thus we would expect this metric to be similar between the experiment and control groups. </p>
+<h4>Evaluation Metrics</h4>
+<h5>Gross Conversion</h5>
+<p>This metric is the ratio of user-ids to complete checkout and enroll in the free trial and number of unique cookies to click the “Start free trial” button. This is considered an evaluation metric because we expect this conversion rate to be correlated to the overall student experience and improvement of coaches’ capacity. When determining whether or not to launch the experiment, we are looking for a minimum difference of 0.01 between the experiment and control groups.</p>
+<h5>Retention</h5>
+<p>This metric is the ratio between the number of user-ids to remain enrolled past the 14-day boundary and the number of user-ids to complete checkout. We would like to see this metric larger in the experiment group as compared to the control group as it indicates overall improved student experiment as well as coaches’ capacity to support students. We would like to see a minimum difference of 0.01 between the experiment and control groups.</p>
+<h5>Net Conversion</h5>
+<p>This metric is the ratio between the number of user-ids to remain enrolled past the 14-day boundary and the number of unique cookies to click the “Start free trial” button. Again, we would like to see metric this increased for our experiment group when compared to the control group with a minimum difference of 0.0075.</p>
+<p>In conclusion, in order for us to launch the experiment, we would like to see an increase in retention and net conversion and a decrease in gross conversion. We would like to see all 3 of these metrics move in the above-mentioned direction in order to launch.</p>
+<h3>Measuring Standard Deviation</h3>
+<div class="highlight"><pre><span></span><span class="c1"># Load libraries</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="c1"># Read and print baseline values table</span>
+<span class="n">baseline_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;BaselineValuesData.csv&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Baseline Values Table:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">)</span>
+
+<span class="c1">#Extract values from table</span>
+<span class="n">UniqueCookies</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;Unique cookies to view page per day&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">UniqueCookiesToStartFreeTrial</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;Unique cookies to click Start free trial per day&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">Enrollments</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;Enrollments per day&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">ClickThroughProb</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;Click-through-probability on Start free trial&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">EnrollingProb</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;Probability of enrolling, given click&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">PaymentProbGivenEnroll</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;Probability of payment, given enroll&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">PaymentProbGivenClick</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;Probability of payment, given click&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">TotalCookies</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;Number of cookies visiting course overview page&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">Alpha</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;alpha&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+<span class="n">Beta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_values</span><span class="p">[</span><span class="n">baseline_values</span><span class="o">.</span><span class="n">Metric</span> <span class="o">==</span> 
+                                     <span class="s1">&#39;beta&#39;</span><span class="p">][</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+
+<span class="c1"># Gross Conversion Standard Deviation</span>
+<span class="n">GrossConversionStd</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">EnrollingProb</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">EnrollingProb</span><span class="p">)</span><span class="o">/</span>
+                               <span class="p">(</span><span class="n">TotalCookies</span><span class="o">*</span><span class="n">UniqueCookiesToStartFreeTrial</span><span class="o">/</span><span class="n">UniqueCookies</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Gross Conversion Standard Deviation:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">GrossConversionStd</span><span class="p">)</span>
+
+<span class="c1"># Retention Standard Deviation</span>
+<span class="n">RetentionStd</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">PaymentProbGivenEnroll</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">PaymentProbGivenEnroll</span><span class="p">)</span><span class="o">/</span>
+                               <span class="p">(</span><span class="n">TotalCookies</span><span class="o">*</span><span class="n">Enrollments</span><span class="o">/</span><span class="n">UniqueCookies</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Retention Standard Deviation:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">RetentionStd</span><span class="p">)</span>
+
+<span class="c1"># Net Conversion Standard Deviation</span>
+<span class="n">NetConversionStd</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">PaymentProbGivenClick</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">PaymentProbGivenClick</span><span class="p">)</span><span class="o">/</span>
+                               <span class="p">(</span><span class="n">TotalCookies</span><span class="o">*</span><span class="n">UniqueCookiesToStartFreeTrial</span><span class="o">/</span><span class="n">UniqueCookies</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Net Conversion Standard Deviation:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">NetConversionStd</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Baseline Values Table:
+                                             Metric         Value
+0               Unique cookies to view page per day  40000.000000
+1  Unique cookies to click Start free trial per day   3200.000000
+2                               Enrollments per day    660.000000
+3     Click-through-probability on Start free trial      0.080000
+4             Probability of enrolling, given click      0.206250
+5              Probability of payment, given enroll      0.530000
+6               Probability of payment, given click      0.109313
+7   Number of cookies visiting course overview page   5000.000000
+8                                             alpha      0.050000
+9                                              beta      0.200000
+Gross Conversion Standard Deviation:
+0.0202
+Retention Standard Deviation:
+0.0549
+Net Conversion Standard Deviation:
+0.0156
+</pre></div>
+
+
+<p>I would expect the analytic estimates for gross conversion and net conversion standard deviation values to be accurate. That is because the gross conversion and the net conversion are both the unit of diversion as well as the unit of analysis. When this is the case, the analytic estimates for standard deviation tend to be accurate. For retention however, we would want to collect an empirical estimate of the variability if we had the time.  </p>
+<h3>Sizing</h3>
+<p>With an alpha of 0.05 and a beta of 0.2, below are the sample sizes for each evaluation metric that we would need to collect to adequately power the experiment. These values were determined using this <a href="http://www.evanmiller.org/ab-testing/sample-size.html">website</a>.<br>
+Gross Conversion: 25,835<br>
+Retention: 39,115<br>
+Net Conversion:  27,413<br>
+We then use these values to calculate the total number of page views required to adequately power the experiment.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Sample sizes required</span>
+<span class="n">GrossConversion_SS</span> <span class="o">=</span> <span class="mi">25835</span>  
+<span class="n">Retention_SS</span> <span class="o">=</span> <span class="mi">39115</span>  
+<span class="n">NetConversion_SS</span> <span class="o">=</span> <span class="mi">27413</span> 
+
+<span class="c1"># Total page views required</span>
+<span class="n">GrossConversion_PV</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">GrossConversion_SS</span><span class="o">/</span><span class="p">(</span><span class="n">UniqueCookiesToStartFreeTrial</span><span class="o">/</span><span class="n">UniqueCookies</span><span class="p">)</span>
+<span class="n">Retention_PV</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">Retention_SS</span><span class="o">/</span><span class="p">(</span><span class="n">Enrollments</span><span class="o">/</span><span class="n">UniqueCookies</span><span class="p">)</span>
+<span class="n">NetConversion_PV</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">NetConversion_SS</span><span class="o">/</span><span class="p">(</span><span class="n">UniqueCookiesToStartFreeTrial</span><span class="o">/</span><span class="n">UniqueCookies</span><span class="p">)</span>
+<span class="n">Minimum_PV</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">GrossConversion_PV</span><span class="p">,</span> <span class="n">Retention_PV</span><span class="p">,</span> <span class="n">NetConversion_PV</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Gross conversion page views required:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">GrossConversion_PV</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Retention page views required:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Retention_PV</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Net conversion page views required:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NetConversion_PV</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Minimum page views required:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">Minimum_PV</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Gross conversion page views required:
+645875
+Retention page views required:
+4741212
+Net conversion page views required:
+685325
+Minimum page views required:
+4741212
+</pre></div>
+
+
+<h3>Duration vs. Exposure</h3>
+<p>If we were to divert 100% of the traffic to the experiment, the output below shows the required duration (days) for each evaluation matric.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Total days required</span>
+<span class="n">GrossConversion_Days</span> <span class="o">=</span> <span class="n">GrossConversion_PV</span><span class="o">/</span><span class="n">UniqueCookies</span>
+<span class="n">Retention_Days</span> <span class="o">=</span> <span class="n">Retention_PV</span><span class="o">/</span><span class="n">UniqueCookies</span>
+<span class="n">NetConversion_Days</span> <span class="o">=</span> <span class="n">NetConversion_PV</span><span class="o">/</span><span class="n">UniqueCookies</span>
+<span class="n">Minimum_Days</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">GrossConversion_Days</span><span class="p">,</span> <span class="n">Retention_Days</span><span class="p">,</span> <span class="n">NetConversion_Days</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Gross conversion days required:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">GrossConversion_Days</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Retention days required:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">Retention_Days</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Net conversion days required:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">NetConversion_Days</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Minimum days required:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">Minimum_Days</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Gross conversion days required:
+17
+Retention days required:
+119
+Net conversion days required:
+18
+Minimum days required:
+119
+</pre></div>
+
+
+<p>For retention, we would have to run the experiment for 119 days, which is too lengthy for us. Given that, we are only left with Gross Conversion and Net Conversion as our evaluation metrics. Since the risk level of this experiment is quite low, it would be reasonable to divert 100% of the traffic and thus would need to run the experiment for 18 days.  </p>
+<h2>Experiment Analysis</h2>
+<h3>Sanity Checks</h3>
+<p>We perform sanity checks on our invariant metrics</p>
+<div class="highlight"><pre><span></span><span class="c1"># Read in experimental data and print first 5 rows</span>
+
+<span class="c1"># Control data</span>
+<span class="n">control_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;ControlGroupData.csv&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Control data:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">control_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="c1"># Experiment data</span>
+<span class="n">experiment_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;ExperimentGroupData.csv&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Experiment data:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="c1"># Expected values for the invariant metrics</span>
+<span class="n">NumberOfCookies_EV</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">NumberOfClicks_EV</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">ClickThroughProb_EV</span> <span class="o">=</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">]</span>
+
+<span class="c1"># Observed values for the invariant metrics</span>
+<span class="n">NumberOfCookies_OV</span> <span class="o">=</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">]</span>\
+                                                            <span class="o">+</span> <span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">])</span>
+<span class="n">NumberOfClicks_OV</span> <span class="o">=</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span> \
+                                                        <span class="o">+</span> <span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">])</span>
+<span class="n">ClickThroughProb_OV</span> <span class="o">=</span> <span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span> \
+<span class="o">/</span> <span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">]</span>
+
+<span class="c1"># 95% Confidence Intervals</span>
+<span class="c1"># Number of cookies</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Cookies Expected Value:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">NumberOfCookies_EV</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Cookies Observed Value:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NumberOfCookies_OV</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">NumberOfCookies_LB</span> <span class="o">=</span> <span class="n">NumberOfCookies_EV</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">NumberOfCookies_EV</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">NumberOfCookies_EV</span><span class="p">)</span>\
+                                                         <span class="o">/</span><span class="p">(</span><span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">]</span>\
+                                                           <span class="o">+</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Cookies Lower Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NumberOfCookies_LB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">NumberOfCookies_UB</span> <span class="o">=</span> <span class="n">NumberOfCookies_EV</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">NumberOfCookies_EV</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">NumberOfCookies_EV</span><span class="p">)</span>\
+                                                         <span class="o">/</span><span class="p">(</span><span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">]</span>\
+                                                           <span class="o">+</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Cookies Upper Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NumberOfCookies_UB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Passes Test:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">NumberOfCookies_OV</span> <span class="o">&gt;</span> <span class="n">NumberOfCookies_LB</span> <span class="ow">and</span> <span class="n">NumberOfCookies_OV</span> <span class="o">&lt;</span> <span class="n">NumberOfCookies_UB</span><span class="p">)</span>
+
+<span class="c1"># Number of clicks on &quot;Start Free Trial&quot;</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Clicks on &quot;Start Free Trial&quot; Expected Value:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">NumberOfClicks_EV</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Clicks on &quot;Start Free Trial&quot; Observed Value:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NumberOfClicks_OV</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">NumberOfClicks_LB</span> <span class="o">=</span> <span class="n">NumberOfClicks_EV</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">NumberOfClicks_EV</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">NumberOfClicks_EV</span><span class="p">)</span>\
+                                                       <span class="o">/</span><span class="p">(</span><span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                         <span class="o">+</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Clicks on &quot;Start Free Trial&quot; Lower Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NumberOfClicks_LB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">NumberOfClicks_UB</span> <span class="o">=</span> <span class="n">NumberOfClicks_EV</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">NumberOfClicks_EV</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">NumberOfClicks_EV</span><span class="p">)</span>\
+                                                       <span class="o">/</span><span class="p">(</span><span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                         <span class="o">+</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Number of Clicks on &quot;Start Free Trial&quot; Upper Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NumberOfClicks_UB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Passes Test:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">NumberOfClicks_OV</span> <span class="o">&gt;</span> <span class="n">NumberOfClicks_LB</span> <span class="ow">and</span> <span class="n">NumberOfClicks_OV</span> <span class="o">&lt;</span> <span class="n">NumberOfClicks_UB</span><span class="p">)</span>
+
+<span class="c1"># Click Through Probability on &quot;Start Free Trial&quot;</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Click-through-probability on &quot;Start Free Trial&quot; Expected Value:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">ClickThroughProb_EV</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Click-through-probability on &quot;Start Free Trial&quot; Observed Value:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">ClickThroughProb_OV</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">ClickThroughProb_LB</span> <span class="o">=</span> <span class="n">ClickThroughProb_EV</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ClickThroughProb_EV</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ClickThroughProb_EV</span><span class="p">)</span>\
+                                                           <span class="o">/</span><span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Click-through-probability on &quot;Start Free Trial&quot; Lower Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">ClickThroughProb_LB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">ClickThroughProb_UB</span> <span class="o">=</span> <span class="n">ClickThroughProb_EV</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ClickThroughProb_EV</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ClickThroughProb_EV</span><span class="p">)</span>\
+                                                           <span class="o">/</span><span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Pageviews&#39;</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Click-through-probability on &quot;Start Free Trial&quot; Upper Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">ClickThroughProb_UB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Passes Test:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ClickThroughProb_OV</span> <span class="o">&gt;</span> <span class="n">ClickThroughProb_LB</span> <span class="ow">and</span> <span class="n">ClickThroughProb_OV</span> <span class="o">&lt;</span> <span class="n">ClickThroughProb_UB</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Control data:
+          Date  Pageviews  Clicks  Enrollments  Payments
+0  Sat, Oct 11       7723     687        134.0      70.0
+1  Sun, Oct 12       9102     779        147.0      70.0
+2  Mon, Oct 13      10511     909        167.0      95.0
+3  Tue, Oct 14       9871     836        156.0     105.0
+4  Wed, Oct 15      10014     837        163.0      64.0
+Experiment data:
+          Date  Pageviews  Clicks  Enrollments  Payments
+0  Sat, Oct 11       7716     686        105.0      34.0
+1  Sun, Oct 12       9288     785        116.0      91.0
+2  Mon, Oct 13      10480     884        145.0      79.0
+3  Tue, Oct 14       9867     827        138.0      92.0
+4  Wed, Oct 15       9793     832        140.0      94.0
+Number of Cookies Expected Value:
+0.5
+Number of Cookies Observed Value:
+0.5006
+Number of Cookies Lower Bound:
+0.4988
+Number of Cookies Upper Bound:
+0.5012
+Passes Test:
+True
+Number of Clicks on &quot;Start Free Trial&quot; Expected Value:
+0.5
+Number of Clicks on &quot;Start Free Trial&quot; Observed Value:
+0.5005
+Number of Clicks on &quot;Start Free Trial&quot; Lower Bound:
+0.4959
+Number of Clicks on &quot;Start Free Trial&quot; Upper Bound:
+0.5041
+Passes Test:
+True
+Click-through-probability on &quot;Start Free Trial&quot; Expected Value:
+0.0821
+Click-through-probability on &quot;Start Free Trial&quot; Observed Value:
+0.0822
+Click-through-probability on &quot;Start Free Trial&quot; Lower Bound:
+0.0812
+Click-through-probability on &quot;Start Free Trial&quot; Upper Bound:
+0.083
+Passes Test:
+True
+</pre></div>
+
+
+<p>All of the invariant metrics pass the sanity check.  </p>
+<h3>Result Analysis</h3>
+<div class="highlight"><pre><span></span><span class="c1"># Practically significant values</span>
+<span class="n">GrossConversion_dmin</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">NetConversion_dmin</span> <span class="o">=</span> <span class="mf">0.0075</span>
+
+<span class="c1"># Length of evaluation metrics</span>
+<span class="n">EvalLength</span> <span class="o">=</span> <span class="p">(</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">count</span><span class="p">()[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">])</span>
+
+<span class="c1"># Gross conversion observed difference</span>
+<span class="n">GrossConversion_OV</span> <span class="o">=</span> <span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">]</span>\
+<span class="o">/</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">]</span>\
+<span class="o">/</span><span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>
+
+<span class="c1"># Gross conversion observed difference</span>
+<span class="n">NetConversion_OV</span> <span class="o">=</span> <span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">]</span>\
+<span class="o">/</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">]</span>\
+<span class="o">/</span><span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>
+
+<span class="c1"># 95% Confidence Intervals for Gross Conversion</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Gross Conversion Observed Difference:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">GrossConversion_OV</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">GrossConversion_LB</span> <span class="o">=</span> <span class="n">GrossConversion_OV</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(((</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">]</span> \
+                                                           <span class="o">+</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">])</span>\
+                                                          <span class="o">/</span><span class="p">(</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                            <span class="o">+</span> <span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>\
+                                                         <span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">]</span>\
+                                                              <span class="o">+</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">])</span>\
+                                                           <span class="o">/</span><span class="p">(</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                             <span class="o">+</span> <span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>\
+                                                         <span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                           <span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Gross Conversion Lower Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">GrossConversion_LB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">GrossConversion_UB</span> <span class="o">=</span> <span class="n">GrossConversion_OV</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(((</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">]</span>\
+                                                           <span class="o">+</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">])</span>\
+                                                          <span class="o">/</span><span class="p">(</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                            <span class="o">+</span> <span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>\
+                                                         <span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">]</span>\
+                                                              <span class="o">+</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Enrollments&#39;</span><span class="p">])</span>\
+                                                           <span class="o">/</span><span class="p">(</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                             <span class="o">+</span> <span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>\
+                                                         <span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                           <span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Gross Conversion Upper Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">GrossConversion_UB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Statistical Difference:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">GrossConversion_OV</span> <span class="o">&gt;</span> <span class="n">GrossConversion_LB</span> <span class="ow">and</span> <span class="n">GrossConversion_OV</span> <span class="o">&lt;</span> <span class="n">GrossConversion_UB</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Practical Difference:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">GrossConversion_OV</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">GrossConversion_dmin</span><span class="p">)</span>
+
+<span class="c1"># 95% Confidence Intervals for Net Convesion</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Net Conversion Observed Difference:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NetConversion_OV</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">NetConversion_LB</span> <span class="o">=</span> <span class="n">NetConversion_OV</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(((</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">]</span>\
+                                                       <span class="o">+</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">])</span>\
+                                                      <span class="o">/</span><span class="p">(</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                        <span class="o">+</span> <span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>\
+                                                     <span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">]</span>\
+                                                          <span class="o">+</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">])</span>\
+                                                       <span class="o">/</span><span class="p">(</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                         <span class="o">+</span> <span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>\
+                                                     <span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                       <span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Net Conversion Lower Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NetConversion_LB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">NetConversion_UB</span> <span class="o">=</span> <span class="n">NetConversion_OV</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(((</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">]</span>\
+                                                       <span class="o">+</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">])</span>\
+                                                      <span class="o">/</span><span class="p">(</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                        <span class="o">+</span> <span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>\
+                                                     <span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">experiment_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">]</span>\
+                                                          <span class="o">+</span> <span class="n">control_data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Payments&#39;</span><span class="p">])</span>\
+                                                       <span class="o">/</span><span class="p">(</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                         <span class="o">+</span> <span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>\
+                                                     <span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">control_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]</span>\
+                                                       <span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="n">experiment_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">EvalLength</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Clicks&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Net Conversion Upper Bound:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">NetConversion_UB</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Statistical Difference:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">NetConversion_OV</span> <span class="o">&gt;</span> <span class="n">NetConversion_LB</span> <span class="ow">and</span> <span class="n">NetConversion_OV</span> <span class="o">&lt;</span> <span class="n">NetConversion_UB</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Practical Difference:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">NetConversion_OV</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">NetConversion_dmin</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Gross Conversion Observed Difference:
+-0.0206
+Gross Conversion Lower Bound:
+-0.0291
+Gross Conversion Upper Bound:
+-0.012
+Statistical Difference:
+True
+Practical Difference:
+True
+Net Conversion Observed Difference:
+-0.0049
+Net Conversion Lower Bound:
+-0.0116
+Net Conversion Upper Bound:
+0.0019
+Statistical Difference:
+True
+Practical Difference:
+False
+</pre></div>
+
+
+<h2>Summary</h2>
+<p>This experiment consisted of diverting cookies that visited the Udacity homepage into one of the experiment and control groups. For sanity checking purposes, the invariant metrics that were selected were the Number of Cookies, Number of clicks on “Start free trial” and Click-Through-Probability. The evaluation metrics were Gross Conversion and Net Conversion, where Gross Conversion is the rate of enrollment per cookie and Net Conversion is the rate of payment per cookie. The null hypothesis is that the evaluation metrics are equal in both the experiment and control groups. In order to reject this null hypothesis and accept the alternative hypothesis, the differences in the evaluation metrics for the two groups must exceed the statistically and pre-specified practically significant thresholds. The Bonferroni correction was not used in our methodology since we require all of our evaluation metrics to be significant. The results show that the invariant metrics pass our sanity check since the metrics show no significant difference between the experiment and control groups at the 95% Confidence Interval. Although the Gross Conversion was found to be statistically significant at the 95% Confidence Interval, the Net Conversion however was not found to be practically significant at the 95% Confidence Interval.  </p>
+<h2>Recommendation</h2>
+<p>The purpose of this experiment was to analyze whether or not adding the suggestion pop-up would lead to the improvement of overall student experience and better use of resources. Although Gross Conversion was found to be significantly and practically different in the experiment group, this was not the case for Net Conversion. Since we had required all of our evaluation metrics to be both statistically and practically significant, my recommendation would be to not launch but instead pursue further experiments.</p>
+<h2>Follow-Up Experiment</h2>
+<p>My suggestion of the follow-up experiment would fall under the same theme of filtering out students that are more likely to cancel their enrollment and potentially waste resources. This filtering process however, needs to be slightly more involved than asking one simple question and offering a suggestion. One major difference in this experiment is that the filtering process would take place after the student has enrolled into a course. Right after enrollment, the student would be diverted to either the experiment or control group, based on the user-id. The experiment group would have to fill out a short quiz that asks several questions in an attempt to gauge the probability that the student would finish end up completing the course and making efficient use of resources such as the coaches’ time. There quiz would consist of questions such as “How many hours/week do you work?”, “Do you do any volunteering that could impact your time for studies?”, etc. After completion, the student would be offered a suggestion whether or not it is appropriate for them to continue and offer advice on how to be successful in completing the course. The null hypothesis of this experiment is that the experiment group will not increase retention. The unit of diversion is the user-id since the students are split into experiment or control groups after enrollment. The invariant metrics would be user-id and the evaluation metric would retention. A statistically and practically significant retention rate between the experiment and control group would indicate a launch.</p>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
