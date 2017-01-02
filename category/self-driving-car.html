@@ -27,7 +27,471 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/finding-lane-lines-on-the-road.html">Finding Lane Lines on the Road</a></h1>
+                    <h1 class="entry-title"><a href="/traffic-signs-classifier.html">Traffic Signs Classifier</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-11-22T00:00:00+00:00">
+                Published: Tue 22 November 2016
+        </abbr>
+
+<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
+
+</footer><!-- /.post-info --><h1>Self-Driving Car Engineer Nanodegree</h1>
+<h2>Deep Learning</h2>
+<h2>Project: Build a Traffic Sign Recognition Classifier</h2>
+<p>In this notebook, a template is provided for you to implement your functionality in stages which is required to successfully complete this project. If additional code is required that cannot be included in the notebook, be sure that the Python code is successfully imported and included in your submission, if necessary. Sections that begin with <strong>'Implementation'</strong> in the header indicate where you should begin your implementation for your project. Note that some sections of implementation are optional, and will be marked with <strong>'Optional'</strong> in the header.</p>
+<p>In addition to implementing code, there will be questions that you must answer which relate to the project and your implementation. Each section where you will answer a question is preceded by a <strong>'Question'</strong> header. Carefully read each question and provide thorough answers in the following text boxes that begin with <strong>'Answer:'</strong>. Your project submission will be evaluated based on your answers to each of the questions and the implementation you provide.</p>
+<blockquote>
+<p><strong>Note:</strong> Code and Markdown cells can be executed using the <strong>Shift + Enter</strong> keyboard shortcut. In addition, Markdown cells can be edited by typically double-clicking the cell to enter edit mode.</p>
+</blockquote>
+<hr>
+<h2>Step 1: Dataset Exploration</h2>
+<p>Visualize the German Traffic Signs Dataset. This is open ended, some suggestions include: plotting traffic signs images, plotting the count of each sign, etc. Be creative!</p>
+<p>The pickled data is a dictionary with 4 key/value pairs:</p>
+<ul>
+<li>features -&gt; the images pixel values, (width, height, channels)</li>
+<li>labels -&gt; the label of the traffic sign</li>
+<li>sizes -&gt; the original width and height of the image, (width, height)</li>
+<li>coords -&gt; coordinates of a bounding box around the sign in the image, (x1, y1, x2, y2). Based the original image (not the resized version).</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># Load required libraries</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelBinarizer</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">misc</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>/Users/Aman/anaconda3/envs/CarND-TensorFlow-Lab/lib/python3.5/site-packages/sklearn/cross_validation.py:44: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. Also note that the interface of the new CV iterators are different from that of this module. This module will be removed in 0.20.
+  &quot;This module will be removed in 0.20.&quot;, DeprecationWarning)
+
+
+Populating the interactive namespace from numpy and matplotlib
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Load pickled data</span>
+
+<span class="c1"># Open training and testing data files</span>
+<span class="n">training_file</span> <span class="o">=</span> <span class="s1">&#39;data/train.p&#39;</span>
+<span class="n">testing_file</span> <span class="o">=</span> <span class="s1">&#39;data/test.p&#39;</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">training_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">train</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">testing_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">test</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span>
+<span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">test</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">],</span> <span class="n">test</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1">### To start off let&#39;s do a basic data summary.</span>
+
+<span class="c1"># Number of training examples</span>
+<span class="n">n_train</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+
+<span class="c1"># Number of testing examples</span>
+<span class="n">n_test</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="c1"># The shape of an image</span>
+<span class="n">image_shape</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+<span class="c1"># Number of classes in the dataset</span>
+<span class="n">n_classes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Number of training examples =&quot;</span><span class="p">,</span> <span class="n">n_train</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Number of testing examples =&quot;</span><span class="p">,</span> <span class="n">n_test</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Image data shape =&quot;</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Number of classes =&quot;</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Number of training examples = 39209
+Number of testing examples = 12630
+Image data shape = (32, 32, 3)
+Number of classes = 43
+</pre></div>
+
+
+<h3>Pictures of the signs</h3>
+<div class="highlight"><pre><span></span><span class="n">traffic_sign</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n_classes</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">traffic_sign</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">y_test</span> <span class="o">==</span> <span class="n">i</span> <span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],:,:,:]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">y_test</span> <span class="o">==</span> <span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],:,:,:]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/Traffic_Signs_Recognition_6_0.png"></p>
+<h3>Count of each sign</h3>
+<div class="highlight"><pre><span></span><span class="c1"># Plot histogram of labels in training and test set</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">axarr</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">n_classes</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Train Labels&#39;</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">n_classes</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Test Labels&#39;</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Label&#39;</span><span class="p">)</span>
+<span class="n">axarr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>&lt;matplotlib.text.Text at 0x12bf6ab70&gt;
+</pre></div>
+
+
+<p><img alt="png" src="/images/Traffic_Signs_Recognition_8_1.png"></p>
+<hr>
+<h2>Step 2: Design and Test a Model Architecture</h2>
+<p>Design and implement a deep learning model that learns to recognize traffic signs. Train and test your model on the <a href="http://benchmark.ini.rub.de/?section=gtsrb&amp;subsection=dataset">German Traffic Sign Dataset</a>.</p>
+<p>There are various aspects to consider when thinking about this problem:</p>
+<ul>
+<li>Your model can be derived from a deep feedforward net or a deep convolutional network.</li>
+<li>Play around preprocessing techniques (normalization, rgb to grayscale, etc)</li>
+<li>Number of examples per label (some have more than others).</li>
+<li>Generate fake data.</li>
+</ul>
+<p>Here is an example of a <a href="http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf">published baseline model on this problem</a>. It's not required to be familiar with the approach used in the paper but, it's good practice to try to read papers like these.</p>
+<h3>Implementation</h3>
+<p>Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.</p>
+<h3>Implement Min-Max scaling to convert image to greyscale</h3>
+<div class="highlight"><pre><span></span><span class="c1"># Implement Min-Max scaling for greyscale image data</span>
+<span class="k">def</span> <span class="nf">normalize_greyscale</span><span class="p">(</span><span class="n">image_data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize the image data with Min-Max scaling to a range of [0.1, 0.9]</span>
+<span class="sd">    :param image_data: The image data to be normalized</span>
+<span class="sd">    :return: Normalized image data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># ToDo: Implement Min-Max scaling for greyscale image data</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.9</span>
+    <span class="n">greyscale_min</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">greyscale_max</span> <span class="o">=</span> <span class="mi">255</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(((</span><span class="n">image_data</span> <span class="o">-</span> <span class="n">greyscale_min</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">greyscale_max</span> <span class="o">-</span> <span class="n">greyscale_min</span><span class="p">))</span>
+
+<span class="n">X_test_n</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">X_train_n</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]):</span>
+    <span class="n">X_test_n</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalize_greyscale</span><span class="p">(</span><span class="n">X_test</span><span class="p">[:,:,:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">X_train_n</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalize_greyscale</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,:,:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+<span class="n">X_test_n</span> <span class="o">=</span> <span class="n">X_test_n</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X_test_n</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_test_n</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X_test_n</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">X_train_n</span> <span class="o">=</span> <span class="n">X_train_n</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X_train_n</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_train_n</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X_train_n</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+</pre></div>
+
+
+<h3>Apply One-Hot Encoding</h3>
+<div class="highlight"><pre><span></span><span class="c1"># Turn labels into numbers and apply One-Hot Encoding</span>
+<span class="n">encoder</span> <span class="o">=</span> <span class="n">LabelBinarizer</span><span class="p">()</span>
+<span class="n">encoder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span>
+
+<span class="c1"># Convert to float32</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">y_test</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+
+
+<h3>Question 1</h3>
+<p><em>Describe the techniques used to preprocess the data.</em></p>
+<p><strong>Answer:</strong></p>
+<p>Whenever possible, we want our variables to have 0 mean and equal variance when doing optimization. One way we can do this on images is to convert the images to greyscale. This has the effect of reducing the overall variation in the dataset. However, we would like to preserve the variation between colors so the normalization was performed individually on each color. </p>
+<p>Also, in order to convert labels into numbers, I applied One-Hot Encoding</p>
+<h3>Split the data into training/validation/testing sets</h3>
+<div class="highlight"><pre><span></span><span class="c1"># Get randomized datasets for training and validation</span>
+<span class="n">train_features</span><span class="p">,</span> <span class="n">valid_features</span><span class="p">,</span> <span class="n">train_labels</span><span class="p">,</span> <span class="n">valid_labels</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_train_n</span><span class="p">,</span>
+    <span class="n">y_train</span><span class="p">,</span>
+    <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">832289</span><span class="p">)</span>
+</pre></div>
+
+
+<h3>Question 2</h3>
+<p><em>Describe how you set up the training, validation and testing data for your model. If you generated additional data, why?</em></p>
+<p><strong>Answer:</strong></p>
+<p>The train_test_split function was used to separate the data in training and testing datasets. I went with the conventional method of using 70% of the data to train and 30% to test.</p>
+<h3>Architecture</h3>
+<div class="highlight"><pre><span></span><span class="c1"># Learning Parameters</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">training_epochs</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="c1"># Size of inputs</span>
+<span class="n">n_input</span> <span class="o">=</span> <span class="n">train_features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  
+<span class="n">n_classes</span> <span class="o">=</span> <span class="n">train_labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># Hidden Layer Parameters</span>
+<span class="n">n_hidden_layer1</span> <span class="o">=</span> <span class="n">n_input</span> <span class="c1"># layer number of features</span>
+<span class="n">n_hidden_layer2</span> <span class="o">=</span> <span class="n">n_input</span> <span class="c1"># layer number of features</span>
+
+<span class="c1"># Store layers weight &amp; bias</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;hidden_layer1&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="n">n_input</span><span class="p">,</span> <span class="n">n_hidden_layer1</span><span class="p">],</span> <span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stddev</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)),</span>
+    <span class="s1">&#39;hidden_layer2&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="n">n_hidden_layer1</span><span class="p">,</span> <span class="n">n_hidden_layer2</span><span class="p">],</span> <span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stddev</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)),</span>
+    <span class="s1">&#39;out&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="n">n_hidden_layer2</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">]))</span>
+<span class="p">}</span>
+<span class="n">biases</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;hidden_layer1&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="n">n_hidden_layer1</span><span class="p">],</span> <span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stddev</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)),</span>
+    <span class="s1">&#39;hidden_layer2&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="n">n_hidden_layer2</span><span class="p">],</span> <span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stddev</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)),</span>
+    <span class="s1">&#39;out&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="n">n_classes</span><span class="p">]))</span>
+<span class="p">}</span>
+
+<span class="c1"># tf Graph input</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_input</span><span class="p">])</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">])</span>
+
+<span class="c1"># Hidden layers with RELU activation</span>
+<span class="n">layer_1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weights</span><span class="p">[</span><span class="s1">&#39;hidden_layer1&#39;</span><span class="p">]),</span> <span class="n">biases</span><span class="p">[</span><span class="s1">&#39;hidden_layer1&#39;</span><span class="p">])</span>
+<span class="n">layer_1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">layer_1</span><span class="p">)</span>
+
+<span class="n">layer_2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weights</span><span class="p">[</span><span class="s1">&#39;hidden_layer2&#39;</span><span class="p">]),</span> <span class="n">biases</span><span class="p">[</span><span class="s1">&#39;hidden_layer2&#39;</span><span class="p">])</span>
+<span class="n">layer_2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">layer_2</span><span class="p">)</span>
+
+<span class="c1"># Output layer with linear activation</span>
+<span class="n">logits</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">layer_2</span><span class="p">,</span> <span class="n">weights</span><span class="p">[</span><span class="s1">&#39;out&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">biases</span><span class="p">[</span><span class="s1">&#39;out&#39;</span><span class="p">]</span>
+
+<span class="n">prediction</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+<span class="n">predict</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> 
+
+<span class="c1"># Define loss and optimizer</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax_cross_entropy_with_logits</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">AdamOptimizer</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+
+<span class="c1">#Define accuracy </span>
+<span class="n">is_correct_prediction</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">is_correct_prediction</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+<span class="c1">#Initialize storage variables</span>
+<span class="n">loss_batch</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">train_acc_batch</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">valid_acc_batch</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Initialize tf session</span>
+<span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">initialize_all_variables</span><span class="p">())</span>
+
+<span class="c1">#Run for all epochs</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_epochs</span><span class="p">):</span>
+
+    <span class="c1"># The training cycle</span>
+    <span class="k">for</span> <span class="n">batch_start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">train_labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">batch_finish</span> <span class="o">=</span> <span class="n">batch_start</span> <span class="o">+</span> <span class="n">batch_size</span>
+        <span class="n">batch_features</span> <span class="o">=</span> <span class="n">train_features</span><span class="p">[</span><span class="n">batch_start</span><span class="p">:</span><span class="n">batch_finish</span><span class="p">]</span>
+        <span class="n">batch_labels</span> <span class="o">=</span> <span class="n">train_labels</span><span class="p">[</span><span class="n">batch_start</span><span class="p">:</span><span class="n">batch_finish</span><span class="p">]</span>
+
+        <span class="c1"># Run optimizer</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">batch_features</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">batch_labels</span><span class="p">})</span>
+
+    <span class="n">loss_out</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">batch_features</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">batch_labels</span><span class="p">})</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">batch_features</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">batch_labels</span><span class="p">})</span>       
+    <span class="n">loss_batch</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">loss_out</span><span class="p">])</span>
+    <span class="n">train_acc_batch</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">acc</span><span class="p">])</span>
+
+    <span class="n">acc</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">valid_features</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span>  <span class="n">valid_labels</span><span class="p">})</span>              
+    <span class="n">valid_acc_batch</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">acc</span><span class="p">])</span>
+
+<span class="c1"># Check accuracy against Validation data</span>
+<span class="n">validation_accuracy</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">X_test_n</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span>  <span class="n">y_test</span><span class="p">})</span>
+
+<span class="c1"># Plot Loss and Accuracy</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arrange</span><span class="p">(</span><span class="n">training_epochs</span><span class="p">)</span>
+<span class="n">loss_plot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+<span class="n">loss_plot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
+<span class="n">loss_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">loss_batch</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">loss_plot</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">epochs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">epochs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+<span class="n">acc_plot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+<span class="n">acc_plot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">)</span>
+<span class="n">acc_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">train_acc_batch</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Training Accuracy&#39;</span><span class="p">)</span>
+<span class="n">acc_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">valid_acc_batch</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Validation Accuracy&#39;</span><span class="p">)</span>
+<span class="n">acc_plot</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">acc_plot</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">epochs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">epochs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+<span class="n">acc_plot</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Validation accuracy at {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">validation_accuracy</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/Traffic_Signs_Recognition_22_0.png"></p>
+<div class="highlight"><pre><span></span>Validation accuracy at 0.7330166101455688
+</pre></div>
+
+
+<h3>Question 3</h3>
+<p><em>What does your final architecture look like? (Type of model, layers, sizes, connectivity, etc.)  For reference on how to build a deep neural network using TensorFlow, see <a href="https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/6df7ae49-c61c-4bb2-a23e-6527e69209ec/lessons/b516a270-8600-4f93-a0a3-20dfeabe5da6/concepts/83a3a2a2-a9bd-4b7b-95b0-eb924ab14432">Deep Neural Network in TensorFlow
+</a> from the classroom.</em></p>
+<p><strong>Answer:</strong></p>
+<p>The model used in this classification task is the Feedforward Neural Network. It contains 2 hidden layers. Within each layer, ReLU is used to convert the linear models into non-linear models. The cost function is determined using the softmax_cross_entropy_with_logits method. </p>
+<p>I only tried the Feedforward Network, but the Convolution Network is also appropriate to solve this problem. Although it would provide more accurate results, the implementation is more complex.</p>
+<p>The size of each layer was 3072.</p>
+<h3>Question 4</h3>
+<p><em>How did you train your model? (Type of optimizer, batch size, epochs, hyperparameters, etc.)</em></p>
+<p><strong>Answer:</strong></p>
+<p>After testing several methods for the optimizer, I settled on using the AdamOptimizer method for the optimizer since it produced the most accurate results. I used a learning rate of 0.001, 20 training epochs and a batch size of 1000.</p>
+<h3>Question 5</h3>
+<p><em>What approach did you take in coming up with a solution to this problem?</em></p>
+<p><strong>Answer:</strong></p>
+<p>The approach that I took followed very similarly to the Deep Neural Network in TensorFlow lesson. Because the example in the lesson focused on classifying letters, I made several tweeks to accomodate the more complex nature of this problem. Some noticable differences include having 2 hidden layers, using a different optimizer and different learning parameters to allow for better tuning.</p>
+<hr>
+<h2>Step 3: Test a Model on New Images</h2>
+<p>Take several pictures of traffic signs that you find on the web or around you (at least five), and run them through your classifier on your computer to produce example results. The classifier might not recognize some local signs but it could prove interesting nonetheless.</p>
+<p>You may find <code>signnames.csv</code> useful as it contains mappings from the class id (integer) to the actual sign name.</p>
+<h3>Implementation</h3>
+<p>Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Load the data</span>
+<span class="n">signs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;testsigns&#39;</span><span class="p">):</span>
+    <span class="n">sign</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;testsigns/&#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">signs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sign</span><span class="p">)</span>
+
+<span class="c1"># Plot the signs</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">signs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">signs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">signs</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">signs</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">signs</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>(-0.5, 31.5, 31.5, -0.5)
+</pre></div>
+
+
+<p><img alt="png" src="/images/Traffic_Signs_Recognition_31_1.png"></p>
+<h3>Question 6</h3>
+<p><em>Choose five candidate images of traffic signs and provide them in the report. Are there any particular qualities of the image(s) that might make classification difficult? It would be helpful to plot the images in the notebook.</em></p>
+<p><strong>Answer:</strong></p>
+<p>The second sign has a lot of obstruction to it with tree branches covering parts of the sign, in addition to containing different colors than those in the training set. I suspect that this one will be difficult to classify by the algorithm. There is also a slight tilt in a couple of the signs, thereby causing classification issues. Also, at this resolution and size, the images look quite blurred.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Preprocess the images and run the signs through the prediction algorithm to test performance</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signs</span><span class="p">)</span>
+<span class="n">X_mine</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]):</span>
+    <span class="n">X_mine</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalize_greyscale</span><span class="p">(</span><span class="n">X</span><span class="p">[:,:,:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+<span class="n">X_mine</span> <span class="o">=</span> <span class="n">X_mine</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X_mine</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_mine</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">X_mine</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+<span class="n">preds</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">predict</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">X_mine</span><span class="p">})</span>
+<span class="k">print</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]:</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,:,:,:])</span> 
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">traffic_sign</span><span class="p">[</span><span class="n">preds</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>[17  1 11 35 28]
+</pre></div>
+
+
+<p><img alt="png" src="/images/Traffic_Signs_Recognition_34_1.png"></p>
+<h3>Question 7</h3>
+<p><em>Is your model able to perform equally well on captured pictures or a live camera stream when compared to testing on the dataset?</em></p>
+<p><strong>Answer:</strong></p>
+<p>The model was able to predict 2 correctly out of 5. This accuracy level is considerably less than the test dataset. 
+However, with a little more tuning, I believe that the accuracy can be considerably improved. The incorrect classifications are actually quite similar the correct image in most cases.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Get top k performers</span>
+<span class="n">top_k</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">top_k</span><span class="p">(</span><span class="n">prediction</span> <span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">X_mine</span><span class="p">})</span>
+
+<span class="n">top_k_t</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">top_k</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+<span class="n">top_k_t</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Probability&#39;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">top_k</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">top_k</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]:</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,:,:,:])</span> 
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]:</span>
+      <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">5</span><span class="p">)</span>
+      <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">traffic_sign</span><span class="p">[</span><span class="n">top_k</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]])</span>
+      <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>[[  6.49364531e-01   1.99722230e-01   1.41885936e-01   3.94556858e-03
+    1.67365838e-03]
+ [  3.57721835e-01   2.25696608e-01   1.06446661e-01   8.79799128e-02
+    3.78358141e-02]
+ [  9.95969296e-01   1.07235939e-03   9.45125881e-04   6.39660633e-04
+    5.71965356e-04]
+ [  9.99996901e-01   3.01500927e-06   1.72645983e-07   2.60306692e-08
+    2.15430038e-08]
+ [  8.93221736e-01   4.44371477e-02   3.70105393e-02   1.33590661e-02
+    6.24658447e-03]]
+[[17 25  1  5 22]
+ [ 1 25 26  9  3]
+ [11 28 30 16 18]
+ [35 36 34 37 40]
+ [28 29 23 25 22]]
+</pre></div>
+
+
+<p><img alt="png" src="/images/Traffic_Signs_Recognition_37_1.png"></p>
+<p><img alt="png" src="/images/Traffic_Signs_Recognition_37_2.png"></p>
+<h3>Question 8</h3>
+<p><em>Use the model's softmax probabilities to visualize the <strong>certainty</strong> of its predictions, <a href="https://www.tensorflow.org/versions/r0.11/api_docs/python/nn.html#top_k"><code>tf.nn.top_k</code></a> could prove helpful here. Which predictions is the model certain of? Uncertain? If the model was incorrect in its initial prediction, does the correct prediction appear in the top k? (k should be 5 at most)</em></p>
+<p><strong>Answer:</strong></p>
+<p>The model is fairly certain about the "Right-of-way at next intersection" and "Ahead only" signs with probabilities above 99%. The model was fairly certain about the "Student Crossing" sign. There was quite a bit of uncertainty about the other 2 signs.
+For the "No Vehicles" sign, the model gave the incorrect output. The correct output did not even appear in the top 5. As noted about, this was expected since the colors did not match the training dataset.</p>
+<h3>Question 9</h3>
+<p><em>If necessary, provide documentation for how an interface was built for your model to load and classify newly-acquired images.</em></p>
+<p><strong>Answer:</strong></p>
+<blockquote>
+<p><strong>Note</strong>: Once you have completed all of the code implementations and successfully answered each question above, you may finalize your work by exporting the iPython Notebook as an HTML document. You can do this by using the menu above and navigating to  \n",
+    "<strong>File -&gt; Download as -&gt; HTML (.html)</strong>. Include the finished document along with this notebook as your submission.</p>
+</blockquote>
+<div class="highlight"><pre><span></span>
+</pre></div>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/finding-lane-lines-on-the-road.html" rel="bookmark"
+                           title="Permalink to Finding Lane Lines on the Road">Finding Lane Lines on the Road</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2016-11-03T00:00:00+00:00">
                 Published: Thu 03 November 2016
@@ -35,7 +499,7 @@
 
 <p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
 
-</footer><!-- /.post-info --><h1><strong>Finding Lane Lines on the Road</strong></h1>
+</footer><!-- /.post-info -->                <h1><strong>Finding Lane Lines on the Road</strong></h1>
 <hr>
 <p>In this project, we use the following tools to identify lane lines on the road:<br>
 <em> Color selection<br>
@@ -44,317 +508,12 @@
 </em> Gaussian smoothing<br>
 <em> Canny Edge Detection<br>
 </em> Hough Tranform line detection  </p>
-<p>We develop a pipeline on a series of individual images, and later apply the result to a video stream (really just a series of images). Check out the video clip "raw-lines-example.mp4" (located <a href="https://github.com/AmanMander123/FindingLanes">here</a>) to see what the output should look like after using the helper functions below. </p>
-<p>Once the result looks roughly like "raw-lines-example.mp4", we get creative and extrapolate the line segments we've detected to map out the full extent of the lane lines.  We can see an example of the result we're going for in the video "P1_example.mp4".  Ultimately, we would like to draw just one line for the left side of the lane, and one for the right.</p>
-<figure>
- <img src="/images/line-segments-example.jpg" width="380" alt="Combined Image" />
- <figcaption>
- <p></p> 
- <p style="text-align: center;"> The output should look something like this (above) after detecting line segments using the helper functions below </p> 
- </figcaption>
-</figure>
-
-<p><p></p> 
-<figure>
- <img src="/images/laneLines_thirdPass.jpg" width="380" alt="Combined Image" />
- <figcaption>
- <p></p> 
- <p style="text-align: center;"> The goal is to extrapolate line segments to get output like this</p> 
- </figcaption>
-</figure></p>
-<div class="highlight"><pre><span></span><span class="c1"># Importing some useful packages</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.image</span> <span class="kn">as</span> <span class="nn">mpimg</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">cv2</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="c1"># Reading in an image</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">mpimg</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;test_images/solidWhiteRight.jpg&#39;</span><span class="p">)</span>
-
-<span class="c1"># Printing out some stats and plotting</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;This image is:&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">),</span> <span class="s1">&#39;with dimesions:&#39;</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>  <span class="c1">#call as plt.imshow(gray, cmap=&#39;gray&#39;) to show a grayscaled image</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>This image is: &lt;class &#39;numpy.ndarray&#39;&gt; with dimesions: (540, 960, 3)
-
-
-
-
-
-&lt;matplotlib.image.AxesImage at 0x10dbac5c0&gt;
-</pre></div>
-
-
-<p><img alt="png" src="/images/FindingLanes_3_2.png"></p>
-<div class="highlight"><pre><span></span><span class="c1"># Define the functions that we will need</span>
-
-<span class="k">def</span> <span class="nf">grayscale</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Applies the Grayscale transform</span>
-<span class="sd">    This will return an image with only one color channel</span>
-<span class="sd">    but NOTE: to see the returned image as grayscale</span>
-<span class="sd">    you should call plt.imshow(gray, cmap=&#39;gray&#39;)&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2GRAY</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">canny</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">low_threshold</span><span class="p">,</span> <span class="n">high_threshold</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Applies the Canny transform&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">Canny</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">low_threshold</span><span class="p">,</span> <span class="n">high_threshold</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">gaussian_blur</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Applies a Gaussian Noise kernel&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">GaussianBlur</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">region_of_interest</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Applies an image mask.</span>
-
-<span class="sd">    Only keeps the region of the image defined by the polygon</span>
-<span class="sd">    formed from `vertices`. The rest of the image is set to black.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Defining a blank mask to start with</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>   
-
-    <span class="c1"># Defining a 3 channel or 1 channel color to fill the mask with depending on the input image</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">channel_count</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># i.e. 3 or 4 depending on your image</span>
-        <span class="n">ignore_mask_color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,)</span> <span class="o">*</span> <span class="n">channel_count</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">ignore_mask_color</span> <span class="o">=</span> <span class="mi">255</span>
-
-    <span class="c1"># Filling pixels inside the polygon defined by &quot;vertices&quot; with the fill color    </span>
-    <span class="n">cv2</span><span class="o">.</span><span class="n">fillPoly</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">ignore_mask_color</span><span class="p">)</span>
-
-    <span class="c1"># Returning the image only where mask pixels are nonzero</span>
-    <span class="n">masked_image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">masked_image</span>
-
-<span class="k">def</span> <span class="nf">weighted_img</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">initial_img</span><span class="p">,</span> <span class="err">α</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="err">β</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="err">λ</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    `img` is the output of the hough_lines(), An image with lines drawn on it.</span>
-<span class="sd">    Should be a blank image (all black) with lines drawn on it.</span>
-
-<span class="sd">    `initial_img` should be the image before any processing.</span>
-
-<span class="sd">    The result image is computed as follows:</span>
-
-<span class="sd">    initial_img * α + img * β + λ</span>
-<span class="sd">    NOTE: initial_img and img must be the same shape!</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">addWeighted</span><span class="p">(</span><span class="n">initial_img</span><span class="p">,</span> <span class="err">α</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="err">β</span><span class="p">,</span> <span class="err">λ</span><span class="p">)</span>
-</pre></div>
-
-
-<h2>Test on Images</h2>
-<p>We first build our pipeline to work on the images in the directory "test_images"  </p>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;test_images/&quot;</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>[&#39;.DS_Store&#39;,
- &#39;solidWhiteCurve.jpg&#39;,
- &#39;solidWhiteRight.jpg&#39;,
- &#39;solidYellowCurve.jpg&#39;,
- &#39;solidYellowCurve2.jpg&#39;,
- &#39;solidYellowLeft.jpg&#39;,
- &#39;whiteCarLaneSwitch-after.jpg&#39;,
- &#39;whiteCarLaneSwitch.jpg&#39;]
-</pre></div>
-
-
-<h2>Test on Videos</h2>
-<p>You know what's cooler than drawing lanes over images? Drawing lanes over video!</p>
-<p>We can test our solution on two provided videos (also found <a href="https://github.com/AmanMander123/FindingLanes">here</a>):</p>
-<p><code>solidWhiteRight.mp4</code></p>
-<p><code>solidYellowLeft.mp4</code></p>
-<div class="highlight"><pre><span></span><span class="c1"># Import everything needed to edit/save/watch video clips</span>
-<span class="kn">from</span> <span class="nn">moviepy.editor</span> <span class="kn">import</span> <span class="n">VideoFileClip</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">HTML</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="c1"># Define a function to process the images</span>
-
-<span class="k">def</span> <span class="nf">process_image</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
-
-    <span class="c1"># Grayscale the image</span>
-    <span class="n">gray</span> <span class="o">=</span> <span class="n">grayscale</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-
-    <span class="c1"># Define a kernel size and apply Gaussian smoothing</span>
-    <span class="n">kernel_size</span> <span class="o">=</span> <span class="mi">5</span>
-    <span class="n">blur_gray</span> <span class="o">=</span> <span class="n">gaussian_blur</span><span class="p">(</span><span class="n">gray</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">)</span>
-
-    <span class="c1"># Define our parameters for Canny and apply</span>
-    <span class="n">low_threshold</span> <span class="o">=</span> <span class="mi">50</span>
-    <span class="n">high_threshold</span> <span class="o">=</span> <span class="mi">150</span>
-    <span class="n">edges</span> <span class="o">=</span> <span class="n">canny</span><span class="p">(</span><span class="n">blur_gray</span><span class="p">,</span> <span class="n">low_threshold</span><span class="p">,</span> <span class="n">high_threshold</span><span class="p">)</span>
-
-    <span class="c1"># Create a masked edges image</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>   
-    <span class="n">ignore_mask_color</span> <span class="o">=</span> <span class="mi">255</span>
-
-    <span class="c1"># Define the polygon</span>
-    <span class="n">imshape</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">x_dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">image</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">y_dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">image</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">vertices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[(</span><span class="mi">10</span><span class="p">,</span><span class="n">y_dim</span><span class="o">-</span><span class="mi">50</span><span class="p">),(</span><span class="n">x_dim</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span><span class="n">y_dim</span><span class="o">-</span><span class="mi">50</span><span class="p">),(</span><span class="n">x_dim</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">40</span><span class="p">,</span><span class="n">y_dim</span><span class="o">/</span><span class="mf">1.65</span><span class="p">),(</span><span class="n">x_dim</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="n">y_dim</span><span class="o">/</span><span class="mf">1.65</span><span class="p">)]],</span>
-                      <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-    <span class="n">masked_edges</span> <span class="o">=</span> <span class="n">region_of_interest</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
-
-    <span class="c1"># Define the Hough transform parameters</span>
-    <span class="n">rho</span> <span class="o">=</span> <span class="mi">2</span> 
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span> 
-    <span class="n">threshold</span> <span class="o">=</span> <span class="mi">15</span>    
-    <span class="n">min_line_length</span> <span class="o">=</span> <span class="mi">10</span> 
-    <span class="n">max_line_gap</span> <span class="o">=</span> <span class="mi">20</span>    
-    <span class="n">line_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">*</span><span class="mi">0</span>
-
-    <span class="c1"># Run Hough on edge detected image</span>
-    <span class="n">lines</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">HoughLinesP</span><span class="p">(</span><span class="n">masked_edges</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="n">min_line_length</span><span class="p">,</span> <span class="n">max_line_gap</span><span class="p">)</span>
-
-    <span class="c1">#Extrapolate between line breaks</span>
-    <span class="n">y_size</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">x_size</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">yL_n</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">xL_n</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">yR_n</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">xR_n</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">yL_n_1</span> <span class="o">=</span> <span class="mi">5000</span>
-    <span class="n">xL_n_1</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">yR_n_1</span> <span class="o">=</span> <span class="mi">5000</span>
-    <span class="n">xR_n_1</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">cutoff</span> <span class="o">=</span> <span class="mi">500</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">y2</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">&gt;</span> <span class="n">yL_n</span><span class="p">:</span>
-                <span class="n">yL_n</span> <span class="o">=</span> <span class="n">y1</span>
-                <span class="n">xL_n</span> <span class="o">=</span> <span class="n">x1</span>
-            <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">y2</span> <span class="o">&gt;</span> <span class="n">yL_n</span><span class="p">:</span>
-                <span class="n">yL_n</span> <span class="o">=</span> <span class="n">y2</span>
-                <span class="n">xL_n</span> <span class="o">=</span> <span class="n">x2</span>
-            <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">&lt;</span> <span class="n">yL_n_1</span><span class="p">:</span>
-                <span class="n">yL_n_1</span> <span class="o">=</span> <span class="n">y1</span>
-                <span class="n">xL_n_1</span> <span class="o">=</span> <span class="n">x1</span>
-            <span class="k">if</span> <span class="n">x1</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">y2</span> <span class="o">&lt;</span> <span class="n">yL_n_1</span><span class="p">:</span>
-                <span class="n">yL_n_1</span> <span class="o">=</span> <span class="n">y2</span>
-                <span class="n">xL_n_1</span> <span class="o">=</span> <span class="n">x2</span>
-
-            <span class="k">if</span> <span class="n">x1</span> <span class="o">&gt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&gt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">&gt;</span> <span class="n">yR_n</span><span class="p">:</span>
-                <span class="n">yR_n</span> <span class="o">=</span> <span class="n">y1</span>
-                <span class="n">xR_n</span> <span class="o">=</span> <span class="n">x1</span>
-            <span class="k">if</span> <span class="n">x1</span> <span class="o">&gt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&gt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">y2</span> <span class="o">&gt;</span> <span class="n">yR_n</span><span class="p">:</span>
-                <span class="n">yR_n</span> <span class="o">=</span> <span class="n">y2</span>
-                <span class="n">xR_n</span> <span class="o">=</span> <span class="n">x2</span>
-            <span class="k">if</span> <span class="n">x1</span> <span class="o">&gt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&gt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">&lt;</span> <span class="n">yR_n_1</span><span class="p">:</span>
-                <span class="n">yR_n_1</span> <span class="o">=</span> <span class="n">y1</span>
-                <span class="n">xR_n_1</span> <span class="o">=</span> <span class="n">x1</span>
-            <span class="k">if</span> <span class="n">x1</span> <span class="o">&gt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">&gt;</span> <span class="n">cutoff</span> <span class="ow">and</span> <span class="n">y2</span> <span class="o">&lt;</span> <span class="n">yR_n_1</span><span class="p">:</span>
-                <span class="n">yR_n_1</span> <span class="o">=</span> <span class="n">y2</span>
-                <span class="n">xR_n_1</span> <span class="o">=</span> <span class="n">x2</span>
-
-    <span class="n">mL</span> <span class="o">=</span> <span class="p">(</span><span class="n">yL_n</span> <span class="o">-</span> <span class="n">yL_n_1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xL_n</span> <span class="o">-</span> <span class="n">xL_n_1</span><span class="p">)</span>
-    <span class="n">mR</span> <span class="o">=</span> <span class="p">(</span><span class="n">yR_n</span> <span class="o">-</span> <span class="n">yR_n_1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xR_n</span> <span class="o">-</span> <span class="n">xR_n_1</span><span class="p">)</span>
-
-    <span class="n">bL</span><span class="o">=</span> <span class="p">(</span><span class="n">yL_n</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">mL</span><span class="o">*</span><span class="n">xL_n</span><span class="p">)</span>
-    <span class="n">bR</span><span class="o">=</span> <span class="p">(</span><span class="n">yR_n</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">mR</span><span class="o">*</span><span class="n">xR_n</span><span class="p">)</span>
-
-    <span class="n">xLB</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_size</span> <span class="o">-</span> <span class="n">bL</span><span class="p">)</span> <span class="o">/</span> <span class="n">mL</span>
-    <span class="n">xRB</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_size</span> <span class="o">-</span> <span class="n">bR</span><span class="p">)</span> <span class="o">/</span> <span class="n">mR</span>
-
-    <span class="n">cv2</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">line_image</span><span class="p">,(</span><span class="nb">int</span><span class="p">(</span><span class="n">xLB</span><span class="p">),</span> <span class="n">y_size</span><span class="p">),(</span><span class="n">xL_n_1</span><span class="p">,</span> <span class="n">yL_n_1</span><span class="p">),(</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="mi">10</span><span class="p">)</span>
-    <span class="n">cv2</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">line_image</span><span class="p">,(</span><span class="nb">int</span><span class="p">(</span><span class="n">xRB</span><span class="p">),</span> <span class="n">y_size</span><span class="p">),(</span><span class="n">xR_n_1</span><span class="p">,</span> <span class="n">yR_n_1</span><span class="p">),(</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="mi">10</span><span class="p">)</span>
-    <span class="n">lines_edges</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">addWeighted</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">line_image</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="c1"># Draw the lines on the edge image</span>
-    <span class="n">lines_edges</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">addWeighted</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">line_image</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> 
-
-    <span class="k">return</span> <span class="n">lines_edges</span>
-</pre></div>
-
-
-<p>Let's try the one with the solid white lane on the right first ...</p>
-<div class="highlight"><pre><span></span><span class="n">white_output</span> <span class="o">=</span> <span class="s1">&#39;white.mp4&#39;</span>
-<span class="n">clip1</span> <span class="o">=</span> <span class="n">VideoFileClip</span><span class="p">(</span><span class="s2">&quot;solidWhiteRight.mp4&quot;</span><span class="p">)</span>
-<span class="n">white_clip</span> <span class="o">=</span> <span class="n">clip1</span><span class="o">.</span><span class="n">fl_image</span><span class="p">(</span><span class="n">process_image</span><span class="p">)</span> <span class="c1">#NOTE: this function expects color images!</span>
-<span class="o">%</span><span class="n">time</span> <span class="n">white_clip</span><span class="o">.</span><span class="n">write_videofile</span><span class="p">(</span><span class="n">white_output</span><span class="p">,</span> <span class="n">audio</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>[MoviePy] &gt;&gt;&gt;&gt; Building video white.mp4
-[MoviePy] Writing video white.mp4
-
-
-100%|█████████▉| 221/222 [00:02&lt;00:00, 77.43it/s]
-
-
-[MoviePy] Done.
-[MoviePy] &gt;&gt;&gt;&gt; Video ready: white.mp4
-
-CPU times: user 2.61 s, sys: 629 ms, total: 3.24 s
-Wall time: 3.27 s
-</pre></div>
-
-
-<p>Below is a snapshot from the output video that is produced.</p>
-<figure>
- <img src="/images/WhiteOutput.png" width="380" alt="Combined Image" />
- <figcaption>
- <p></p> 
- <p style="text-align: center;"> Output from video produced above </p> 
- </figcaption>
-</figure>
-
-<p>Now for the one with the solid yellow lane on the left. This one's more tricky!</p>
-<div class="highlight"><pre><span></span><span class="n">yellow_output</span> <span class="o">=</span> <span class="s1">&#39;yellow.mp4&#39;</span>
-<span class="n">clip2</span> <span class="o">=</span> <span class="n">VideoFileClip</span><span class="p">(</span><span class="s1">&#39;solidYellowLeft.mp4&#39;</span><span class="p">)</span>
-<span class="n">yellow_clip</span> <span class="o">=</span> <span class="n">clip2</span><span class="o">.</span><span class="n">fl_image</span><span class="p">(</span><span class="n">process_image</span><span class="p">)</span>
-<span class="o">%</span><span class="n">time</span> <span class="n">yellow_clip</span><span class="o">.</span><span class="n">write_videofile</span><span class="p">(</span><span class="n">yellow_output</span><span class="p">,</span> <span class="n">audio</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>[MoviePy] &gt;&gt;&gt;&gt; Building video yellow.mp4
-[MoviePy] Writing video yellow.mp4
-
-
-100%|█████████▉| 681/682 [00:09&lt;00:00, 72.73it/s]
-
-
-[MoviePy] Done.
-[MoviePy] &gt;&gt;&gt;&gt; Video ready: yellow.mp4
-
-CPU times: user 8.39 s, sys: 1.88 s, total: 10.3 s
-Wall time: 9.79 s
-</pre></div>
-
-
-<figure>
- <img src="/images/YellowOutput.png" width="380" alt="Combined Image" />
- <figcaption>
- <p></p> 
- <p style="text-align: center;"> Output from video produced above </p> 
- </figcaption>
-</figure>
-
-<h2>Reflections</h2>
-<p>Both the output videos produced can be found <a href="https://github.com/AmanMander123/FindingLanes">here</a> called white.mp4 and yellow.mp4.  </p>
-<p>The current version of the algorithm contains the pipeline to detect lanes on the road and then extrapolates to 
-create line segments.</p>
-<p>Although the current version of the algorithm works well with the two videos above, there exist many opportunities
-to improve uopn this version. </p>
-<p>First, the lane lines are differentiated by using the centre of the image. If a particular lane was to fall on the
-opposite side of the image, the algorithm will not be able to interpret it as a separate lane and thus cause 
-extrapolation issues. </p>
-<p>This situation can arise during entrance and exit ramps, lane changes and special construction lanes.</p>
-<p>This situation will also arise if there is a relatively sharp turn, which again would break the linearity assumption
-used in the extrapolation algorithm. In order to overcome this restriction, we can used a more generalized model.</p>
-<p>In a real self driving car, we would require real-time processing, which is not the case right now. We would need to
-bring in real-time processing technologies to increase the practically of this algorithm.</p>                </article>
-            </aside><!-- /#featured -->
+<p>We develop a pipeline on a series of individual images, and later apply …</p>
+                <a class="readmore" href="/finding-lane-lines-on-the-road.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+                </ol><!-- /#posts-list -->
+                </section><!-- /#content -->
         <section id="extras" class="body">
                 <div class="social">
                         <h2>social</h2>
