@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Behavioral Cloning</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/category/ab-testing.html">AB Testing</a></li>
+                    <li><a href="/category/data-analysis.html">Data Analysis</a></li>
+                    <li><a href="/category/data-wrangling.html">Data Wrangling</a></li>
+                    <li><a href="/category/finance.html">Finance</a></li>
+                    <li><a href="/category/machine-learning.html">Machine Learning</a></li>
+                    <li class="active"><a href="/category/self-driving-car.html">Self Driving Car</a></li>
+                    <li><a href="/category/visualizations.html">Visualizations</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/behavioral-cloning.html" rel="bookmark"
+           title="Permalink to Behavioral Cloning">Behavioral Cloning</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-01-18T00:00:00+00:00">
+                Published: Mon 18 January 2016
+        </abbr>
+
+<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
+
+</footer><!-- /.post-info -->      <h2>Summary</h2>
+<p>This project is the result of a Udacity project in which a deep learning model is trained to drive a vehicle autonomously. The simulation environment is provided by Udacity to train and test the models. The video of the result can be viewed <a href="https://youtu.be/PqEMiCJosos">here</a>. The numbers scrolling on the right represent the angle of the steering wheel.<br>
+In this project, I used the Keras Deep Learning library to train the car to follow the track.  </p>
+<h2>Data Collection</h2>
+<p>The training data was collected using the training mode in the simulator developed by Udacity. The settings on the simulator were set to the smallest size and fastest graphics. While manually driving the car around the track, 3 images were saved every 0.1 seconds: one from the center camera, one from the left camera and one from the right camera. A driving_log.csv was generated during this process that contains the path to the files, as well as the angle of the steering wheel, which was the data label. The acceleration is kept constant. The approach that I took was to first do 4 laps trying my best to drive in the middle of the road. I then did 2 laps where I purposely drove the car to the left side of the track with the recording turned off. As soon as I got to the edge of the road, I would turn on the recording and recover back to the center of the road. I did 2 more laps training the car to recover from the right side of the road. This allowed the model to learn to not only drive in the center of the road, but also recover from both the left and right sides of the track.</p>
+<h2>Image Preprocessing</h2>
+<p>In order to eliminate noise, the following steps were performed to preprocess each image. First, the image was reduced in size and flattened. Then each image was normalized by using greyscale normalization. The resized, flattened and normalized images were saved as features and the steering angles as labels. The data was then split into training and validation sets.  </p>
+<div class="highlight"><pre><span></span><span class="c1"># Suppress all warning</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+
+<span class="c1"># Load libraries</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="c1"># Keras libraries</span>
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="kn">import</span> <span class="n">Sequential</span><span class="p">,</span> <span class="n">model_from_json</span>
+<span class="kn">from</span> <span class="nn">keras.layers</span> <span class="kn">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Dropout</span><span class="p">,</span> <span class="n">Activation</span><span class="p">,</span> <span class="n">Flatten</span>
+<span class="kn">from</span> <span class="nn">keras.layers</span> <span class="kn">import</span> <span class="n">Convolution2D</span><span class="p">,</span> <span class="n">MaxPooling2D</span>
+<span class="kn">from</span> <span class="nn">keras.optimizers</span> <span class="kn">import</span> <span class="n">SGD</span><span class="p">,</span> <span class="n">Adam</span><span class="p">,</span> <span class="n">RMSprop</span>
+<span class="kn">from</span> <span class="nn">keras.utils</span> <span class="kn">import</span> <span class="n">np_utils</span>
+<span class="kn">from</span> <span class="nn">keras</span> <span class="kn">import</span> <span class="n">backend</span> <span class="k">as</span> <span class="n">K</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Preprocess Data</span>
+
+<span class="c1"># Define paths</span>
+<span class="n">path_to_folder</span> <span class="o">=</span> <span class="s2">&quot;/Users/Aman/Documents/SelfDrivingCarCourse&quot;</span>
+<span class="n">path_to_files</span> <span class="o">=</span> <span class="s2">&quot;{}/driving_log.csv&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path_to_folder</span><span class="p">)</span>
+
+<span class="c1"># Import the data</span>
+<span class="n">raw_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_to_files</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+        <span class="n">raw_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> 
+
+<span class="c1"># Raw data file stats</span>
+<span class="n">data_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Length of data file:&quot;</span><span class="p">,</span> <span class="n">data_len</span><span class="p">)</span>
+
+<span class="c1"># Initialize features and labels</span>
+<span class="n">features</span> <span class="o">=</span> <span class="p">()</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">()</span>
+
+<span class="c1"># Function to resize and flatten each image</span>
+<span class="k">def</span> <span class="nf">flatten_image</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())[</span><span class="mi">65</span><span class="p">:</span><span class="mi">135</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">flattened_img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">flattened_img</span>
+
+<span class="c1"># Store features</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">))),</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;it&#39;</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">features</span> <span class="o">+=</span> <span class="p">(</span><span class="n">flatten_image</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">j</span><span class="p">),)</span>
+
+<span class="c1">#Get length of features</span>
+<span class="n">item_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+
+<span class="c1"># Reshape each image to by 18 x 80</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">item_len</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="c1"># Store labels    </span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">))),</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;it&#39;</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">labels</span> <span class="o">+=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]),)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+<span class="c1"># Get randomized datasets for training and test</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">features</span><span class="p">,</span>
+    <span class="n">labels</span><span class="p">,</span>
+    <span class="n">test_size</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">832289</span><span class="p">)</span>
+
+<span class="c1"># Get randomized datasets for training and validation</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_valid</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_valid</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span>
+    <span class="n">y_train</span><span class="p">,</span>
+    <span class="n">test_size</span><span class="o">=</span><span class="mf">0.30</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">832289</span><span class="p">)</span>
+
+<span class="c1"># Implement Min-Max scaling for greyscale image data</span>
+<span class="k">def</span> <span class="nf">normalize_greyscale</span><span class="p">(</span><span class="n">image_data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize the image data with Min-Max scaling to a range of [0.1, 0.9]</span>
+<span class="sd">    :param image_data: The image data to be normalized</span>
+<span class="sd">    :return: Normalized image data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.9</span>
+    <span class="n">greyscale_min</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">greyscale_max</span> <span class="o">=</span> <span class="mi">255</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(((</span><span class="n">image_data</span> <span class="o">-</span> <span class="n">greyscale_min</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">greyscale_max</span> <span class="o">-</span> <span class="n">greyscale_min</span><span class="p">))</span>
+
+<span class="c1">#Normalize data</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+<span class="n">X_valid</span> <span class="o">=</span> <span class="n">X_valid</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+<span class="n">X_test</span>  <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">normalize_greyscale</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">X_valid</span> <span class="o">=</span> <span class="n">normalize_greyscale</span><span class="p">(</span><span class="n">X_valid</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">normalize_greyscale</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>  0%|          | 9/9739 [00:00&lt;01:49, 88.52it/s]
+
+Length of data file: 9739
+
+
+100%|██████████| 9739/9739 [01:36&lt;00:00, 101.15it/s]
+100%|██████████| 9739/9739 [00:01&lt;00:00, 6358.32it/s]
+</pre></div>
+
+
+<h2>Model</h2>
+<p>The model consists of 4 convolutional layers, 1 max pooling layer and 3 dense layers. With each progressing convolutional layer, the channel size was decreased by 50% (i.e. 16, 8, 4, 2). After the fourth convolutional layer, a max pooling was then applied with a dropout of 25%.  Then after flattening the matrix, dense layers were used with 16 features and the ReLu activation was applied. I used 20 epochs in the training of the model. In addition, the pool size was (2,2) and the convolutional kernal was (3,3). The Sequential convolutional model was used with an Adam Optimizer and the mean_squared_error loss function.  </p>
+<p>How I decided the number and type of layers:<br>
+I tested the model with 2, 4 and 6 layers and found the performance to be best with 4.  </p>
+<p>How I tuned the hyperparameter:<br>
+In terms of the dropout rate after the first layer, I felt that 25% was enough so that most of the data is retained to train the model but enough is dropped out as to not cause overfitting. After the second step, a dropout of 50% was applied as to further prevent overfitting. I noticed that increasing the dropout rate at this step was more apprpriate to reduce overfitting. I tried 5, 10, 20, 25 and 30 epochs and ended up using 20 epochs with a batch size of 128.  </p>
+<p>How I trained my model:<br>
+I trained my model first driving the car 4 times around the course trying to remain in the middle of the track as much as possible. Then I did 2 laps while training the model to recover from each side by turning the recoding on and off. By using this technique, the model was able to learn to keep the car in the middle of the track as much as possible but also recover when it got off the track. During training, the best model parameters were determined using the validation set.    </p>
+<p>How I evaluated my model:<br>
+I evaluated the model by checking its performance while in autonomous mode. I observed when the car when off the track and I retrained it once again in the portion of the track. During training, the test set was used to determine the accuracy of the model.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Set seed for reproducibility</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1337</span><span class="p">)</span> 
+
+<span class="c1"># Initialize model parameters</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">nb_classes</span> <span class="o">=</span> <span class="mi">1</span> 
+<span class="n">nb_epoch</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="c1"># Define convolutional filters</span>
+<span class="n">nb_filters1</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">nb_filters2</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">nb_filters3</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">nb_filters4</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># Define size of pooling area for max pooling</span>
+<span class="n">pool_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Define convolution kernel size</span>
+<span class="n">kernel_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Construct model with convolutional layers</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+
+<span class="n">input_shape</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+<span class="c1"># Layers with ReLu activation</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">nb_filters1</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">border_mode</span><span class="o">=</span><span class="s1">&#39;valid&#39;</span><span class="p">,</span>
+                        <span class="n">input_shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">nb_filters2</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">nb_filters3</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">nb_filters4</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+
+<span class="c1"># Max Pooling </span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">MaxPooling2D</span><span class="p">(</span><span class="n">pool_size</span><span class="o">=</span><span class="n">pool_size</span><span class="p">))</span>
+
+<span class="c1"># Apply dropout of 25%</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.25</span><span class="p">))</span>
+
+<span class="c1"># Flatten matrix</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Flatten</span><span class="p">())</span>
+
+<span class="c1"># Dense and apply ReLu activation</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
+
+<span class="c1"># Apply dropout of 50%</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">nb_classes</span><span class="p">))</span>
+
+<span class="c1"># Print summary of the model</span>
+<span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+
+<span class="c1"># Compile model using Adam optimizer </span>
+<span class="c1"># Get loss using mean squared error</span>
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mean_squared_error&#39;</span><span class="p">,</span>
+              <span class="n">optimizer</span><span class="o">=</span><span class="n">Adam</span><span class="p">(),</span>
+              <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+
+<span class="c1"># Model training</span>
+<span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span>
+                    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">nb_epoch</span><span class="o">=</span><span class="n">nb_epoch</span><span class="p">,</span>
+                    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">X_valid</span><span class="p">,</span> <span class="n">y_valid</span><span class="p">))</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Test score:&#39;</span><span class="p">,</span> <span class="n">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Test accuracy:&#39;</span><span class="p">,</span> <span class="n">score</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+convolution2d_1 (Convolution2D)  (None, 16, 78, 16)    160         convolution2d_input_1[0][0]      
+____________________________________________________________________________________________________
+activation_1 (Activation)        (None, 16, 78, 16)    0           convolution2d_1[0][0]            
+____________________________________________________________________________________________________
+convolution2d_2 (Convolution2D)  (None, 14, 76, 8)     1160        activation_1[0][0]               
+____________________________________________________________________________________________________
+activation_2 (Activation)        (None, 14, 76, 8)     0           convolution2d_2[0][0]            
+____________________________________________________________________________________________________
+convolution2d_3 (Convolution2D)  (None, 12, 74, 4)     292         activation_2[0][0]               
+____________________________________________________________________________________________________
+activation_3 (Activation)        (None, 12, 74, 4)     0           convolution2d_3[0][0]            
+____________________________________________________________________________________________________
+convolution2d_4 (Convolution2D)  (None, 10, 72, 2)     74          activation_3[0][0]               
+____________________________________________________________________________________________________
+activation_4 (Activation)        (None, 10, 72, 2)     0           convolution2d_4[0][0]            
+____________________________________________________________________________________________________
+maxpooling2d_1 (MaxPooling2D)    (None, 5, 36, 2)      0           activation_4[0][0]               
+____________________________________________________________________________________________________
+dropout_1 (Dropout)              (None, 5, 36, 2)      0           maxpooling2d_1[0][0]             
+____________________________________________________________________________________________________
+flatten_1 (Flatten)              (None, 360)           0           dropout_1[0][0]                  
+____________________________________________________________________________________________________
+dense_1 (Dense)                  (None, 16)            5776        flatten_1[0][0]                  
+____________________________________________________________________________________________________
+activation_5 (Activation)        (None, 16)            0           dense_1[0][0]                    
+____________________________________________________________________________________________________
+dense_2 (Dense)                  (None, 16)            272         activation_5[0][0]               
+____________________________________________________________________________________________________
+activation_6 (Activation)        (None, 16)            0           dense_2[0][0]                    
+____________________________________________________________________________________________________
+dense_3 (Dense)                  (None, 16)            272         activation_6[0][0]               
+____________________________________________________________________________________________________
+activation_7 (Activation)        (None, 16)            0           dense_3[0][0]                    
+____________________________________________________________________________________________________
+dropout_2 (Dropout)              (None, 16)            0           activation_7[0][0]               
+____________________________________________________________________________________________________
+dense_4 (Dense)                  (None, 1)             17          dropout_2[0][0]                  
+====================================================================================================
+Total params: 8023
+____________________________________________________________________________________________________
+Train on 18406 samples, validate on 7889 samples
+Epoch 1/20
+18406/18406 [==============================] - 31s - loss: 0.2418 - acc: 0.4669 - val_loss: 0.1472 - val_acc: 0.5031
+Epoch 2/20
+18406/18406 [==============================] - 30s - loss: 0.1629 - acc: 0.5104 - val_loss: 0.1295 - val_acc: 0.5221
+Epoch 3/20
+18406/18406 [==============================] - 31s - loss: 0.1495 - acc: 0.5198 - val_loss: 0.1203 - val_acc: 0.5409
+Epoch 4/20
+18406/18406 [==============================] - 30s - loss: 0.1436 - acc: 0.5244 - val_loss: 0.1245 - val_acc: 0.5368
+Epoch 5/20
+18406/18406 [==============================] - 31s - loss: 0.1420 - acc: 0.5296 - val_loss: 0.1162 - val_acc: 0.5463
+Epoch 6/20
+18406/18406 [==============================] - 32s - loss: 0.1380 - acc: 0.5331 - val_loss: 0.1136 - val_acc: 0.5562
+Epoch 7/20
+18406/18406 [==============================] - 31s - loss: 0.1361 - acc: 0.5332 - val_loss: 0.1127 - val_acc: 0.5584
+Epoch 8/20
+18406/18406 [==============================] - 31s - loss: 0.1341 - acc: 0.5361 - val_loss: 0.1095 - val_acc: 0.5595
+Epoch 9/20
+18406/18406 [==============================] - 31s - loss: 0.1354 - acc: 0.5360 - val_loss: 0.1094 - val_acc: 0.5567
+Epoch 10/20
+18406/18406 [==============================] - 31s - loss: 0.1324 - acc: 0.5394 - val_loss: 0.1126 - val_acc: 0.5530
+Epoch 11/20
+18406/18406 [==============================] - 31s - loss: 0.1326 - acc: 0.5362 - val_loss: 0.1158 - val_acc: 0.5522
+Epoch 12/20
+18406/18406 [==============================] - 32s - loss: 0.1311 - acc: 0.5413 - val_loss: 0.1078 - val_acc: 0.5674
+Epoch 13/20
+18406/18406 [==============================] - 31s - loss: 0.1308 - acc: 0.5415 - val_loss: 0.1035 - val_acc: 0.5733
+Epoch 14/20
+18406/18406 [==============================] - 31s - loss: 0.1270 - acc: 0.5462 - val_loss: 0.1080 - val_acc: 0.5615
+Epoch 15/20
+18406/18406 [==============================] - 31s - loss: 0.1260 - acc: 0.5469 - val_loss: 0.1173 - val_acc: 0.5466
+Epoch 16/20
+18406/18406 [==============================] - 31s - loss: 0.1257 - acc: 0.5457 - val_loss: 0.1065 - val_acc: 0.5646
+Epoch 17/20
+18406/18406 [==============================] - 31s - loss: 0.1244 - acc: 0.5487 - val_loss: 0.1099 - val_acc: 0.5562
+Epoch 18/20
+18406/18406 [==============================] - 31s - loss: 0.1258 - acc: 0.5461 - val_loss: 0.1101 - val_acc: 0.5593
+Epoch 19/20
+18406/18406 [==============================] - 31s - loss: 0.1250 - acc: 0.5486 - val_loss: 0.1028 - val_acc: 0.5736
+Epoch 20/20
+18406/18406 [==============================] - 31s - loss: 0.1232 - acc: 0.5486 - val_loss: 0.1057 - val_acc: 0.5651
+Test score: 0.103015983609
+Test accuracy: 0.581793292266
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Save model as json file</span>
+<span class="n">json_string</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;model.json&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">json_string</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+
+    <span class="c1"># Save weights</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span><span class="s1">&#39;./model.h5&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h2>Conclusion</h2>
+<p>The final accuracy from the test set is 0.58. In practical terms, although the car does a good job in autonomous mode, there is still much room for improvement. The car does swerve around the road quite a bit and has the tendancy to make sharp and sudden movements. This car is not yet ready to hit the real streets.  </p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
