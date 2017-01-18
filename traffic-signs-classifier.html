@@ -40,25 +40,22 @@
 
 <p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
 
-</footer><!-- /.post-info -->      <h1>Self-Driving Car Engineer Nanodegree</h1>
-<h2>Deep Learning</h2>
-<h2>Project: Build a Traffic Sign Recognition Classifier</h2>
-<p>In this notebook, a template is provided for you to implement your functionality in stages which is required to successfully complete this project. If additional code is required that cannot be included in the notebook, be sure that the Python code is successfully imported and included in your submission, if necessary. Sections that begin with <strong>'Implementation'</strong> in the header indicate where you should begin your implementation for your project. Note that some sections of implementation are optional, and will be marked with <strong>'Optional'</strong> in the header.</p>
-<p>In addition to implementing code, there will be questions that you must answer which relate to the project and your implementation. Each section where you will answer a question is preceded by a <strong>'Question'</strong> header. Carefully read each question and provide thorough answers in the following text boxes that begin with <strong>'Answer:'</strong>. Your project submission will be evaluated based on your answers to each of the questions and the implementation you provide.</p>
-<blockquote>
-<p><strong>Note:</strong> Code and Markdown cells can be executed using the <strong>Shift + Enter</strong> keyboard shortcut. In addition, Markdown cells can be edited by typically double-clicking the cell to enter edit mode.</p>
-</blockquote>
-<hr>
-<h2>Step 1: Dataset Exploration</h2>
-<p>Visualize the German Traffic Signs Dataset. This is open ended, some suggestions include: plotting traffic signs images, plotting the count of each sign, etc. Be creative!</p>
+</footer><!-- /.post-info -->      <h1>Deep Learning Using TensorFlow</h1>
+<h2>Summary</h2>
+<p>The purpose of this exercise is to use deep neural networks to classify traffic signs. Specifically, we train a model to classify traffic signs from the <a href="http://benchmark.ini.rub.de/?section=gtsrb&amp;subsection=dataset">German Traffic Sign Dataset</a>.  </p>
+<h2>Data</h2>
 <p>The pickled data is a dictionary with 4 key/value pairs:</p>
 <ul>
-<li>features -&gt; the images pixel values, (width, height, channels)</li>
+<li>features -&gt; the images pixel values (width, height, channels)</li>
 <li>labels -&gt; the label of the traffic sign</li>
-<li>sizes -&gt; the original width and height of the image, (width, height)</li>
+<li>sizes -&gt; the original width and height of the image (width, height)</li>
 <li>coords -&gt; coordinates of a bounding box around the sign in the image, (x1, y1, x2, y2). Based the original image (not the resized version).</li>
 </ul>
-<div class="highlight"><pre><span></span><span class="c1"># Load required libraries</span>
+<div class="highlight"><pre><span></span><span class="c1"># Hide warnings</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span><span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+
+<span class="c1"># Load required libraries</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">cv2</span>
@@ -70,18 +67,6 @@
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">misc</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-
-<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
-<span class="o">%</span><span class="n">pylab</span> <span class="n">inline</span>
-<span class="n">pylab</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>/Users/Aman/anaconda3/envs/CarND-TensorFlow-Lab/lib/python3.5/site-packages/sklearn/cross_validation.py:44: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. Also note that the interface of the new CV iterators are different from that of this module. This module will be removed in 0.20.
-  &quot;This module will be removed in 0.20.&quot;, DeprecationWarning)
-
-
-Populating the interactive namespace from numpy and matplotlib
 </pre></div>
 
 
@@ -101,9 +86,9 @@ Populating the interactive namespace from numpy and matplotlib
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="c1">### To start off let&#39;s do a basic data summary.</span>
-
-<span class="c1"># Number of training examples</span>
+<h2>Data Exploration</h2>
+<h3>Basic Data Summary</h3>
+<div class="highlight"><pre><span></span><span class="c1"># Number of training examples</span>
 <span class="n">n_train</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
 
 <span class="c1"># Number of testing examples</span>
@@ -140,7 +125,10 @@ Number of classes = 43
 </pre></div>
 
 
-<p><img alt="png" src="/images/Traffic_Signs_Recognition_6_0.png"></p>
+<figure>
+ <img src="/images/Traffic_Signs_Recognition_6_0.png" width="380"/>
+</figure>
+
 <h3>Count of each sign</h3>
 <div class="highlight"><pre><span></span><span class="c1"># Plot histogram of labels in training and test set</span>
 <span class="n">f</span><span class="p">,</span> <span class="n">axarr</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
@@ -154,24 +142,17 @@ Number of classes = 43
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>&lt;matplotlib.text.Text at 0x12bf6ab70&gt;
+<div class="highlight"><pre><span></span>&lt;matplotlib.text.Text at 0x12ab24be0&gt;
 </pre></div>
 
 
-<p><img alt="png" src="/images/Traffic_Signs_Recognition_8_1.png"></p>
-<hr>
-<h2>Step 2: Design and Test a Model Architecture</h2>
-<p>Design and implement a deep learning model that learns to recognize traffic signs. Train and test your model on the <a href="http://benchmark.ini.rub.de/?section=gtsrb&amp;subsection=dataset">German Traffic Sign Dataset</a>.</p>
-<p>There are various aspects to consider when thinking about this problem:</p>
-<ul>
-<li>Your model can be derived from a deep feedforward net or a deep convolutional network.</li>
-<li>Play around preprocessing techniques (normalization, rgb to grayscale, etc)</li>
-<li>Number of examples per label (some have more than others).</li>
-<li>Generate fake data.</li>
-</ul>
-<p>Here is an example of a <a href="http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf">published baseline model on this problem</a>. It's not required to be familiar with the approach used in the paper but, it's good practice to try to read papers like these.</p>
-<h3>Implementation</h3>
-<p>Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.</p>
+<figure>
+ <img src="/images/Traffic_Signs_Recognition_8_1.png" width="380"/>
+</figure>
+
+<h2>Data Preprocessing</h2>
+<p>Whenever possible, we want our variables to have 0 mean and equal variance when performing gradient descent optimization. One way we can do this on images is to convert the images to greyscale. This has the effect of reducing the overall variation in the dataset. However, we would like to preserve the variation between colors so the normalization was performed individually on each color. </p>
+<p>Also, in order to convert labels into numbers, I applied One-Hot Encoding.</p>
 <h3>Implement Min-Max scaling to convert image to greyscale</h3>
 <div class="highlight"><pre><span></span><span class="c1"># Implement Min-Max scaling for greyscale image data</span>
 <span class="k">def</span> <span class="nf">normalize_greyscale</span><span class="p">(</span><span class="n">image_data</span><span class="p">):</span>
@@ -212,12 +193,8 @@ Number of classes = 43
 </pre></div>
 
 
-<h3>Question 1</h3>
-<p><em>Describe the techniques used to preprocess the data.</em></p>
-<p><strong>Answer:</strong></p>
-<p>Whenever possible, we want our variables to have 0 mean and equal variance when doing optimization. One way we can do this on images is to convert the images to greyscale. This has the effect of reducing the overall variation in the dataset. However, we would like to preserve the variation between colors so the normalization was performed individually on each color. </p>
-<p>Also, in order to convert labels into numbers, I applied One-Hot Encoding</p>
-<h3>Split the data into training/validation/testing sets</h3>
+<h3>Split the data into training/validation sets</h3>
+<p>The train_test_split function was used to separate the data in training and validation sets (70/30 split)</p>
 <div class="highlight"><pre><span></span><span class="c1"># Get randomized datasets for training and validation</span>
 <span class="n">train_features</span><span class="p">,</span> <span class="n">valid_features</span><span class="p">,</span> <span class="n">train_labels</span><span class="p">,</span> <span class="n">valid_labels</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
     <span class="n">X_train_n</span><span class="p">,</span>
@@ -227,11 +204,11 @@ Number of classes = 43
 </pre></div>
 
 
-<h3>Question 2</h3>
-<p><em>Describe how you set up the training, validation and testing data for your model. If you generated additional data, why?</em></p>
-<p><strong>Answer:</strong></p>
-<p>The train_test_split function was used to separate the data in training and testing datasets. I went with the conventional method of using 70% of the data to train and 30% to test.</p>
-<h3>Architecture</h3>
+<h3>Model Architecture</h3>
+<p>The model used in this classification task is the Feedforward Neural Network. It contains 2 hidden layers. Within each layer, ReLU is used to convert the linear models into non-linear models. The cost function is determined using the softmax_cross_entropy_with_logits method. </p>
+<p>The size of each layer was 3072.  </p>
+<p>After testing several methods for the optimizer, I settled on using the AdamOptimizer method for the optimizer since it produced the most accurate results. I used a learning rate of 0.001, 20 training epochs and a batch size of 1000.  </p>
+<p>The accuracy against the test set is determined to be 0.76.</p>
 <div class="highlight"><pre><span></span><span class="c1"># Learning Parameters</span>
 <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.001</span>
 <span class="n">training_epochs</span> <span class="o">=</span> <span class="mi">20</span>
@@ -242,8 +219,8 @@ Number of classes = 43
 <span class="n">n_classes</span> <span class="o">=</span> <span class="n">train_labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="c1"># Hidden Layer Parameters</span>
-<span class="n">n_hidden_layer1</span> <span class="o">=</span> <span class="n">n_input</span> <span class="c1"># layer number of features</span>
-<span class="n">n_hidden_layer2</span> <span class="o">=</span> <span class="n">n_input</span> <span class="c1"># layer number of features</span>
+<span class="n">n_hidden_layer1</span> <span class="o">=</span> <span class="n">n_input</span> <span class="c1"># layer 1: number of features</span>
+<span class="n">n_hidden_layer2</span> <span class="o">=</span> <span class="n">n_input</span> <span class="c1"># layer 2: number of features</span>
 
 <span class="c1"># Store layers weight &amp; bias</span>
 <span class="n">weights</span> <span class="o">=</span> <span class="p">{</span>
@@ -278,11 +255,11 @@ Number of classes = 43
 <span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax_cross_entropy_with_logits</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">AdamOptimizer</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 
-<span class="c1">#Define accuracy </span>
+<span class="c1"># Define accuracy </span>
 <span class="n">is_correct_prediction</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 <span class="n">accuracy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">is_correct_prediction</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
 
-<span class="c1">#Initialize storage variables</span>
+<span class="c1"># Initialize storage variables</span>
 <span class="n">loss_batch</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">train_acc_batch</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">valid_acc_batch</span> <span class="o">=</span> <span class="p">[]</span>
@@ -291,7 +268,7 @@ Number of classes = 43
 <span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
 <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">initialize_all_variables</span><span class="p">())</span>
 
-<span class="c1">#Run for all epochs</span>
+<span class="c1"># Run for all epochs</span>
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_epochs</span><span class="p">):</span>
 
     <span class="c1"># The training cycle</span>
@@ -312,10 +289,10 @@ Number of classes = 43
     <span class="n">valid_acc_batch</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">acc</span><span class="p">])</span>
 
 <span class="c1"># Check accuracy against Validation data</span>
-<span class="n">validation_accuracy</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">X_test_n</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span>  <span class="n">y_test</span><span class="p">})</span>
+<span class="n">test_accuracy</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">X_test_n</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span>  <span class="n">y_test</span><span class="p">})</span>
 
 <span class="c1"># Plot Loss and Accuracy</span>
-<span class="n">epochs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arrange</span><span class="p">(</span><span class="n">training_epochs</span><span class="p">)</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">training_epochs</span><span class="p">)</span>
 <span class="n">loss_plot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
 <span class="n">loss_plot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
 <span class="n">loss_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">loss_batch</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
@@ -330,40 +307,24 @@ Number of classes = 43
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Validation accuracy at {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">validation_accuracy</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Test set accuracy at {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">test_accuracy</span><span class="p">))</span>
 </pre></div>
 
 
-<p><img alt="png" src="/images/Traffic_Signs_Recognition_22_0.png"></p>
-<div class="highlight"><pre><span></span>Validation accuracy at 0.7330166101455688
+<figure>
+ <img src="/images/Traffic_Signs_Recognition_17_0.png" width="380"/>
+</figure>
+
+<div class="highlight"><pre><span></span>Test set accuracy at 0.7630245685577393
 </pre></div>
 
 
-<h3>Question 3</h3>
-<p><em>What does your final architecture look like? (Type of model, layers, sizes, connectivity, etc.)  For reference on how to build a deep neural network using TensorFlow, see <a href="https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/6df7ae49-c61c-4bb2-a23e-6527e69209ec/lessons/b516a270-8600-4f93-a0a3-20dfeabe5da6/concepts/83a3a2a2-a9bd-4b7b-95b0-eb924ab14432">Deep Neural Network in TensorFlow
-</a> from the classroom.</em></p>
-<p><strong>Answer:</strong></p>
-<p>The model used in this classification task is the Feedforward Neural Network. It contains 2 hidden layers. Within each layer, ReLU is used to convert the linear models into non-linear models. The cost function is determined using the softmax_cross_entropy_with_logits method. </p>
-<p>I only tried the Feedforward Network, but the Convolution Network is also appropriate to solve this problem. Although it would provide more accurate results, the implementation is more complex.</p>
-<p>The size of each layer was 3072.</p>
-<h3>Question 4</h3>
-<p><em>How did you train your model? (Type of optimizer, batch size, epochs, hyperparameters, etc.)</em></p>
-<p><strong>Answer:</strong></p>
-<p>After testing several methods for the optimizer, I settled on using the AdamOptimizer method for the optimizer since it produced the most accurate results. I used a learning rate of 0.001, 20 training epochs and a batch size of 1000.</p>
-<h3>Question 5</h3>
-<p><em>What approach did you take in coming up with a solution to this problem?</em></p>
-<p><strong>Answer:</strong></p>
-<p>The approach that I took followed very similarly to the Deep Neural Network in TensorFlow lesson. Because the example in the lesson focused on classifying letters, I made several tweeks to accomodate the more complex nature of this problem. Some noticable differences include having 2 hidden layers, using a different optimizer and different learning parameters to allow for better tuning.</p>
-<hr>
-<h2>Step 3: Test a Model on New Images</h2>
-<p>Take several pictures of traffic signs that you find on the web or around you (at least five), and run them through your classifier on your computer to produce example results. The classifier might not recognize some local signs but it could prove interesting nonetheless.</p>
-<p>You may find <code>signnames.csv</code> useful as it contains mappings from the class id (integer) to the actual sign name.</p>
-<h3>Implementation</h3>
-<p>Use the code cell (or multiple code cells, if necessary) to implement the first step of your project. Once you have completed your implementation and are satisfied with the results, be sure to thoroughly answer the questions that follow.</p>
+<h2>Test a Model on New Images</h2>
+<p>5 random images were selected from the web and the above model was used to classify each image</p>
 <div class="highlight"><pre><span></span><span class="c1"># Load the data</span>
 <span class="n">signs</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;testsigns&#39;</span><span class="p">):</span>
-    <span class="n">sign</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;testsigns/&#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;signs&#39;</span><span class="p">):</span>
+    <span class="n">sign</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;signs/&#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
     <span class="n">signs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sign</span><span class="p">)</span>
 
 <span class="c1"># Plot the signs</span>
@@ -391,10 +352,10 @@ Number of classes = 43
 </pre></div>
 
 
-<p><img alt="png" src="/images/Traffic_Signs_Recognition_31_1.png"></p>
-<h3>Question 6</h3>
-<p><em>Choose five candidate images of traffic signs and provide them in the report. Are there any particular qualities of the image(s) that might make classification difficult? It would be helpful to plot the images in the notebook.</em></p>
-<p><strong>Answer:</strong></p>
+<figure>
+ <img src="/images/Traffic_Signs_Recognition_19_1.png" width="380"/>
+</figure>
+
 <p>The second sign has a lot of obstruction to it with tree branches covering parts of the sign, in addition to containing different colors than those in the training set. I suspect that this one will be difficult to classify by the algorithm. There is also a slight tilt in a couple of the signs, thereby causing classification issues. Also, at this resolution and size, the images look quite blurred.</p>
 <div class="highlight"><pre><span></span><span class="c1"># Preprocess the images and run the signs through the prediction algorithm to test performance</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signs</span><span class="p">)</span>
@@ -419,14 +380,14 @@ Number of classes = 43
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>[17  1 11 35 28]
+<div class="highlight"><pre><span></span>[17 15 11 35 28]
 </pre></div>
 
 
-<p><img alt="png" src="/images/Traffic_Signs_Recognition_34_1.png"></p>
-<h3>Question 7</h3>
-<p><em>Is your model able to perform equally well on captured pictures or a live camera stream when compared to testing on the dataset?</em></p>
-<p><strong>Answer:</strong></p>
+<figure>
+ <img src="/images/Traffic_Signs_Recognition_21_1.png" width="380"/>
+</figure>
+
 <p>The model was able to predict 2 correctly out of 5. This accuracy level is considerably less than the test dataset. 
 However, with a little more tuning, I believe that the accuracy can be considerably improved. The incorrect classifications are actually quite similar the correct image in most cases.</p>
 <div class="highlight"><pre><span></span><span class="c1"># Get top k performers</span>
@@ -450,40 +411,34 @@ However, with a little more tuning, I believe that the accuracy can be considera
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>[[  6.49364531e-01   1.99722230e-01   1.41885936e-01   3.94556858e-03
-    1.67365838e-03]
- [  3.57721835e-01   2.25696608e-01   1.06446661e-01   8.79799128e-02
-    3.78358141e-02]
- [  9.95969296e-01   1.07235939e-03   9.45125881e-04   6.39660633e-04
-    5.71965356e-04]
- [  9.99996901e-01   3.01500927e-06   1.72645983e-07   2.60306692e-08
-    2.15430038e-08]
- [  8.93221736e-01   4.44371477e-02   3.70105393e-02   1.33590661e-02
-    6.24658447e-03]]
-[[17 25  1  5 22]
- [ 1 25 26  9  3]
- [11 28 30 16 18]
- [35 36 34 37 40]
- [28 29 23 25 22]]
+<div class="highlight"><pre><span></span>[[  9.14724290e-01   3.48184742e-02   2.44188774e-02   1.12548526e-02
+    8.70645326e-03]
+ [  6.19467914e-01   1.66500613e-01   1.06849402e-01   3.82951796e-02
+    1.47809843e-02]
+ [  9.37286496e-01   4.40914296e-02   6.60394179e-03   4.35731094e-03
+    2.27867719e-03]
+ [  9.99963284e-01   2.19555932e-05   1.33507947e-05   1.26138286e-06
+    1.20478603e-07]
+ [  7.13300705e-01   1.70367077e-01   9.27464738e-02   2.05706917e-02
+    1.45089917e-03]]
+[[17  1 15 14 25]
+ [15  1 20 32 26]
+ [11 30  7 18  1]
+ [35 34 40 36 33]
+ [28 29 22 19 25]]
 </pre></div>
 
 
-<p><img alt="png" src="/images/Traffic_Signs_Recognition_37_1.png"></p>
-<p><img alt="png" src="/images/Traffic_Signs_Recognition_37_2.png"></p>
-<h3>Question 8</h3>
-<p><em>Use the model's softmax probabilities to visualize the <strong>certainty</strong> of its predictions, <a href="https://www.tensorflow.org/versions/r0.11/api_docs/python/nn.html#top_k"><code>tf.nn.top_k</code></a> could prove helpful here. Which predictions is the model certain of? Uncertain? If the model was incorrect in its initial prediction, does the correct prediction appear in the top k? (k should be 5 at most)</em></p>
-<p><strong>Answer:</strong></p>
-<p>The model is fairly certain about the "Right-of-way at next intersection" and "Ahead only" signs with probabilities above 99%. The model was fairly certain about the "Student Crossing" sign. There was quite a bit of uncertainty about the other 2 signs.
+<figure>
+ <img src="/images/Traffic_Signs_Recognition_23_1.png" width="380"/>
+</figure>
+
+<figure>
+ <img src="/images/Traffic_Signs_Recognition_23_2.png" width="380"/>
+</figure>
+
+<p>The model is fairly certain about the "Right-of-way at next intersection" and "Ahead only" signs with probabilities above 90%. The model was fairly certain about the "Student Crossing" sign. There was quite a bit of uncertainty about the other 2 signs.
 For the "No Vehicles" sign, the model gave the incorrect output. The correct output did not even appear in the top 5. As noted about, this was expected since the colors did not match the training dataset.</p>
-<h3>Question 9</h3>
-<p><em>If necessary, provide documentation for how an interface was built for your model to load and classify newly-acquired images.</em></p>
-<p><strong>Answer:</strong></p>
-<blockquote>
-<p><strong>Note</strong>: Once you have completed all of the code implementations and successfully answered each question above, you may finalize your work by exporting the iPython Notebook as an HTML document. You can do this by using the menu above and navigating to  \n",
-    "<strong>File -&gt; Download as -&gt; HTML (.html)</strong>. Include the finished document along with this notebook as your submission.</p>
-</blockquote>
-<div class="highlight"><pre><span></span>
-</pre></div>
     </div><!-- /.entry-content -->
 
   </article>
