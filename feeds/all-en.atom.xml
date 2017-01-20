@@ -91,7 +91,7 @@ Number of classes = 43
 
 
 &lt;p&gt;&lt;p&gt;&lt;/p&gt; 
- &lt;img src=/images/Traffic_Signs_Recognition_6_0.png width="100" height="200" /&gt;
+ &lt;img src=/images/Traffic_Signs_Recognition_6_0.png width="150" height="200" /&gt;
  &lt;p&gt;&lt;/p&gt; &lt;/p&gt;
 &lt;h3&gt;Count of each sign&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Plot histogram of labels in training and test set&lt;/span&gt;
@@ -111,7 +111,7 @@ Number of classes = 43
 
 
 &lt;p&gt;&lt;p&gt;&lt;/p&gt; 
- &lt;img src=/images/Traffic_Signs_Recognition_8_1.png width="100" height="200" /&gt;
+ &lt;img src=/images/Traffic_Signs_Recognition_8_1.png width="150" height="200" /&gt;
  &lt;p&gt;&lt;/p&gt; &lt;/p&gt;
 &lt;h2&gt;Data Preprocessing&lt;/h2&gt;
 &lt;p&gt;Whenever possible, we want our variables to have 0 mean and equal variance when performing gradient descent optimization. One way we can do this on images is to convert the images to greyscale. This has the effect of reducing the overall variation in the dataset. However, we would like to preserve the variation between colors so the normalization was performed individually on each color. &lt;/p&gt;
@@ -275,7 +275,7 @@ Number of classes = 43
 
 
 &lt;p&gt;&lt;p&gt;&lt;/p&gt; 
- &lt;img src=/images/Traffic_Signs_Recognition_17_0.png width="100" height="200" /&gt;
+ &lt;img src=/images/Traffic_Signs_Recognition_17_0.png width="150" height="200" /&gt;
  &lt;p&gt;&lt;/p&gt; &lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Test set accuracy at 0.7630245685577393
 &lt;/pre&gt;&lt;/div&gt;
@@ -315,7 +315,7 @@ Number of classes = 43
 
 
 &lt;p&gt;&lt;p&gt;&lt;/p&gt; 
- &lt;img src=/images/Traffic_Signs_Recognition_19_1.png width="100" height="200" /&gt;
+ &lt;img src=/images/Traffic_Signs_Recognition_19_1.png width="150" height="200" /&gt;
  &lt;p&gt;&lt;/p&gt; &lt;/p&gt;
 &lt;p&gt;The second sign has a lot of obstruction to it with tree branches covering parts of the sign, in addition to containing different colors than those in the training set. I suspect that this one will be difficult to classify by the algorithm. There is also a slight tilt in a couple of the signs, thereby causing classification issues. Also, at this resolution and size, the images look quite blurred.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Preprocess the images and run the signs through the prediction algorithm to test performance&lt;/span&gt;
@@ -346,7 +346,7 @@ Number of classes = 43
 
 
 &lt;p&gt;&lt;p&gt;&lt;/p&gt; 
- &lt;img src=/images/Traffic_Signs_Recognition_21_1.png width="100" height="200" /&gt;
+ &lt;img src=/images/Traffic_Signs_Recognition_21_1.png width="150" height="200" /&gt;
  &lt;p&gt;&lt;/p&gt; &lt;/p&gt;
 &lt;p&gt;The model was able to predict 2 correctly out of 5. This accuracy level is considerably less than the test dataset. 
 However, with a little more tuning, I believe that the accuracy can be considerably improved. The incorrect classifications are actually quite similar the correct image in most cases.&lt;/p&gt;
@@ -390,10 +390,10 @@ However, with a little more tuning, I believe that the accuracy can be considera
 
 
 &lt;p&gt;&lt;p&gt;&lt;/p&gt; 
- &lt;img src=/images/Traffic_Signs_Recognition_23_1.png width="100" height="200" /&gt;
+ &lt;img src=/images/Traffic_Signs_Recognition_23_1.png width="150" height="200" /&gt;
  &lt;p&gt;&lt;/p&gt; &lt;/p&gt;
 &lt;p&gt;&lt;p&gt;&lt;/p&gt; 
- &lt;img src=/images/Traffic_Signs_Recognition_23_2.png width="100" height="200" /&gt;
+ &lt;img src=/images/Traffic_Signs_Recognition_23_2.png width="150" height="200" /&gt;
  &lt;p&gt;&lt;/p&gt; &lt;/p&gt;
 &lt;p&gt;The model is fairly certain about the "Right-of-way at next intersection" and "Ahead only" signs with probabilities above 90%. The model was fairly certain about the "Student Crossing" sign. There was quite a bit of uncertainty about the other 2 signs.
 For the "No Vehicles" sign, the model gave the incorrect output. The correct output did not even appear in the top 5. As noted about, this was expected since the colors did not match the training dataset.&lt;/p&gt;</content></entry><entry><title>Finding Lane Lines on the Road</title><link href="/finding-lane-lines-on-the-road.html" rel="alternate"></link><published>2016-11-03T00:00:00+00:00</published><updated>2016-11-03T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2016-11-03:/finding-lane-lines-on-the-road.html</id><summary type="html">&lt;h1&gt;&lt;strong&gt;Finding Lane Lines on the Road&lt;/strong&gt;&lt;/h1&gt;
