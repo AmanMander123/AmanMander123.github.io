@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
         <meta charset="utf-8" />
-        <title>A Pelican Blog</title>
+        <title>Collaborative Filtering Based Recommendation System</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
         <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
 
@@ -19,14 +19,19 @@
                     <li><a href="/category/data-analysis.html">Data Analysis</a></li>
                     <li><a href="/category/finance.html">Finance</a></li>
                     <li><a href="/category/machine-learning.html">Machine Learning</a></li>
-                    <li><a href="/category/recommendation-system.html">Recommendation System</a></li>
+                    <li class="active"><a href="/category/recommendation-system.html">Recommendation System</a></li>
                     <li><a href="/category/self-driving-car.html">Self Driving Car</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/collaborative-filtering-based-recommendation-system.html" rel="bookmark"
+           title="Permalink to Collaborative Filtering Based Recommendation System">Collaborative Filtering Based Recommendation System</a></h1>
+    </header>
 
-            <aside id="featured" class="body">
-                <article>
-                    <h1 class="entry-title"><a href="/collaborative-filtering-based-recommendation-system.html">Collaborative Filtering Based Recommendation System</a></h1>
+    <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2017-02-07T00:00:00+00:00">
                 Published: Tue 07 February 2017
@@ -34,7 +39,7 @@
 
 <p>In <a href="/category/recommendation-system.html">Recommendation System</a>.</p>
 
-</footer><!-- /.post-info --><h2>Overview</h2>
+</footer><!-- /.post-info -->      <h2>Overview</h2>
 <p>This is a very basic and simplistic collaborative filtering based recommender system. It uses a subset of the <a href="https://movielens.org/">MovieLens</a> dataset provided by <a href="http://files.grouplens.org/datasets/movielens/ml-latest-small-README.html">GroupLens</a>.<br>
 As of right now, the recommender generates a list of top 10 recommendations for any user in the dataset. Below are the steps on how it accomplishes this:<br>
 1. First we read in the raw data tables - movies and ratings
@@ -501,329 +506,11 @@ Recommendations for user
 2776      Field of Dreams (1989)
 6665       Risky Business (1983)
 Name: Title, dtype: object
-</pre></div>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/traffic-signs-classifier.html" rel="bookmark"
-                           title="Permalink to Traffic Signs Classifier">Traffic Signs Classifier</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-11-22T00:00:00+00:00">
-                Published: Tue 22 November 2016
-        </abbr>
-
-<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
-
-</footer><!-- /.post-info -->                <h1>Deep Learning Using TensorFlow</h1>
-<h2>Summary</h2>
-<p>The purpose of this exercise is to use deep neural networks to classify traffic signs. Specifically, we train a model to classify traffic signs from the <a href="http://benchmark.ini.rub.de/?section=gtsrb&amp;subsection=dataset">German Traffic Sign Dataset</a>.  </p>
-<h2>Data</h2>
-<p>The pickled data is a dictionary with 4 key/value pairs:</p>
-<ul>
-<li>features -&gt; the images …</li></ul>
-                <a class="readmore" href="/traffic-signs-classifier.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/finding-lane-lines-on-the-road.html" rel="bookmark"
-                           title="Permalink to Finding Lane Lines on the Road">Finding Lane Lines on the Road</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-11-03T00:00:00+00:00">
-                Published: Thu 03 November 2016
-        </abbr>
-
-<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
-
-</footer><!-- /.post-info -->                <h1><strong>Finding Lane Lines on the Road</strong></h1>
-<hr>
-<p>In this project, we use the following tools to identify lane lines on the road:<br>
-<em> Color selection<br>
-</em> Region of interest selection<br>
-<em> Grayscaling<br>
-</em> Gaussian smoothing<br>
-<em> Canny Edge Detection<br>
-</em> Hough Tranform line detection  </p>
-<p>We develop a pipeline on a series of individual images, and later apply …</p>
-                <a class="readmore" href="/finding-lane-lines-on-the-road.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/titanic-dataset-visualization.html" rel="bookmark"
-                           title="Permalink to Titanic Dataset Visualization">Titanic Dataset Visualization</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-09-14T00:00:00+00:00">
-                Published: Wed 14 September 2016
-        </abbr>
-
-<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
-
-</footer><!-- /.post-info -->                <h1>Link to Visualization</h1>
-<p><a href="http://bl.ocks.org/AmanMander123/raw/ebcf54644bd3672e5b14613318740eea/">Click here</a>  </p>
-<h1>Summary</h1>
-<p>This visualization describes the percentage of passengers that surived during the Titanic disaster. The circles represent the susbet of passengers categorized by sex, passenger class and point of embarkation. The size of the circle corresponds to the percent value; the higher the proportion of …</p>
-                <a class="readmore" href="/titanic-dataset-visualization.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/ab-testing-free-trial-scanner.html" rel="bookmark"
-                           title="Permalink to A/B Testing – Free Trial Scanner">A/B Testing – Free Trial Scanner</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-09-03T00:00:00+00:00">
-                Published: Sat 03 September 2016
-        </abbr>
-
-<p>In <a href="/category/ab-testing.html">AB Testing</a>.</p>
-
-</footer><!-- /.post-info -->                <h2>Experiment Overview</h2>
-<p>In this experiment, Udacity tested the change where if the student clicked “Start free trial” on the home page, they were asked about their availability to commit to the course as can be seen <a href="https://drive.google.com/file/d/0ByAfiG8HpNUMakVrS0s4cGN2TjQ/view">here</a>. If the student indicated that they had fewer than 5 hours per week …</p>
-                <a class="readmore" href="/ab-testing-free-trial-scanner.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/identify-fraud-from-enron-financial-statements.html" rel="bookmark"
-                           title="Permalink to Identify Fraud from Enron Financial Statements">Identify Fraud from Enron Financial Statements</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-07-09T00:00:00+00:00">
-                Published: Sat 09 July 2016
-        </abbr>
-
-<p>In <a href="/category/machine-learning.html">Machine Learning</a>.</p>
-
-</footer><!-- /.post-info -->                <h2>Purpose</h2>
-<p>The goal of this project is to identify employees from Enron that have been in on the fraud committed that came to light in 2001. This will be based on a machine learning algorithm using public Enron financial and email information.  </p>
-<h2>Data Exploration</h2>
-<p>The dataset that will be used …</p>
-                <a class="readmore" href="/identify-fraud-from-enron-financial-statements.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html" rel="bookmark"
-                           title="Permalink to Financial Contributions to the 2016 Presidential Campaigns from NY">Financial Contributions to the 2016 Presidential Campaigns from NY</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-05-17T00:00:00+00:00">
-                Published: Tue 17 May 2016
-        </abbr>
-
-<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
-
-</footer><!-- /.post-info -->                <p>========================================================</p>
-<div class="highlight"><pre><span></span><span class="cp">#</span><span class="nf">Load</span><span class="x"> libraries</span>
-<span class="x">library(ggplot2)</span>
-<span class="x">library(lubridate)</span>
-<span class="x">library(dplyr)</span>
-<span class="x">library(tidyr)</span>
-<span class="x">library(gridExtra)</span>
-<span class="x">library(psych)</span>
-
-<span class="err">#</span><span class="x"> Load the Data</span>
-<span class="x">data = read.csv(&#39;NYContributionData.csv&#39;, row.names = NULL)</span>
-<span class="cp">#</span><span class="nf">Convert</span><span class="x"> dates from integers to DD-MM-YYYY format</span>
-<span class="x">data</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x"> = dmy(data</span><span class="p">$</span><span class="nv">contb_receipt_dt</span><span class="x">)</span>
 </pre></div>
+    </div><!-- /.entry-content -->
 
-
-<h1>Univariate Plots Section</h1>
-<div class="highlight"><pre><span></span><span class="err">#</span><span class="x"> Summarize the data set</span>
-<span class="x">dim(data)</span>
-
-<span class="cp">##</span><span class="c"> [1] 186976     18</span><span class="x"></span>
-
-<span class="x">names …</span></pre></div>
-                <a class="readmore" href="/financial-contributions-to-the-2016-presidential-campaigns-from-ny.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/data-wrangling-with-mongodb-openstreetmap-data-case-study.html" rel="bookmark"
-                           title="Permalink to Data Wrangling with MongoDB – OpenStreetMap Data Case Study">Data Wrangling with MongoDB – OpenStreetMap Data Case Study</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-05-04T00:00:00+00:00">
-                Published: Wed 04 May 2016
-        </abbr>
-
-<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
-
-</footer><!-- /.post-info -->                <h2>Summary</h2>
-<p>Map Area: <a href="https://mapzen.com/data/metro-extracts/">Waterloo, Ontario, Canada</a><br>
-Problems Encountered in the Map:<br>
-After initially downloading the Waterloo area and running it against the script below, I noticed the following problems with the data:<br>
-•   Inconsistent methods of describing street direction (e.g. “N” or “North”)<br>
-•   Inconsistent street types (e.g. St. instead …</p>
-                <a class="readmore" href="/data-wrangling-with-mongodb-openstreetmap-data-case-study.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/udacity-engagement-analysis.html" rel="bookmark"
-                           title="Permalink to Udacity Engagement Analysis">Udacity Engagement Analysis</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-03-16T00:00:00+00:00">
-                Published: Wed 16 March 2016
-        </abbr>
-
-<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
-
-</footer><!-- /.post-info -->                <h2>Loading Data from CSVs</h2>
-<div class="highlight"><pre><span></span><span class="c1"># Import csv library</span>
-<span class="kn">import</span> <span class="nn">unicodecsv</span>
-
-<span class="c1"># Define function to read and store data</span>
-<span class="k">def</span> <span class="nf">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">reader</span> <span class="o">=</span> <span class="n">unicodecsv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
-
-<span class="n">enrollments</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/enrollments.csv&#39;</span><span class="p">)</span>
-<span class="n">daily_engagement</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/daily_engagement.csv&#39;</span><span class="p">)</span>
-<span class="n">project_submissions</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/project_submissions.csv&#39;</span><span class="p">)</span>
-
-<span class="c1"># Print out first …</span></pre></div>
-                <a class="readmore" href="/udacity-engagement-analysis.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/behavioral-cloning.html" rel="bookmark"
-                           title="Permalink to Behavioral Cloning">Behavioral Cloning</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-01-18T00:00:00+00:00">
-                Published: Mon 18 January 2016
-        </abbr>
-
-<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
-
-</footer><!-- /.post-info -->                <h2>Summary</h2>
-<p>This project is the result of a Udacity project in which a deep learning model is trained to drive a vehicle autonomously. The simulation environment is provided by Udacity to train and test the models. The video of the result can be viewed <a href="https://youtu.be/PqEMiCJosos">here</a>. The numbers scrolling on the …</p>
-                <a class="readmore" href="/behavioral-cloning.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/introduction-to-research-methods.html" rel="bookmark"
-                           title="Permalink to Introduction to Research Methods">Introduction to Research Methods</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2015-09-19T00:00:00+00:00">
-                Published: Sat 19 September 2015
-        </abbr>
-
-<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
-
-</footer><!-- /.post-info -->                <h1>Introduction To Research Methods</h1>
-<h2>Chopsticks</h2>
-<p>A few researchers set out to determine the optimal length of chopsticks for children and adults. They came up with a measure of how effective a pair of chopsticks performed, called the "Food Pinching Performance." The "Food Pinching Performance" was determined by counting the number …</p>
-                <a class="readmore" href="/introduction-to-research-methods.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/stock-screener.html" rel="bookmark"
-                           title="Permalink to Stock Screener">Stock Screener</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2015-09-07T00:00:00+00:00">
-                Published: Mon 07 September 2015
-        </abbr>
-
-<p>In <a href="/category/finance.html">Finance</a>.</p>
-
-</footer><!-- /.post-info -->                <h2>Purpose</h2>
-<p>This script gathers ticker data on the tickers in the TickerList.csv file and calculates the following metrics:<br>
-- Simple moving averages
-- RSI
-- Exponential moving averages
-- MACD  </p>
-<p>Then the tickers are filtered using the following user-defined parameters:<br>
-- MinPrice
-- MaxPrice
-- MinRSI 
-- MaxRSI
-- MinVol
-- MA1 
-- MA2  </p>
-<p>The technical charts of the tickers …</p>
-                <a class="readmore" href="/stock-screener.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/baseball-salaries-analysis.html" rel="bookmark"
-                           title="Permalink to Baseball Salaries Analysis">Baseball Salaries Analysis</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2015-03-25T00:00:00+00:00">
-                Published: Wed 25 March 2015
-        </abbr>
-
-<p>In <a href="/category/data-analysis.html">Data Analysis</a>.</p>
-
-</footer><!-- /.post-info -->                <p>The Baseball Data was used to answer the following questions:<br>
-Are salaries higher in 2015 than in 1985?<br>
-Does the mean salary increase with the year?<br>
-Do a player salaries have a higher correlation with total runs or homeruns?</p>
-<div class="highlight"><pre><span></span><span class="c1"># Import packages</span>
-<span class="kn">import</span> <span class="nn">csv</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as …</span></pre></div>
-                <a class="readmore" href="/baseball-salaries-analysis.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-                </ol><!-- /#posts-list -->
-                </section><!-- /#content -->
+  </article>
+</section>
         <section id="extras" class="body">
                 <div class="social">
                         <h2>social</h2>
