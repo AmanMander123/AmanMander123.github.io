@@ -41,13 +41,21 @@
 
 </footer><!-- /.post-info -->      <h2>Overview</h2>
 <p>This is a very basic and simplistic collaborative filtering based recommender system. It uses a subset of the <a href="https://movielens.org/">MovieLens</a> dataset provided by <a href="http://files.grouplens.org/datasets/movielens/ml-latest-small-README.html">GroupLens</a>.<br>
-As of right now, the recommender generates a list of top 10 recommendations for any user in the dataset. Below are the steps on how it accomplishes this:<br>
-1. First we read in the raw data tables - movies and ratings
-2. Then we merge the 2 data tables on the movieId key and delete the timestamp field
-3. We then generate a pivot table with the values as the ratings, the movie titles as the rows and the user IDs as the columns
-4. A correlation matrix is then generated that represents the correlations between movies
-5. Then the movies that the selected user has already watched are extracted and their correlations with the other movies are then summed
-6. The recommendation list is then sorted from highest to lowest correlation and the movies with the top 10 correlations are then recommended</p>
+As of right now, the recommender generates a list of top 10 recommendations for any user in the dataset. Below are the steps on how it accomplishes this: <br>
+1. First we read in the raw data tables - movies and ratings<br>
+2. Then we merge the 2 data tables on the movieId key and delete the timestamp field<br>
+3. We then generate a pivot table with the values as the ratings, the movie titles as the rows and the user IDs as the columns<br>
+4. A correlation matrix is then generated that represents the correlations between movies<br>
+5. Then the movies that the selected user has already watched are extracted and their correlations with the other movies are then summed<br>
+6. The recommendation list is then sorted from highest to lowest correlation and the movies with the top 10 correlations are then recommended  </p>
+<p>Limitations:<br>
+The greatest limitation of this technique is that if a user has not rated any movies, a recommendation cannot be provided since we do not understand the preferences of the user, known as the <a href="https://en.wikipedia.org/wiki/Cold_start">cold start</a> problem.</p>
+<p>Next Steps:<br>
+The ultimate goal is to fill in the missing ratings for all users by making predictions on what the user is most likely to rate the movies that they have not watched. This can be accomplished in many ways:<br>
+1. Create buckets of correlation values that represent ratings (C&lt;=0 represents rating of 0, C &gt; 0 &amp; C &lt; 0.1 represents rating of 0.5, etc...)<br>
+2. Use machine learning algorithms to predict the missing ratings (kNN, Decision Trees/Random Forests, Clustering)  </p>
+<p>For the next iteration of this system, I will be going with using a machine learning algorithm to make the predictions. Although it is worth trying all of the algorithms mentioned above, I would most likely start with kNN.  </p>
+<p>Measuring the accuracy of the predicted ratings is also very crucial to determine the credibility of the recommendation system. This can be done by using the full MovieLens dataset and calculating the precision and recall values.</p>
 <div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>  

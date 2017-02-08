@@ -36,13 +36,21 @@
 
 </footer><!-- /.post-info --><h2>Overview</h2>
 <p>This is a very basic and simplistic collaborative filtering based recommender system. It uses a subset of the <a href="https://movielens.org/">MovieLens</a> dataset provided by <a href="http://files.grouplens.org/datasets/movielens/ml-latest-small-README.html">GroupLens</a>.<br>
-As of right now, the recommender generates a list of top 10 recommendations for any user in the dataset. Below are the steps on how it accomplishes this:<br>
-1. First we read in the raw data tables - movies and ratings
-2. Then we merge the 2 data tables on the movieId key and delete the timestamp field
-3. We then generate a pivot table with the values as the ratings, the movie titles as the rows and the user IDs as the columns
-4. A correlation matrix is then generated that represents the correlations between movies
-5. Then the movies that the selected user has already watched are extracted and their correlations with the other movies are then summed
-6. The recommendation list is then sorted from highest to lowest correlation and the movies with the top 10 correlations are then recommended</p>
+As of right now, the recommender generates a list of top 10 recommendations for any user in the dataset. Below are the steps on how it accomplishes this: <br>
+1. First we read in the raw data tables - movies and ratings<br>
+2. Then we merge the 2 data tables on the movieId key and delete the timestamp field<br>
+3. We then generate a pivot table with the values as the ratings, the movie titles as the rows and the user IDs as the columns<br>
+4. A correlation matrix is then generated that represents the correlations between movies<br>
+5. Then the movies that the selected user has already watched are extracted and their correlations with the other movies are then summed<br>
+6. The recommendation list is then sorted from highest to lowest correlation and the movies with the top 10 correlations are then recommended  </p>
+<p>Limitations:<br>
+The greatest limitation of this technique is that if a user has not rated any movies, a recommendation cannot be provided since we do not understand the preferences of the user, known as the <a href="https://en.wikipedia.org/wiki/Cold_start">cold start</a> problem.</p>
+<p>Next Steps:<br>
+The ultimate goal is to fill in the missing ratings for all users by making predictions on what the user is most likely to rate the movies that they have not watched. This can be accomplished in many ways:<br>
+1. Create buckets of correlation values that represent ratings (C&lt;=0 represents rating of 0, C &gt; 0 &amp; C &lt; 0.1 represents rating of 0.5, etc...)<br>
+2. Use machine learning algorithms to predict the missing ratings (kNN, Decision Trees/Random Forests, Clustering)  </p>
+<p>For the next iteration of this system, I will be going with using a machine learning algorithm to make the predictions. Although it is worth trying all of the algorithms mentioned above, I would most likely start with kNN.  </p>
+<p>Measuring the accuracy of the predicted ratings is also very crucial to determine the credibility of the recommendation system. This can be done by using the full MovieLens dataset and calculating the precision and recall values.</p>
 <div class="highlight"><pre><span></span><span class="c1"># Import libraries</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>  
@@ -507,6 +515,66 @@ Name: Title, dtype: object
                     <h1>Other articles</h1>
                     <hr />
                     <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/simple-neural-network.html" rel="bookmark"
+                           title="Permalink to Simple Neural Network">Simple Neural Network</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2017-02-06T00:00:00+00:00">
+                Published: Mon 06 February 2017
+        </abbr>
+
+<p>In <a href="/category/machine-learning.html">Machine Learning</a>.</p>
+
+</footer><!-- /.post-info -->                <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">exp</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">random</span><span class="p">,</span> <span class="n">dot</span>
+
+<span class="c1"># Define neural network class</span>
+<span class="k">class</span> <span class="nc">NeuralNetwork</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#Seed random number generator</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Model single neuron with 3 inputs and 1 output</span>
+        <span class="c1"># Assign random weights to a 3 x 1 matrix with values between -1 and 1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">synaptic_weights</span> <span class="o">=</span> <span class="mi">2 …</span></pre></div>
+                <a class="readmore" href="/simple-neural-network.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/simple-linear-regression.html" rel="bookmark"
+                           title="Permalink to Simple Linear Regression">Simple Linear Regression</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2017-02-05T00:00:00+00:00">
+                Published: Sun 05 February 2017
+        </abbr>
+
+<p>In <a href="/category/machine-learning.html">Machine Learning</a>.</p>
+
+</footer><!-- /.post-info -->                <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">def</span> <span class="nf">computer_error_for_line_given_points</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+    <span class="c1"># Initialize error at 0</span>
+    <span class="n">totalError</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Loop through all points</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)):</span>
+        <span class="c1"># Get x value</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Get y value</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Get squared difference and add to total error</span>
+        <span class="n">totalError</span> <span class="o">+=</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">m …</span></pre></div>
+                <a class="readmore" href="/simple-linear-regression.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>

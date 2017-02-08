@@ -3,13 +3,21 @@
 &lt;p&gt;This is a very basic and simplistic collaborative filtering based recommender system. It uses a subset of the &lt;a href="https://movielens.org/"&gt;MovieLens&lt;/a&gt; dataset provided by &lt;a href="http://files.grouplens.org/datasets/movielens/ml-latest-small-README.html"&gt;GroupLens&lt;/a&gt;.&lt;br&gt;
 As of right now, the recommender generates a list of top 10 recommendations for any user in the dataset. Below are the steps on how it …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;Overview&lt;/h2&gt;
 &lt;p&gt;This is a very basic and simplistic collaborative filtering based recommender system. It uses a subset of the &lt;a href="https://movielens.org/"&gt;MovieLens&lt;/a&gt; dataset provided by &lt;a href="http://files.grouplens.org/datasets/movielens/ml-latest-small-README.html"&gt;GroupLens&lt;/a&gt;.&lt;br&gt;
-As of right now, the recommender generates a list of top 10 recommendations for any user in the dataset. Below are the steps on how it accomplishes this:&lt;br&gt;
-1. First we read in the raw data tables - movies and ratings
-2. Then we merge the 2 data tables on the movieId key and delete the timestamp field
-3. We then generate a pivot table with the values as the ratings, the movie titles as the rows and the user IDs as the columns
-4. A correlation matrix is then generated that represents the correlations between movies
-5. Then the movies that the selected user has already watched are extracted and their correlations with the other movies are then summed
-6. The recommendation list is then sorted from highest to lowest correlation and the movies with the top 10 correlations are then recommended&lt;/p&gt;
+As of right now, the recommender generates a list of top 10 recommendations for any user in the dataset. Below are the steps on how it accomplishes this: &lt;br&gt;
+1. First we read in the raw data tables - movies and ratings&lt;br&gt;
+2. Then we merge the 2 data tables on the movieId key and delete the timestamp field&lt;br&gt;
+3. We then generate a pivot table with the values as the ratings, the movie titles as the rows and the user IDs as the columns&lt;br&gt;
+4. A correlation matrix is then generated that represents the correlations between movies&lt;br&gt;
+5. Then the movies that the selected user has already watched are extracted and their correlations with the other movies are then summed&lt;br&gt;
+6. The recommendation list is then sorted from highest to lowest correlation and the movies with the top 10 correlations are then recommended  &lt;/p&gt;
+&lt;p&gt;Limitations:&lt;br&gt;
+The greatest limitation of this technique is that if a user has not rated any movies, a recommendation cannot be provided since we do not understand the preferences of the user, known as the &lt;a href="https://en.wikipedia.org/wiki/Cold_start"&gt;cold start&lt;/a&gt; problem.&lt;/p&gt;
+&lt;p&gt;Next Steps:&lt;br&gt;
+The ultimate goal is to fill in the missing ratings for all users by making predictions on what the user is most likely to rate the movies that they have not watched. This can be accomplished in many ways:&lt;br&gt;
+1. Create buckets of correlation values that represent ratings (C&amp;lt;=0 represents rating of 0, C &amp;gt; 0 &amp;amp; C &amp;lt; 0.1 represents rating of 0.5, etc...)&lt;br&gt;
+2. Use machine learning algorithms to predict the missing ratings (kNN, Decision Trees/Random Forests, Clustering)  &lt;/p&gt;
+&lt;p&gt;For the next iteration of this system, I will be going with using a machine learning algorithm to make the predictions. Although it is worth trying all of the algorithms mentioned above, I would most likely start with kNN.  &lt;/p&gt;
+&lt;p&gt;Measuring the accuracy of the predicted ratings is also very crucial to determine the credibility of the recommendation system. This can be done by using the full MovieLens dataset and calculating the precision and recall values.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Import libraries&lt;/span&gt;
 &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
 &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;  
