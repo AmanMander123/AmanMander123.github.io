@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
         <meta charset="utf-8" />
-        <title>A Pelican Blog - Self Driving Car</title>
+        <title>Vehicle Detection and Tracking</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
         <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
 
@@ -23,10 +23,15 @@
                     <li class="active"><a href="/category/self-driving-car.html">Self Driving Car</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/vehicle-detection-and-tracking.html" rel="bookmark"
+           title="Permalink to Vehicle Detection and Tracking">Vehicle Detection and Tracking</a></h1>
+    </header>
 
-            <aside id="featured" class="body">
-                <article>
-                    <h1 class="entry-title"><a href="/vehicle-detection-and-tracking.html">Vehicle Detection and Tracking</a></h1>
+    <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2017-02-15T00:00:00+00:00">
                 Published: Wed 15 February 2017
@@ -34,7 +39,7 @@
 
 <p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
 
-</footer><!-- /.post-info --><p>The goals / steps of this project are the following:</p>
+</footer><!-- /.post-info -->      <p>The goals / steps of this project are the following:</p>
 <ul>
 <li>Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier.</li>
 <li>Implement a sliding-window technique and use the trained classifier to search for vehicles in images.</li>
@@ -632,111 +637,11 @@ Wall time: 2h 40min 51s
 
 
 <div class="highlight"><pre><span></span>
-</pre></div>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+</pre></div>
+    </div><!-- /.entry-content -->
 
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/advanced-lane-finding.html" rel="bookmark"
-                           title="Permalink to Advanced Lane Finding">Advanced Lane Finding</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2017-02-05T00:00:00+00:00">
-                Published: Sun 05 February 2017
-        </abbr>
-
-<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
-
-</footer><!-- /.post-info -->                <p>The goals / steps of this project are the following:</p>
-<ul>
-<li>Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.</li>
-<li>Apply a distortion correction to raw images.</li>
-<li>Use color transforms, gradients, etc., to create a thresholded binary image.</li>
-<li>Apply a perspective transform to rectify binary image ("birds-eye …</li></ul>
-                <a class="readmore" href="/advanced-lane-finding.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/traffic-signs-classifier.html" rel="bookmark"
-                           title="Permalink to Traffic Signs Classifier">Traffic Signs Classifier</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-11-22T00:00:00+00:00">
-                Published: Tue 22 November 2016
-        </abbr>
-
-<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
-
-</footer><!-- /.post-info -->                <h1>Deep Learning Using TensorFlow</h1>
-<h2>Summary</h2>
-<p>The purpose of this exercise is to use deep neural networks to classify traffic signs. Specifically, we train a model to classify traffic signs from the <a href="http://benchmark.ini.rub.de/?section=gtsrb&amp;subsection=dataset">German Traffic Sign Dataset</a>.  </p>
-<h2>Data</h2>
-<p>The pickled data is a dictionary with 4 key/value pairs:</p>
-<ul>
-<li>features -&gt; the images …</li></ul>
-                <a class="readmore" href="/traffic-signs-classifier.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/finding-lane-lines-on-the-road.html" rel="bookmark"
-                           title="Permalink to Finding Lane Lines on the Road">Finding Lane Lines on the Road</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-11-03T00:00:00+00:00">
-                Published: Thu 03 November 2016
-        </abbr>
-
-<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
-
-</footer><!-- /.post-info -->                <h1><strong>Finding Lane Lines on the Road</strong></h1>
-<hr>
-<p>In this project, we use the following tools to identify lane lines on the road:<br>
-<em> Color selection<br>
-</em> Region of interest selection<br>
-<em> Grayscaling<br>
-</em> Gaussian smoothing<br>
-<em> Canny Edge Detection<br>
-</em> Hough Tranform line detection  </p>
-<p>We develop a pipeline on a series of individual images, and later apply …</p>
-                <a class="readmore" href="/finding-lane-lines-on-the-road.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/behavioral-cloning.html" rel="bookmark"
-                           title="Permalink to Behavioral Cloning">Behavioral Cloning</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-01-18T00:00:00+00:00">
-                Published: Mon 18 January 2016
-        </abbr>
-
-<p>In <a href="/category/self-driving-car.html">Self Driving Car</a>.</p>
-
-</footer><!-- /.post-info -->                <h2>Summary</h2>
-<p>This project is the result of a Udacity project in which a deep learning model is trained to drive a vehicle autonomously. The simulation environment is provided by Udacity to train and test the models. The video of the result can be viewed <a href="https://youtu.be/PqEMiCJosos">here</a>. The numbers scrolling on the …</p>
-                <a class="readmore" href="/behavioral-cloning.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-                </ol><!-- /#posts-list -->
-                </section><!-- /#content -->
+  </article>
+</section>
         <section id="extras" class="body">
                 <div class="social">
                         <h2>social</h2>
