@@ -1,5 +1,261 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>A Pelican Blog - Machine Learning</title><link href="/" rel="alternate"></link><link href="/feeds/machine-learning.atom.xml" rel="self"></link><id>/</id><updated>2017-02-06T00:00:00+00:00</updated><entry><title>Simple Neural Network</title><link href="/simple-neural-network.html" rel="alternate"></link><published>2017-02-06T00:00:00+00:00</published><updated>2017-02-06T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2017-02-06:/simple-neural-network.html</id><summary type="html">&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;dot&lt;/span&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>A Pelican Blog - Machine Learning</title><link href="/" rel="alternate"></link><link href="/feeds/machine-learning.atom.xml" rel="self"></link><id>/</id><updated>2017-02-20T00:00:00+00:00</updated><entry><title>Sentiment Analysis</title><link href="/sentiment-analysis.html" rel="alternate"></link><published>2017-02-20T00:00:00+00:00</published><updated>2017-02-20T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2017-02-20:/sentiment-analysis.html</id><summary type="html">&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Load libraries&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;tensorflow&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;tf&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;tflearn&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tflearn.data_utils&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;to_categorical&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Read in training data&lt;/span&gt;
+&lt;span class="n"&gt;reviews&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;reviews.txt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;labels&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;labels.txt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Count word frequency&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Counter&lt;/span&gt;
+&lt;span class="n"&gt;total_counts&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Counter&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_ …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Load libraries&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;np&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;tensorflow&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;tf&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;tflearn&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tflearn.data_utils&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;to_categorical&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Read in training data&lt;/span&gt;
+&lt;span class="n"&gt;reviews&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;reviews.txt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;labels&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_csv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;labels.txt&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Count word frequency&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Counter&lt;/span&gt;
+&lt;span class="n"&gt;total_counts&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Counter&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;_&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;row&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;reviews&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;iterrows&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;total_counts&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;row&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Total words in data set: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;total_counts&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(&amp;#39;Total words in data set: &amp;#39;, 74074)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Sort and print top vocab words&lt;/span&gt;
+&lt;span class="n"&gt;vocab&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;sorted&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;total_counts&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;total_counts&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;reverse&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)[:&lt;/span&gt;&lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;vocab&lt;/span&gt;&lt;span class="p"&gt;[:&lt;/span&gt;&lt;span class="mi"&gt;60&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[&amp;#39;&amp;#39;, &amp;#39;the&amp;#39;, &amp;#39;.&amp;#39;, &amp;#39;and&amp;#39;, &amp;#39;a&amp;#39;, &amp;#39;of&amp;#39;, &amp;#39;to&amp;#39;, &amp;#39;is&amp;#39;, &amp;#39;br&amp;#39;, &amp;#39;it&amp;#39;, &amp;#39;in&amp;#39;, &amp;#39;i&amp;#39;, &amp;#39;this&amp;#39;, &amp;#39;that&amp;#39;, &amp;#39;s&amp;#39;, &amp;#39;was&amp;#39;, &amp;#39;as&amp;#39;, &amp;#39;for&amp;#39;, &amp;#39;with&amp;#39;, &amp;#39;movie&amp;#39;, &amp;#39;but&amp;#39;, &amp;#39;film&amp;#39;, &amp;#39;you&amp;#39;, &amp;#39;on&amp;#39;, &amp;#39;t&amp;#39;, &amp;#39;not&amp;#39;, &amp;#39;he&amp;#39;, &amp;#39;are&amp;#39;, &amp;#39;his&amp;#39;, &amp;#39;have&amp;#39;, &amp;#39;be&amp;#39;, &amp;#39;one&amp;#39;, &amp;#39;all&amp;#39;, &amp;#39;at&amp;#39;, &amp;#39;they&amp;#39;, &amp;#39;by&amp;#39;, &amp;#39;an&amp;#39;, &amp;#39;who&amp;#39;, &amp;#39;so&amp;#39;, &amp;#39;from&amp;#39;, &amp;#39;like&amp;#39;, &amp;#39;there&amp;#39;, &amp;#39;her&amp;#39;, &amp;#39;or&amp;#39;, &amp;#39;just&amp;#39;, &amp;#39;about&amp;#39;, &amp;#39;out&amp;#39;, &amp;#39;if&amp;#39;, &amp;#39;has&amp;#39;, &amp;#39;what&amp;#39;, &amp;#39;some&amp;#39;, &amp;#39;good&amp;#39;, &amp;#39;can&amp;#39;, &amp;#39;more&amp;#39;, &amp;#39;she&amp;#39;, &amp;#39;when&amp;#39;, &amp;#39;very&amp;#39;, &amp;#39;up&amp;#39;, &amp;#39;time&amp;#39;, &amp;#39;no&amp;#39;]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Assign index to each word&lt;/span&gt;
+&lt;span class="n"&gt;word2idx&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;word&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;word&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;vocab&lt;/span&gt;&lt;span class="p"&gt;)}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Convert text to vector&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;text_to_vector&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;word_vector&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;zeros&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;vocab&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;int_&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;word&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;idx&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;word2idx&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;word&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;idx&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;continue&lt;/span&gt;
+        &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;word_vector&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;idx&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;word_vector&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;word_vectors&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;zeros&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;reviews&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;vocab&lt;/span&gt;&lt;span class="p"&gt;)),&lt;/span&gt; &lt;span class="n"&gt;dtype&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;int_&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;ii&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;reviews&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;iterrows&lt;/span&gt;&lt;span class="p"&gt;()):&lt;/span&gt;
+    &lt;span class="n"&gt;word_vectors&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;ii&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;text_to_vector&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Split into train, validation and test sets&lt;/span&gt;
+&lt;span class="n"&gt;Y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="o"&gt;==&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;positive&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;astype&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;int_&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;records&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;shuffle&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;arange&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;records&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;shuffle&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;shuffle&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;test_fraction&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.9&lt;/span&gt;
+
+&lt;span class="n"&gt;train_split&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;test_split&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;shuffle&lt;/span&gt;&lt;span class="p"&gt;[:&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;records&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;test_fraction&lt;/span&gt;&lt;span class="p"&gt;)],&lt;/span&gt; &lt;span class="n"&gt;shuffle&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;records&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;test_fraction&lt;/span&gt;&lt;span class="p"&gt;):]&lt;/span&gt;
+&lt;span class="n"&gt;trainX&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;trainY&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;word_vectors&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;train_split&lt;/span&gt;&lt;span class="p"&gt;,:],&lt;/span&gt; &lt;span class="n"&gt;to_categorical&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;values&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;train_split&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;testX&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;testY&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;word_vectors&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;test_split&lt;/span&gt;&lt;span class="p"&gt;,:],&lt;/span&gt; &lt;span class="n"&gt;to_categorical&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Y&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;values&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;test_split&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Network building&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;build_model&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="c1"&gt;# This resets all parameters and variables, leave this here&lt;/span&gt;
+    &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;reset_default_graph&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# Inputs&lt;/span&gt;
+    &lt;span class="n"&gt;net&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tflearn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;input_data&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# Hidden layer(s)&lt;/span&gt;
+    &lt;span class="n"&gt;net&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tflearn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fully_connected&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;200&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;activation&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ReLU&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;net&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tflearn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fully_connected&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;25&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;activation&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;ReLU&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# Output layer&lt;/span&gt;
+    &lt;span class="n"&gt;net&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tflearn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fully_connected&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;activation&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;softmax&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;net&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tflearn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;regression&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;optimizer&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;sgd&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                             &lt;span class="n"&gt;learning_rate&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                             &lt;span class="n"&gt;loss&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;categorical_crossentropy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;model&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tflearn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DNN&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;net&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;model&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Initialize model&lt;/span&gt;
+&lt;span class="n"&gt;model&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;build_model&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Training&lt;/span&gt;
+&lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;trainX&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;trainY&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;validation_set&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mf"&gt;0.1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;show_metric&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;batch_size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;128&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n_epoch&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Training Step: 15899  | total loss: [1m[32m0.21230[0m[0m | time: 4.150s
+| SGD | epoch: 100 | loss: 0.21230 - acc: 0.9071 -- iter: 20224/20250
+Training Step: 15900  | total loss: [1m[32m0.20658[0m[0m | time: 5.185s
+| SGD | epoch: 100 | loss: 0.20658 - acc: 0.9054 | val_loss: 0.38249 - val_acc: 0.8631 -- iter: 20250/20250
+--
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Test accuracy&lt;/span&gt;
+&lt;span class="n"&gt;predictions&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;predict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;testX&lt;/span&gt;&lt;span class="p"&gt;))[:,&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mf"&gt;0.5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;astype&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;int_&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;test_accuracy&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;np&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;mean&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;predictions&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;testY&lt;/span&gt;&lt;span class="p"&gt;[:,&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;axis&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Test accuracy: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;test_accuracy&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(&amp;#39;Test accuracy: &amp;#39;, 0.86519999999999997)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Helper function that uses your model to predict sentiment&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;positive_prob&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;predict&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="n"&gt;text_to_vector&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;lower&lt;/span&gt;&lt;span class="p"&gt;())])[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Sentence: {}&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = {:.3f} :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;positive_prob&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; 
+          &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;positive_prob&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mf"&gt;0.5&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# Test examples&lt;/span&gt;
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;this is a great day&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;this is a disappointing experience&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;this is a greatly disappointing experience&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;I am not going to recommend this person&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;I cannot believe how good she was&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;I thought very highly of the person&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;I thought he was not up to the mark&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;The discussion was very enlightening&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;He could have been more prepared&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;His skills in programming were clearly evident&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;Some improvement in communication would have helped&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;She does not have a great deal of experience with databases&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;His software skills were limited&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;His background in scalable systems is promising&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;It was unusual that he did not know about MapReduce&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;It was not evident that he could perform well&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;His coding skills were amazing&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;He did not perform well on the coding test&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;He demonstrated a good understanding of databases&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;sentence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;The logic he used to explain that problem was not correct&amp;quot;&lt;/span&gt;
+&lt;span class="n"&gt;test_sentence&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sentence&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;great&lt;/span&gt; &lt;span class="n"&gt;day&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.999 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;disappointing&lt;/span&gt; &lt;span class="n"&gt;experience&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.240 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;greatly&lt;/span&gt; &lt;span class="n"&gt;disappointing&lt;/span&gt; &lt;span class="n"&gt;experience&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.309 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;I&lt;/span&gt; &lt;span class="n"&gt;am&lt;/span&gt; &lt;span class="n"&gt;not&lt;/span&gt; &lt;span class="n"&gt;going&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;recommend&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt; &lt;span class="n"&gt;person&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.227 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;I&lt;/span&gt; &lt;span class="n"&gt;cannot&lt;/span&gt; &lt;span class="n"&gt;believe&lt;/span&gt; &lt;span class="n"&gt;how&lt;/span&gt; &lt;span class="n"&gt;good&lt;/span&gt; &lt;span class="n"&gt;she&lt;/span&gt; &lt;span class="n"&gt;was&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.615 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;I&lt;/span&gt; &lt;span class="n"&gt;thought&lt;/span&gt; &lt;span class="n"&gt;very&lt;/span&gt; &lt;span class="n"&gt;highly&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;person&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.991 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;I&lt;/span&gt; &lt;span class="n"&gt;thought&lt;/span&gt; &lt;span class="n"&gt;he&lt;/span&gt; &lt;span class="n"&gt;was&lt;/span&gt; &lt;span class="n"&gt;not&lt;/span&gt; &lt;span class="n"&gt;up&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;mark&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.586 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;The&lt;/span&gt; &lt;span class="n"&gt;discussion&lt;/span&gt; &lt;span class="n"&gt;was&lt;/span&gt; &lt;span class="n"&gt;very&lt;/span&gt; &lt;span class="n"&gt;enlightening&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.681 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;He&lt;/span&gt; &lt;span class="n"&gt;could&lt;/span&gt; &lt;span class="n"&gt;have&lt;/span&gt; &lt;span class="n"&gt;been&lt;/span&gt; &lt;span class="n"&gt;more&lt;/span&gt; &lt;span class="n"&gt;prepared&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.250 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;His&lt;/span&gt; &lt;span class="n"&gt;skills&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="n"&gt;programming&lt;/span&gt; &lt;span class="n"&gt;were&lt;/span&gt; &lt;span class="n"&gt;clearly&lt;/span&gt; &lt;span class="n"&gt;evident&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.427 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Some&lt;/span&gt; &lt;span class="n"&gt;improvement&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="n"&gt;communication&lt;/span&gt; &lt;span class="n"&gt;would&lt;/span&gt; &lt;span class="n"&gt;have&lt;/span&gt; &lt;span class="n"&gt;helped&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.165 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;She&lt;/span&gt; &lt;span class="n"&gt;does&lt;/span&gt; &lt;span class="n"&gt;not&lt;/span&gt; &lt;span class="n"&gt;have&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;great&lt;/span&gt; &lt;span class="n"&gt;deal&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;experience&lt;/span&gt; &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;databases&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.985 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;His&lt;/span&gt; &lt;span class="n"&gt;software&lt;/span&gt; &lt;span class="n"&gt;skills&lt;/span&gt; &lt;span class="n"&gt;were&lt;/span&gt; &lt;span class="n"&gt;limited&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.514 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;His&lt;/span&gt; &lt;span class="n"&gt;background&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="n"&gt;scalable&lt;/span&gt; &lt;span class="n"&gt;systems&lt;/span&gt; &lt;span class="k"&gt;is&lt;/span&gt; &lt;span class="n"&gt;promising&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.436 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;It&lt;/span&gt; &lt;span class="n"&gt;was&lt;/span&gt; &lt;span class="n"&gt;unusual&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;he&lt;/span&gt; &lt;span class="n"&gt;did&lt;/span&gt; &lt;span class="n"&gt;not&lt;/span&gt; &lt;span class="n"&gt;know&lt;/span&gt; &lt;span class="n"&gt;about&lt;/span&gt; &lt;span class="n"&gt;MapReduce&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.713 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;It&lt;/span&gt; &lt;span class="n"&gt;was&lt;/span&gt; &lt;span class="n"&gt;not&lt;/span&gt; &lt;span class="n"&gt;evident&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;he&lt;/span&gt; &lt;span class="n"&gt;could&lt;/span&gt; &lt;span class="n"&gt;perform&lt;/span&gt; &lt;span class="n"&gt;well&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.453 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;His&lt;/span&gt; &lt;span class="n"&gt;coding&lt;/span&gt; &lt;span class="n"&gt;skills&lt;/span&gt; &lt;span class="n"&gt;were&lt;/span&gt; &lt;span class="n"&gt;amazing&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.991 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;He&lt;/span&gt; &lt;span class="n"&gt;did&lt;/span&gt; &lt;span class="n"&gt;not&lt;/span&gt; &lt;span class="n"&gt;perform&lt;/span&gt; &lt;span class="n"&gt;well&lt;/span&gt; &lt;span class="n"&gt;on&lt;/span&gt; &lt;span class="n"&gt;the&lt;/span&gt; &lt;span class="n"&gt;coding&lt;/span&gt; &lt;span class="n"&gt;test&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.731 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;He&lt;/span&gt; &lt;span class="n"&gt;demonstrated&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;good&lt;/span&gt; &lt;span class="n"&gt;understanding&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;databases&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.821 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Positive&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Sentence&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;The&lt;/span&gt; &lt;span class="n"&gt;logic&lt;/span&gt; &lt;span class="n"&gt;he&lt;/span&gt; &lt;span class="n"&gt;used&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;explain&lt;/span&gt; &lt;span class="n"&gt;that&lt;/span&gt; &lt;span class="n"&gt;problem&lt;/span&gt; &lt;span class="n"&gt;was&lt;/span&gt; &lt;span class="n"&gt;not&lt;/span&gt; &lt;span class="n"&gt;correct&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;P(positive) = 0.061 :&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;Negative&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</content></entry><entry><title>Simple Neural Network</title><link href="/simple-neural-network.html" rel="alternate"></link><published>2017-02-06T00:00:00+00:00</published><updated>2017-02-06T00:00:00+00:00</updated><author><name></name></author><id>tag:None,2017-02-06:/simple-neural-network.html</id><summary type="html">&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;numpy&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;exp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;dot&lt;/span&gt;
 
 &lt;span class="c1"&gt;# Define neural network class&lt;/span&gt;
 &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;NeuralNetwork&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;

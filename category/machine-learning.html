@@ -26,7 +26,266 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/simple-neural-network.html">Simple Neural Network</a></h1>
+                    <h1 class="entry-title"><a href="/sentiment-analysis.html">Sentiment Analysis</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2017-02-20T00:00:00+00:00">
+                Published: Mon 20 February 2017
+        </abbr>
+
+<p>In <a href="/category/machine-learning.html">Machine Learning</a>.</p>
+
+</footer><!-- /.post-info --><div class="highlight"><pre><span></span><span class="c1"># Load libraries</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">tflearn</span>
+<span class="kn">from</span> <span class="nn">tflearn.data_utils</span> <span class="kn">import</span> <span class="n">to_categorical</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Read in training data</span>
+<span class="n">reviews</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;reviews.txt&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;labels.txt&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Count word frequency</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="n">total_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">reviews</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="n">total_counts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Total words in data set: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">total_counts</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>(&#39;Total words in data set: &#39;, 74074)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Sort and print top vocab words</span>
+<span class="n">vocab</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">total_counts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">total_counts</span><span class="o">.</span><span class="n">get</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)[:</span><span class="mi">10000</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">vocab</span><span class="p">[:</span><span class="mi">60</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>[&#39;&#39;, &#39;the&#39;, &#39;.&#39;, &#39;and&#39;, &#39;a&#39;, &#39;of&#39;, &#39;to&#39;, &#39;is&#39;, &#39;br&#39;, &#39;it&#39;, &#39;in&#39;, &#39;i&#39;, &#39;this&#39;, &#39;that&#39;, &#39;s&#39;, &#39;was&#39;, &#39;as&#39;, &#39;for&#39;, &#39;with&#39;, &#39;movie&#39;, &#39;but&#39;, &#39;film&#39;, &#39;you&#39;, &#39;on&#39;, &#39;t&#39;, &#39;not&#39;, &#39;he&#39;, &#39;are&#39;, &#39;his&#39;, &#39;have&#39;, &#39;be&#39;, &#39;one&#39;, &#39;all&#39;, &#39;at&#39;, &#39;they&#39;, &#39;by&#39;, &#39;an&#39;, &#39;who&#39;, &#39;so&#39;, &#39;from&#39;, &#39;like&#39;, &#39;there&#39;, &#39;her&#39;, &#39;or&#39;, &#39;just&#39;, &#39;about&#39;, &#39;out&#39;, &#39;if&#39;, &#39;has&#39;, &#39;what&#39;, &#39;some&#39;, &#39;good&#39;, &#39;can&#39;, &#39;more&#39;, &#39;she&#39;, &#39;when&#39;, &#39;very&#39;, &#39;up&#39;, &#39;time&#39;, &#39;no&#39;]
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Assign index to each word</span>
+<span class="n">word2idx</span> <span class="o">=</span> <span class="p">{</span><span class="n">word</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vocab</span><span class="p">)}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Convert text to vector</span>
+<span class="k">def</span> <span class="nf">text_to_vector</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">word_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">word2idx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">word_vector</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">word_vector</span><span class="p">)</span>
+
+<span class="n">word_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">reviews</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reviews</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()):</span>
+    <span class="n">word_vectors</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">text_to_vector</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Split into train, validation and test sets</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="p">(</span><span class="n">labels</span><span class="o">==</span><span class="s1">&#39;positive&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span>
+<span class="n">records</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+<span class="n">shuffle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">shuffle</span><span class="p">)</span>
+<span class="n">test_fraction</span> <span class="o">=</span> <span class="mf">0.9</span>
+
+<span class="n">train_split</span><span class="p">,</span> <span class="n">test_split</span> <span class="o">=</span> <span class="n">shuffle</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="n">records</span><span class="o">*</span><span class="n">test_fraction</span><span class="p">)],</span> <span class="n">shuffle</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">records</span><span class="o">*</span><span class="n">test_fraction</span><span class="p">):]</span>
+<span class="n">trainX</span><span class="p">,</span> <span class="n">trainY</span> <span class="o">=</span> <span class="n">word_vectors</span><span class="p">[</span><span class="n">train_split</span><span class="p">,:],</span> <span class="n">to_categorical</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">train_split</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">testX</span><span class="p">,</span> <span class="n">testY</span> <span class="o">=</span> <span class="n">word_vectors</span><span class="p">[</span><span class="n">test_split</span><span class="p">,:],</span> <span class="n">to_categorical</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">test_split</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Network building</span>
+<span class="k">def</span> <span class="nf">build_model</span><span class="p">():</span>
+    <span class="c1"># This resets all parameters and variables, leave this here</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">reset_default_graph</span><span class="p">()</span>
+
+    <span class="c1"># Inputs</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">tflearn</span><span class="o">.</span><span class="n">input_data</span><span class="p">([</span><span class="bp">None</span><span class="p">,</span> <span class="mi">10000</span><span class="p">])</span>
+
+    <span class="c1"># Hidden layer(s)</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">tflearn</span><span class="o">.</span><span class="n">fully_connected</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;ReLU&#39;</span><span class="p">)</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">tflearn</span><span class="o">.</span><span class="n">fully_connected</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;ReLU&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Output layer</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">tflearn</span><span class="o">.</span><span class="n">fully_connected</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;softmax&#39;</span><span class="p">)</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">tflearn</span><span class="o">.</span><span class="n">regression</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span> 
+                             <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> 
+                             <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;categorical_crossentropy&#39;</span><span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">tflearn</span><span class="o">.</span><span class="n">DNN</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Initialize model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Training</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">trainX</span><span class="p">,</span> <span class="n">trainY</span><span class="p">,</span> <span class="n">validation_set</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">show_metric</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">n_epoch</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>Training Step: 15899  | total loss: [1m[32m0.21230[0m[0m | time: 4.150s
+| SGD | epoch: 100 | loss: 0.21230 - acc: 0.9071 -- iter: 20224/20250
+Training Step: 15900  | total loss: [1m[32m0.20658[0m[0m | time: 5.185s
+| SGD | epoch: 100 | loss: 0.20658 - acc: 0.9054 | val_loss: 0.38249 - val_acc: 0.8631 -- iter: 20250/20250
+--
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Test accuracy</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">testX</span><span class="p">))[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span>
+<span class="n">test_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">predictions</span> <span class="o">==</span> <span class="n">testY</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Test accuracy: &quot;</span><span class="p">,</span> <span class="n">test_accuracy</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>(&#39;Test accuracy: &#39;, 0.86519999999999997)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Helper function that uses your model to predict sentiment</span>
+<span class="k">def</span> <span class="nf">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">):</span>
+    <span class="n">positive_prob</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">([</span><span class="n">text_to_vector</span><span class="p">(</span><span class="n">sentence</span><span class="o">.</span><span class="n">lower</span><span class="p">())])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Sentence: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sentence</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;P(positive) = {:.3f} :&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">positive_prob</span><span class="p">),</span> 
+          <span class="s1">&#39;Positive&#39;</span> <span class="k">if</span> <span class="n">positive_prob</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="k">else</span> <span class="s1">&#39;Negative&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># Test examples</span>
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;this is a great day&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;this is a disappointing experience&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;this is a greatly disappointing experience&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;I am not going to recommend this person&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;I cannot believe how good she was&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;I thought very highly of the person&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;I thought he was not up to the mark&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;The discussion was very enlightening&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;He could have been more prepared&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;His skills in programming were clearly evident&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;Some improvement in communication would have helped&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;She does not have a great deal of experience with databases&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;His software skills were limited&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;His background in scalable systems is promising&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;It was unusual that he did not know about MapReduce&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;It was not evident that he could perform well&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;His coding skills were amazing&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;He did not perform well on the coding test&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;He demonstrated a good understanding of databases&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+<span class="n">sentence</span> <span class="o">=</span> <span class="s2">&quot;The logic he used to explain that problem was not correct&quot;</span>
+<span class="n">test_sentence</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">Sentence</span><span class="o">:</span> <span class="k">this</span> <span class="k">is</span> <span class="n">a</span> <span class="n">great</span> <span class="n">day</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.999 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="k">this</span> <span class="k">is</span> <span class="n">a</span> <span class="n">disappointing</span> <span class="n">experience</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.240 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="k">this</span> <span class="k">is</span> <span class="n">a</span> <span class="n">greatly</span> <span class="n">disappointing</span> <span class="n">experience</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.309 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">I</span> <span class="n">am</span> <span class="n">not</span> <span class="n">going</span> <span class="n">to</span> <span class="n">recommend</span> <span class="k">this</span> <span class="n">person</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.227 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">I</span> <span class="n">cannot</span> <span class="n">believe</span> <span class="n">how</span> <span class="n">good</span> <span class="n">she</span> <span class="n">was</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.615 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">I</span> <span class="n">thought</span> <span class="n">very</span> <span class="n">highly</span> <span class="n">of</span> <span class="n">the</span> <span class="n">person</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.991 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">I</span> <span class="n">thought</span> <span class="n">he</span> <span class="n">was</span> <span class="n">not</span> <span class="n">up</span> <span class="n">to</span> <span class="n">the</span> <span class="n">mark</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.586 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">The</span> <span class="n">discussion</span> <span class="n">was</span> <span class="n">very</span> <span class="n">enlightening</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.681 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">He</span> <span class="n">could</span> <span class="n">have</span> <span class="n">been</span> <span class="n">more</span> <span class="n">prepared</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.250 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">His</span> <span class="n">skills</span> <span class="k">in</span> <span class="n">programming</span> <span class="n">were</span> <span class="n">clearly</span> <span class="n">evident</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.427 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">Some</span> <span class="n">improvement</span> <span class="k">in</span> <span class="n">communication</span> <span class="n">would</span> <span class="n">have</span> <span class="n">helped</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.165 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">She</span> <span class="n">does</span> <span class="n">not</span> <span class="n">have</span> <span class="n">a</span> <span class="n">great</span> <span class="n">deal</span> <span class="n">of</span> <span class="n">experience</span> <span class="k">with</span> <span class="n">databases</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.985 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">His</span> <span class="n">software</span> <span class="n">skills</span> <span class="n">were</span> <span class="n">limited</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.514 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">His</span> <span class="n">background</span> <span class="k">in</span> <span class="n">scalable</span> <span class="n">systems</span> <span class="k">is</span> <span class="n">promising</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.436 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">It</span> <span class="n">was</span> <span class="n">unusual</span> <span class="n">that</span> <span class="n">he</span> <span class="n">did</span> <span class="n">not</span> <span class="n">know</span> <span class="n">about</span> <span class="n">MapReduce</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.713 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">It</span> <span class="n">was</span> <span class="n">not</span> <span class="n">evident</span> <span class="n">that</span> <span class="n">he</span> <span class="n">could</span> <span class="n">perform</span> <span class="n">well</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.453 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">His</span> <span class="n">coding</span> <span class="n">skills</span> <span class="n">were</span> <span class="n">amazing</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.991 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">He</span> <span class="n">did</span> <span class="n">not</span> <span class="n">perform</span> <span class="n">well</span> <span class="n">on</span> <span class="n">the</span> <span class="n">coding</span> <span class="n">test</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.731 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">He</span> <span class="n">demonstrated</span> <span class="n">a</span> <span class="n">good</span> <span class="n">understanding</span> <span class="n">of</span> <span class="n">databases</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.821 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Positive&#39;</span><span class="o">)</span>
+<span class="n">Sentence</span><span class="o">:</span> <span class="n">The</span> <span class="n">logic</span> <span class="n">he</span> <span class="n">used</span> <span class="n">to</span> <span class="n">explain</span> <span class="n">that</span> <span class="n">problem</span> <span class="n">was</span> <span class="n">not</span> <span class="n">correct</span>
+<span class="o">(</span><span class="s1">&#39;P(positive) = 0.061 :&#39;</span><span class="o">,</span> <span class="s1">&#39;Negative&#39;</span><span class="o">)</span>
+</pre></div>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/simple-neural-network.html" rel="bookmark"
+                           title="Permalink to Simple Neural Network">Simple Neural Network</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2017-02-06T00:00:00+00:00">
                 Published: Mon 06 February 2017
@@ -34,7 +293,7 @@
 
 <p>In <a href="/category/machine-learning.html">Machine Learning</a>.</p>
 
-</footer><!-- /.post-info --><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">exp</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">random</span><span class="p">,</span> <span class="n">dot</span>
+</footer><!-- /.post-info -->                <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">exp</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">random</span><span class="p">,</span> <span class="n">dot</span>
 
 <span class="c1"># Define neural network class</span>
 <span class="k">class</span> <span class="nc">NeuralNetwork</span><span class="p">():</span>
@@ -44,79 +303,10 @@
 
         <span class="c1"># Model single neuron with 3 inputs and 1 output</span>
         <span class="c1"># Assign random weights to a 3 x 1 matrix with values between -1 and 1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">synaptic_weights</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
-
-    <span class="c1"># Define sigmoid function</span>
-    <span class="k">def</span> <span class="nf">__sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
-
-    <span class="c1"># Gradient of the sigmoid curve</span>
-    <span class="k">def</span> <span class="nf">__sigmoid_derivative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_set_inputs</span><span class="p">,</span> <span class="n">training_set_outputs</span><span class="p">,</span> <span class="n">number_of_training_iterations</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_training_iterations</span><span class="p">):</span>
-             <span class="c1"># Pass the trianing set through out neural network</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">training_set_inputs</span><span class="p">)</span>
-
-            <span class="c1"># Calculate the error</span>
-            <span class="n">error</span> <span class="o">=</span> <span class="n">training_set_outputs</span> <span class="o">-</span> <span class="n">output</span>
-
-            <span class="c1"># Multiply the error by the input and again by the gradient of the sigmoid curve</span>
-            <span class="n">adjustment</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">training_set_inputs</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sigmoid_derivative</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
-
-            <span class="c1"># Adjust the weights</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">synaptic_weights</span> <span class="o">+=</span> <span class="n">adjustment</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
-        <span class="c1"># Pass inputs through our neural network</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sigmoid</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">synaptic_weights</span><span class="p">))</span>
-
-    <span class="c1"># The neural network thinks</span>
-    <span class="k">def</span> <span class="nf">think</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
-        <span class="c1"># Pass inputs through our neural network</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sigmoid</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">synaptic_weights</span><span class="p">))</span>
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-
-    <span class="c1"># Initialize a single neuron neural network</span>
-    <span class="n">neural_network</span> <span class="o">=</span> <span class="n">NeuralNetwork</span><span class="p">()</span>
-
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Random starting synaptic weights:&#39;</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">neural_network</span><span class="o">.</span><span class="n">synaptic_weights</span><span class="p">)</span>
-
-    <span class="c1"># The training set - we will have 4 examples: 3 inputs, 1 output</span>
-    <span class="n">training_set_inputs</span> <span class="o">=</span> <span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
-    <span class="n">training_set_outputs</span> <span class="o">=</span> <span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span>
-
-    <span class="c1"># Train neural network using training data</span>
-    <span class="n">neural_network</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">training_set_inputs</span><span class="p">,</span> <span class="n">training_set_outputs</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
-
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;New synaptic weights after training:&#39;</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">neural_network</span><span class="o">.</span><span class="n">synaptic_weights</span><span class="p">)</span>
-
-    <span class="c1"># Test neural network with new data</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Consider new situation [1,0,0] -&gt; ?&#39;</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">neural_network</span><span class="o">.</span><span class="n">think</span><span class="p">(</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])))</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>Random starting synaptic weights:
-[[-0.16595599]
- [ 0.44064899]
- [-0.99977125]]
-New synaptic weights after training:
-[[ 2.25398875]
- [ 2.47194872]
- [ 9.40867424]]
-Consider new situation [1,0,0] -&gt; ?
-[ 0.90499404]
-</pre></div>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+        <span class="bp">self</span><span class="o">.</span><span class="n">synaptic_weights</span> <span class="o">=</span> <span class="mi">2 …</span></pre></div>
+                <a class="readmore" href="/simple-neural-network.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
